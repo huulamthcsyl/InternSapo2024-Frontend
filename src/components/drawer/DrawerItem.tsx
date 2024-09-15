@@ -6,7 +6,7 @@ type Props = {
   link: string,
 }
 
-export default function DrawerItem({ name, link }: Props) {
+export default function DrawerItem({ name }: Props) {
   return (
     <ListItem key={name} disablePadding>
       <ListItemButton>
