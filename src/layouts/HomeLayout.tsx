@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom"
-import HomeDrawer from "../components/HomeDrawer"
-import AppBarWithHeader from "../components/AppBarWithHeader"
+import HomeDrawer from "../components/drawer/HomeDrawer"
+import AppBarWithHeader from "../components/appbar/AppBarWithHeader"
 import { Box, Toolbar } from "@mui/material"
 
 type Props = {}
