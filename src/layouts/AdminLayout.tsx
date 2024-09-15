@@ -1,6 +1,5 @@
 import { Outlet } from "react-router-dom"
 import HomeDrawer from "../components/HomeDrawer"
-import "../styles/layouts/HomeLayout.css"
 import AppBarWithHeader from "../components/AppBarWithHeader"
 import { Box } from "@mui/material"
 
