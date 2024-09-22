@@ -8,7 +8,7 @@ type Props = {
 
 export default function MainBox({ children }: Props) {
   return (
-    <Box component="main">
+    <Box component="main" >
       <Toolbar />
       {children}
     </Box>
