@@ -71,7 +71,6 @@ export default function BrandPage({}: Props) {
                 <Box sx={{ padding: "20px 24px", backgroundColor: "#F0F1F1" }}>
                     <Box
                         sx={{
-                            flexGrow: 1,
                             display: "flex",
                             padding: "11px 0",
                             height: "38px",
