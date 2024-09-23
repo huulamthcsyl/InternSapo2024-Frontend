@@ -9,6 +9,10 @@ import VariantPage from "../pages/home/products/variants/VariantPage";
 import BrandPage from "../pages/home/products/brands/BrandPage";
 import ProductDetail from "../pages/home/products/product-detail/ProductDetail";
 import CategoryPage from "../pages/home/products/categories/CategoryPage";
+import ProductEdit from "../pages/home/products/product-detail/product-edit/ProductEdit";
+import AddVariant from "../pages/home/products/product-detail/add-variant/AddVariant";
+import AddProduct from "../pages/home/products/add-product/AddProduct";
+import TextFieldd from "../pages/home/products/TextFieldd";
 
 export const router = createBrowserRouter([
     {
@@ -42,6 +46,22 @@ export const router = createBrowserRouter([
             {
                 path: "/products/detail",
                 element: <ProductDetail />,
+            },
+            {
+                path: "/products/edit",
+                element: <ProductEdit />,
+            },
+            {
+                path: "/products/create",
+                element: <AddProduct/>,
+            },
+            {
+                path: "/products/variants/create",
+                element: <AddVariant />,
+            },
+            {
+                path: "/products/text",
+                element: <TextFieldd />,
             },
         ],
     },

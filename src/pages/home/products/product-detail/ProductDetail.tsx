@@ -1,7 +1,8 @@
-import { Box, CardMedia, TextField, Typography } from "@mui/material";
+import { Box, Button, CardMedia, TextField, Typography } from "@mui/material";
 import ProductDetailAppBar from "./ProductDetailAppBar";
 import MainBox from "../../../../components/layout/MainBox";
 import LabelInfo from "./LabelInfo";
+import { AddCircle } from "@mui/icons-material";
 
 type Props = {};
 
@@ -67,24 +68,16 @@ export default function ProductDetail({}: Props) {
                                         label="Ngày cập nhật cuối"
                                         info="01/01/2024 12:00"
                                     />
-                                    <Box sx={{ width: "100%" }}>
-                                        <Typography
-                                            marginBottom={"10px"}
-                                            fontSize={"0.9rem"}
-                                        >
-                                            Mô tả sản phẩm
-                                        </Typography>
-                                        <TextField
-                                            rows={3}
-                                            multiline
-                                            disabled
-                                            defaultValue={"Hàng chất lượng cao"}
-                                            sx={{
-                                                width: "100%",
-                                                fontSize: "0.9rem",
-                                            }}
-                                        />
-                                    </Box>
+                                    <TextField
+                                        fullWidth
+                                        multiline
+                                        disabled
+                                        rows={4}
+                                        id="outlined-uncontrolled"
+                                        label="Mô tả sản phẩm"
+                                        defaultValue="foo"
+                                        margin="normal"
+                                    />
                                 </Box>
                                 <Box
                                     sx={{
@@ -233,6 +226,7 @@ export default function ProductDetail({}: Props) {
                                     </Box>
                                 </Box>
                             </Box>
+                            
                         </Box>
                         <Box sx={{ flexGrow: 1 }}>
                             <Box

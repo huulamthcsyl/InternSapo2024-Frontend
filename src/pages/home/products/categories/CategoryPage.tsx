@@ -183,6 +183,7 @@ export default function CategoryPage({}: Props) {
                         <TextField
                             sx={{ width: "50%" }}
                             required
+                            size="small"
                             label="Tên loại sản phẩm"
                             defaultValue="foo"
                             margin="normal"
@@ -190,6 +191,7 @@ export default function CategoryPage({}: Props) {
                         <TextField
                             sx={{ width: "50%" }}
                             label="Mã loại"
+                            size="small"
                             defaultValue="foo"
                             margin="normal"
                         />

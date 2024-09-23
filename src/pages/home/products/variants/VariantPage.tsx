@@ -65,52 +65,6 @@ export default function VariantPage({}: Props) {
             <VariantPageAppBar />
             <MainBox>
                 <Box sx={{ padding: "20px 24px", backgroundColor: "#F0F1F1" }}>
-                    <Box
-                        sx={{
-                            flexGrow: 1,
-                            display: "flex",
-                            padding: "11px 0",
-                            height: "38px",
-                            justifyContent: "space-between",
-                        }}
-                    >
-                        <ButtonGroup>
-                            <Button
-                                variant="text"
-                                size="large"
-                                sx={{
-                                    color: "black",
-                                    textTransform: "none",
-                                    fontSize: "18px",
-                                }}
-                            >
-                                Loại sản phẩm
-                            </Button>
-                            <Divider
-                                orientation="vertical"
-                                variant="middle"
-                                flexItem
-                            />
-                            <Button
-                                variant="text"
-                                size="large"
-                                sx={{
-                                    color: "black",
-                                    textTransform: "none",
-                                    fontSize: "18px",
-                                }}
-                            >
-                                Nhãn hiệu
-                            </Button>
-                        </ButtonGroup>
-                        <Button
-                            variant="contained"
-                            startIcon={<Add />}
-                            sx={{ textTransform: "none" }}
-                        >
-                            Thêm sản phẩm
-                        </Button>
-                    </Box>
                     <Box sx={{ backgroundColor: "white" }}>
                         <Box sx={{ padding: "16px" }}>
                             <Box

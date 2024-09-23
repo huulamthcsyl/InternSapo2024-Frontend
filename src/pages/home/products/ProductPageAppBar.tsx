@@ -6,8 +6,8 @@ type Props = {}
 export default function ProductPageAppBar({}: Props) {
   return (
     <MainAppBar>
-      <Box sx={{ display: 'flex'}}>
-        <Typography sx={{fontSize:"26px"}}>Danh sách sản phẩm</Typography>
+      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Typography sx={{fontSize:"26px"}} color='textPrimary'>Danh sách sản phẩm</Typography>
       </Box>
     </MainAppBar>
   )

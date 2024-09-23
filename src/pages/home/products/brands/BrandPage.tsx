@@ -176,13 +176,14 @@ export default function BrandPage({}: Props) {
                         <TextField
                             sx={{ width: "50%" }}
                             required
-                           
+                            size="small"
                             label="Tên nhãn hiệu"
                             defaultValue="foo"
                             margin="normal"
                         />
                         <TextField
                             sx={{ width: "50%" }}
+                            size="small"
                             label="Mã loại"
                             defaultValue="foo"
                             margin="normal"
