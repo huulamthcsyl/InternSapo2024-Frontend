@@ -1,4 +1,5 @@
 import { ListItem, ListItemButton, ListItemText, ListItemIcon } from "@mui/material"
+import { useNavigate } from "react-router-dom"
 
 
 type Props = {
@@ -7,10 +8,13 @@ type Props = {
   icon: any
 }
 
-export default function DrawerItem({ name, icon }: Props) {
+export default function DrawerItem({ name, link, icon }: Props) {
+
+  const navigate = useNavigate();
+
   return (
     <ListItem key={name} disablePadding>
-      <ListItemButton>
+      <ListItemButton onClick={() => navigate(link)}>
         <ListItemIcon sx={{ color: "#fff" }}>
           {icon}
         </ListItemIcon>
