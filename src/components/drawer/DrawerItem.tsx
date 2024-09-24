@@ -1,19 +1,20 @@
 import { ListItem, ListItemButton, ListItemText, ListItemIcon } from "@mui/material"
-import HomeIcon from '@mui/icons-material/Home';
+
 
 type Props = {
   name: string,
   link: string,
+  icon: any
 }
 
-export default function DrawerItem({ name }: Props) {
+export default function DrawerItem({ name, icon }: Props) {
   return (
     <ListItem key={name} disablePadding>
       <ListItemButton>
-        <ListItemIcon>
-          <HomeIcon />
+        <ListItemIcon sx={{ color: "#fff" }}>
+          {icon}
         </ListItemIcon>
-        <ListItemText primary={name} />
+        <ListItemText sx={{ color: '#fff' }} primary={name} />
       </ListItemButton>
     </ListItem>
   )
