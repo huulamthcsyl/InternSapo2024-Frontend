@@ -15,7 +15,7 @@ const getCustomersByKeyword = async (keyword: string): Promise<Customer[]> => {
             }
         });
         const customers = await response.data.content.map((customer: any) => {
-            return new Customer(customer.id, customer.code, customer.name, customer.email, customer.phoneNumber, customer.address, customer.gender, new Date(customer.birthday), customer.totalExpense, customer.numberOfOrder);
+            return Customer.fromJson(customer);
         });
         return customers;
     } catch (error) {

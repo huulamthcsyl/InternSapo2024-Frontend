@@ -1,14 +1,22 @@
 class Order {
     code: string;
-    customerName: string;
-    createdOn: Date;
+    customerId: number;
+    orderDetails: [];
+    note: string;
+    paymentType: string;
     totalQuantity: number;
+    cashReceived: number;
+    cashRepay: number;
     totalPayment: number;
-    constructor(code: string, customerName: string, createdOn: Date, totalQuantity: number, totalPayment: number) {
+    constructor(code: string, customerId: number, orderDetails: [], note: string, paymentType: string, totalQuantity: number, totalPayment: number, cashReceived: number, cashRepay: number) {
         this.code = code;
-        this.customerName = customerName;
-        this.createdOn = createdOn;
+        this.customerId = customerId;
+        this.orderDetails = orderDetails;
+        this.note = note;
+        this.paymentType = paymentType;
         this.totalQuantity = totalQuantity;
         this.totalPayment = totalPayment;
+        this.cashReceived = cashReceived;
+        this.cashRepay = cashRepay;
     }
 }

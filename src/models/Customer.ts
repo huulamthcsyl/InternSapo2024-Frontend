@@ -22,4 +22,8 @@ export default class Customer {
         this.totalExpense = totalExpense;
         this.numberOfOrder = numberOfOrder;
     }
+
+    static fromJson(json: any): Customer {
+        return new Customer(json.id, json.code, json.name, json.email, json.phoneNumber, json.address, json.gender, new Date(json.birthday), json.totalExpense, json.numberOfOrder);
+    }
 }
