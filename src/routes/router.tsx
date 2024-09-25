@@ -4,6 +4,8 @@ import HomePage from "../pages/home/HomePage";
 import LoginPage from "../pages/login/LoginPage";
 import AdminLayout from "../layouts/AdminLayout";
 import AdminPage from "../pages/admin/AdminPage";
+import OrderListPage from "../pages/order/order-list/OrderListPage";
+import CreateOrderPage from "../pages/order/create-order/CreateOrderPage";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +20,14 @@ export const router = createBrowserRouter([
         path: "",
         element: <HomePage />
       },
+      {
+        path: "order",
+        element: <OrderListPage />
+      },
+      {
+        path: "order/create",
+        element: <CreateOrderPage />
+      }
     ]
   },
   {
