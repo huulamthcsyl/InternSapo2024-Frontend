@@ -18,6 +18,22 @@ export const router = createBrowserRouter([
         path: "",
         element: <HomePage />
       },
+      {
+        path: "customers",
+        element: <CustomerPage />
+      },
+      {
+        path: "customers/create",
+        element: <NewCustomerPage />
+      },
+      {
+        path: "customers/:customerId",  // Dynamic route với customerID
+        element: <CustomerDetailPage />  // Component sẽ render chi tiết khách hàng
+      },
+      {
+        path: "/overview",
+        element: <OverviewPage />
+      }
     ]
   },
   {
