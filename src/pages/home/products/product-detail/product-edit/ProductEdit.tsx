@@ -15,13 +15,119 @@ import MainBox from "../../../../../components/layout/MainBox";
 import Add from "@mui/icons-material/Add";
 import Cancel from "@mui/icons-material/Cancel";
 import { AddCircle } from "@mui/icons-material";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+    BrandResponse,
+    CategoryResponse,
+    ProductRequest,
+    VariantRequest,
+} from "../../ProductInterface";
+import Property from "../../Property";
 
 type Props = {};
 
 export default function ProductDetail({}: Props) {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [product, setProduct] = useState<ProductRequest>({});
+    const [sizes, setSizes] = useState<string[]>([]);
+    const [additionalSizes, setAdditionalSizes] = useState<string[]>([]);
+    const [additionalColors, setAdditionalColors] = useState<string[]>([]);
+    const [colors, setColors] = useState<string[]>([]);
+    const [materials, setMaterials] = useState<string[]>([]);
+    const [additionalMaterials, setAdditionalMaterials] = useState<string[]>(
+        []
+    );
+    const [categories, setCategories] = useState<CategoryResponse[]>([]);
+    const [currentVariant, setCurrentVariant] = useState<{
+        variant: VariantRequest;
+        index: number;
+    }>({
+        variant: {
+            name: "",
+            sku: "",
+            size: "",
+            color: "",
+            material: "",
+            imagePath: "",
+            initialPrice: 0,
+            priceForSale: 0,
+        },
+        index: 0,
+    });
+    const [brands, setBrands] = useState<BrandResponse[]>([]);
+    const [variants, setVariants] = useState<VariantRequest[]>([]);
+
+    function handleProductChange(e) {
+        setProduct({ ...product, [e.target.name]: e.target.value });
+    }
+
+    function handleVariantChange(index, field, value) {
+        console.log(index, field, value);
+        const updatedVariants = [...variants];
+        updatedVariants[index] = {
+            ...updatedVariants[index],
+            [field]: value,
+        };
+        setVariants(updatedVariants);
+        if (index === currentVariant?.index) {
+            setCurrentVariant({
+                ...currentVariant,
+                variant: updatedVariants[index],
+            });
+        }
+    }
+
+    function handleUpdateProduct() {
+        fetch(`http://localhost:8080/v1/products/${id}/edit`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                // Authorization: `Bearer ${user?.token}`,
+            },
+            body: JSON.stringify({ ...product, variants: variants }),
+        })
+            .then((res) => {
+                return res.json();
+            })
+            .then((result) => {
+                window.alert(result.message);
+            });
+    }
+
+    useEffect(() => {
+        fetch(`http://localhost:8080/v1/products/${id}`)
+            .then((res) => res.json())
+            .then((result) => {
+                setProduct(result.data);
+                setSizes(result.data.size);
+                setColors(result.data.color);
+                setMaterials(result.data.material);
+                setCurrentVariant({
+                    variant: result.data.variants[0],
+                    index: 0,
+                });
+                setVariants(result.data.variants);
+            });
+        fetch(
+            `http://localhost:8080/v1/products/categories?page=0&limit=10&query=`
+        )
+            .then((res) => res.json())
+            .then((result) => {
+                setCategories(result.data);
+            });
+        fetch(`http://localhost:8080/v1/products/brands?page=0&limit=10&query=`)
+            .then((res) => res.json())
+            .then((result) => {
+                setBrands(result.data);
+            });
+    }, []);
+    console.log(variants);
+    console.log(currentVariant.index);
     return (
         <Box>
-            <ProductEditAppBar />
+            <ProductEditAppBar id={id} submit={handleUpdateProduct} />
             <MainBox>
                 <Box sx={{ padding: "20px 24px", backgroundColor: "#F0F1F1" }}>
                     <Box
@@ -33,7 +139,7 @@ export default function ProductDetail({}: Props) {
                         }}
                     >
                         <Typography sx={{ fontSize: "20px" }}>
-                            Áo khoác Chino thời thượng
+                            {product.name}
                         </Typography>
                     </Box>
                     <Box sx={{ display: "flex", gap: "24px" }}>
@@ -59,14 +165,19 @@ export default function ProductDetail({}: Props) {
                                     <TextField
                                         required
                                         fullWidth
+                                        name="name"
                                         label="Tên sản phẩm"
-                                        defaultValue="foo"
+                                        value={product.name}
+                                        onChange={handleProductChange}
                                         margin="normal"
                                         size="small"
                                     />
                                     <TextField
                                         fullWidth
                                         multiline
+                                        name="description"
+                                        value={product.description}
+                                        onChange={handleProductChange}
                                         rows={4}
                                         label="Mô tả sản phẩm"
                                         defaultValue="foo"
@@ -220,13 +331,10 @@ export default function ProductDetail({}: Props) {
                                         >
                                             Kích cỡ
                                         </Typography>
-                                        <TextField
-                                            sx={{
-                                                flexGrow: 1,
-                                                fontSize: "0.9rem",
-                                            }}
-                                            size="small"
-                                            defaultValue={"fdsf"}
+                                        <Property
+                                            fixedBadges={sizes}
+                                            badges={additionalSizes}
+                                            setBadges={setAdditionalSizes}
                                         />
                                     </Box>
                                     <Box
@@ -241,13 +349,10 @@ export default function ProductDetail({}: Props) {
                                         >
                                             Màu sắc
                                         </Typography>
-                                        <TextField
-                                            sx={{
-                                                flexGrow: 1,
-                                                fontSize: "0.9rem",
-                                            }}
-                                            size="small"
-                                            defaultValue={"fdsf"}
+                                        <Property
+                                            fixedBadges={colors}
+                                            badges={additionalColors}
+                                            setBadges={setAdditionalColors}
                                         />
                                     </Box>
                                     <Box
@@ -262,13 +367,10 @@ export default function ProductDetail({}: Props) {
                                         >
                                             Chất liệu
                                         </Typography>
-                                        <TextField
-                                            sx={{
-                                                flexGrow: 1,
-                                                fontSize: "0.9rem",
-                                            }}
-                                            size="small"
-                                            defaultValue={"fdsf"}
+                                        <Property
+                                            fixedBadges={materials}
+                                            badges={additionalMaterials}
+                                            setBadges={setAdditionalMaterials}
                                         />
                                     </Box>
                                 </Box>
@@ -301,12 +403,23 @@ export default function ProductDetail({}: Props) {
                                     <Select
                                         labelId="category"
                                         id="category"
+                                        name="categoryId"
                                         label="Loại sản phẩm"
-                                        defaultValue={10}
+                                        value={
+                                            product.categoryId !== undefined
+                                                ? product.categoryId
+                                                : ""
+                                        }
+                                        onChange={handleProductChange}
                                     >
-                                        <MenuItem value={10}>Ten</MenuItem>
-                                        <MenuItem value={20}>Twenty</MenuItem>
-                                        <MenuItem value={30}>Thirty</MenuItem>
+                                        {categories?.map((category) => (
+                                            <MenuItem
+                                                key={category.id}
+                                                value={category.id}
+                                            >
+                                                {category.name}
+                                            </MenuItem>
+                                        ))}
                                     </Select>
                                 </FormControl>
                                 <FormControl fullWidth margin="normal">
@@ -316,12 +429,22 @@ export default function ProductDetail({}: Props) {
                                     <Select
                                         labelId="brand"
                                         id="brand"
-                                        label="Nhãn hiệu"
-                                        defaultValue={10}
+                                        name="brandId"
+                                        value={
+                                            product.brandId !== undefined
+                                                ? product.brandId
+                                                : ""
+                                        }
+                                        onChange={handleProductChange}
                                     >
-                                        <MenuItem value={10}>Ten</MenuItem>
-                                        <MenuItem value={20}>Twenty</MenuItem>
-                                        <MenuItem value={30}>Thirty</MenuItem>
+                                        {brands?.map((brand) => (
+                                            <MenuItem
+                                                key={brand.id}
+                                                value={brand.id}
+                                            >
+                                                {brand.name}
+                                            </MenuItem>
+                                        ))}
                                     </Select>
                                 </FormControl>
                             </Box>
@@ -362,85 +485,62 @@ export default function ProductDetail({}: Props) {
                                 </Typography>
                                 <Button></Button>
                             </Box>
-                            <Box sx={{ padding: "3px" }}>
-                                <Box
-                                    sx={{
-                                        backgroundColor: "#08f",
-                                        padding: "16px",
-                                        height: "40px",
-                                        display: "flex",
-                                        gap: "10px",
-                                        borderRadius: "3px",
-                                    }}
-                                >
-                                    <CardMedia
-                                        component="img"
-                                        sx={{
-                                            padding: "0 10px",
-                                            width: 40,
-                                            height: 40,
-                                        }}
-                                        image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                        alt="Paella dish"
-                                    />
-                                    <Box>
-                                        <Typography
-                                            fontSize={"0.9rem"}
-                                            sx={{ color: "white" }}
+                            {product?.variants?.length > 0 ? (
+                                product.variants.map((variant, index) => (
+                                    <Box
+                                        sx={{ padding: "3px" }}
+                                        key={variant.id}
+                                        onClick={() =>
+                                            setCurrentVariant({
+                                                variant,
+                                                index,
+                                            })
+                                        }
+                                    >
+                                        <Box
+                                            sx={{
+                                                // backgroundColor: "#08f",
+                                                padding: "16px",
+                                                height: "40px",
+                                                display: "flex",
+                                                gap: "10px",
+                                                borderRadius: "3px",
+                                            }}
                                         >
-                                            Áo khoác Chino thời thượng - M -
-                                            Trắng
-                                        </Typography>
-                                        <Typography
-                                            fontSize={"0.9rem"}
-                                            sx={{ color: "white" }}
-                                        >
-                                            Tồn kho: 9
-                                        </Typography>
+                                            <CardMedia
+                                                component="img"
+                                                sx={{
+                                                    padding: "0 10px",
+                                                    width: 40,
+                                                    height: 40,
+                                                }}
+                                                image={variant.imagePath}
+                                                alt="Paella dish"
+                                            />
+                                            <Box>
+                                                <Typography
+                                                    fontSize={"0.9rem"}
+                                                    // sx={{ color: "white" }}
+                                                >
+                                                    {variant.name}
+                                                </Typography>
+                                                <Typography
+                                                    fontSize={"0.9rem"}
+                                                    // sx={{ color: "white" }}
+                                                >
+                                                    Tồn kho: {variant.quantity}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
                                     </Box>
-                                    <Button variant="text" color="error">
-                                        Xóa
-                                    </Button>
-                                </Box>
-                            </Box>
-                            <Box sx={{ padding: "3px" }}>
-                                <Box
-                                    sx={{
-                                        padding: "16px",
-                                        height: "40px",
-                                        display: "flex",
-                                        gap: "10px",
-                                        borderRadius: "3px",
-                                    }}
-                                >
-                                    <CardMedia
-                                        component="img"
-                                        sx={{
-                                            padding: "0 10px",
-                                            width: 40,
-                                            height: 40,
-                                        }}
-                                        image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                        alt="Paella dish"
-                                    />
-                                    <Box>
-                                        <Typography fontSize={"0.9rem"}>
-                                            Áo khoác Chino thời thượng - M -
-                                            Trắng
-                                        </Typography>
-                                        <Typography
-                                            fontSize={"0.9rem"}
-                                            color="textDisabled"
-                                        >
-                                            Tồn kho: 9
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                            </Box>
+                                ))
+                            ) : (
+                                <></>
+                            )}
                             <Box
                                 sx={{
                                     borderTop: "1px solid #d9d9d9",
-                                    height:'60px', 
+                                    height: "60px",
                                     display: "flex",
                                     justifyContent: "center",
                                 }}
@@ -454,6 +554,11 @@ export default function ProductDetail({}: Props) {
                                     }
                                     sx={{ textTransform: "none" }}
                                     variant="text"
+                                    onClick={() =>
+                                        navigate(
+                                            `/products/${id}/variants/create`
+                                        )
+                                    }
                                 >
                                     Thêm phiên bản
                                 </Button>
@@ -490,14 +595,30 @@ export default function ProductDetail({}: Props) {
                                         <TextField
                                             required
                                             label="Tên phiên bản"
-                                            defaultValue={"dfds"}
+                                            value={
+                                                currentVariant?.variant?.name
+                                            }
+                                            onChange={(e) =>
+                                                handleVariantChange(
+                                                    currentVariant?.index,
+                                                    "name",
+                                                    e.target.value
+                                                )
+                                            }
                                             fullWidth
                                             size="small"
                                             margin="normal"
                                         />
                                         <TextField
                                             label="Mã SKU"
-                                            defaultValue={"dfds"}
+                                            value={currentVariant?.variant?.sku}
+                                            onChange={(e) =>
+                                                handleVariantChange(
+                                                    currentVariant?.index,
+                                                    "sku",
+                                                    e.target.value
+                                                )
+                                            }
                                             sx={{ width: "50%" }}
                                             size="small"
                                             margin="normal"
@@ -511,12 +632,14 @@ export default function ProductDetail({}: Props) {
                                             alignItems: "center",
                                         }}
                                     >
-                                        <Box sx={{
-                                            mt:2,
-                                            display: "flex",
-                                            flexDirection:'column',
-                                            justifyContent: "center"
-                                        }}>
+                                        <Box
+                                            sx={{
+                                                mt: 2,
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                justifyContent: "center",
+                                            }}
+                                        >
                                             <CardMedia
                                                 component="img"
                                                 sx={{
@@ -527,7 +650,13 @@ export default function ProductDetail({}: Props) {
                                                 image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
                                                 alt="Paella dish"
                                             />
-                                            <Button variant="text" color="primary" sx={{textTransform:'none'}}>Thay đổi ảnh</Button>
+                                            <Button
+                                                variant="text"
+                                                color="primary"
+                                                sx={{ textTransform: "none" }}
+                                            >
+                                                Thay đổi ảnh
+                                            </Button>
                                         </Box>
                                     </Box>
                                 </Box>
@@ -570,15 +699,31 @@ export default function ProductDetail({}: Props) {
                                             labelId="size"
                                             id="size"
                                             label="Kích cỡ"
-                                            defaultValue={10}
+                                            value={
+                                                currentVariant?.variant
+                                                    ?.size !== undefined
+                                                    ? currentVariant?.variant
+                                                          ?.size
+                                                    : ""
+                                            }
+                                            onChange={(e) =>
+                                                handleVariantChange(
+                                                    currentVariant?.index,
+                                                    "size",
+                                                    e.target.value
+                                                )
+                                            }
                                         >
-                                            <MenuItem value={10}>Ten</MenuItem>
-                                            <MenuItem value={20}>
-                                                Twenty
-                                            </MenuItem>
-                                            <MenuItem value={30}>
-                                                Thirty
-                                            </MenuItem>
+                                            {[...sizes, ...additionalSizes].map(
+                                                (size, index) => (
+                                                    <MenuItem
+                                                        value={size}
+                                                        key={index}
+                                                    >
+                                                        {size}
+                                                    </MenuItem>
+                                                )
+                                            )}
                                         </Select>
                                     </FormControl>
                                     <FormControl
@@ -593,15 +738,32 @@ export default function ProductDetail({}: Props) {
                                             labelId="color"
                                             id="color"
                                             label="Màu sắc"
-                                            defaultValue={10}
+                                            value={
+                                                currentVariant?.variant
+                                                    ?.color !== undefined
+                                                    ? currentVariant?.variant
+                                                          ?.color
+                                                    : ""
+                                            }
+                                            onChange={(e) =>
+                                                handleVariantChange(
+                                                    currentVariant?.index,
+                                                    "color",
+                                                    e.target.value
+                                                )
+                                            }
                                         >
-                                            <MenuItem value={10}>Ten</MenuItem>
-                                            <MenuItem value={20}>
-                                                Twenty
-                                            </MenuItem>
-                                            <MenuItem value={30}>
-                                                Thirty
-                                            </MenuItem>
+                                            {[
+                                                ...colors,
+                                                ...additionalColors,
+                                            ].map((color, index) => (
+                                                <MenuItem
+                                                    value={color}
+                                                    key={index}
+                                                >
+                                                    {color}
+                                                </MenuItem>
+                                            ))}
                                         </Select>
                                     </FormControl>
                                     <FormControl
@@ -616,15 +778,32 @@ export default function ProductDetail({}: Props) {
                                             labelId="material"
                                             id="material"
                                             label="Chất liệu"
-                                            defaultValue={10}
+                                            value={
+                                                currentVariant?.variant
+                                                    ?.material !== undefined
+                                                    ? currentVariant?.variant
+                                                          ?.material
+                                                    : ""
+                                            }
+                                            onChange={(e) =>
+                                                handleVariantChange(
+                                                    currentVariant?.index,
+                                                    "material",
+                                                    e.target.value
+                                                )
+                                            }
                                         >
-                                            <MenuItem value={10}>Ten</MenuItem>
-                                            <MenuItem value={20}>
-                                                Twenty
-                                            </MenuItem>
-                                            <MenuItem value={30}>
-                                                Thirty
-                                            </MenuItem>
+                                            {[
+                                                ...materials,
+                                                ...additionalMaterials,
+                                            ].map((material, index) => (
+                                                <MenuItem
+                                                    value={material}
+                                                    key={index}
+                                                >
+                                                    {material}
+                                                </MenuItem>
+                                            ))}
                                         </Select>
                                     </FormControl>
                                 </Box>
@@ -658,14 +837,34 @@ export default function ProductDetail({}: Props) {
                                         label="Giá bán"
                                         required
                                         size="small"
-                                        defaultValue={"sfds"}
+                                        value={
+                                            currentVariant?.variant
+                                                ?.priceForSale
+                                        }
+                                        onChange={(e) =>
+                                            handleVariantChange(
+                                                currentVariant?.index,
+                                                "priceForSale",
+                                                e.target.value
+                                            )
+                                        }
                                         sx={{ width: "50%" }}
                                     />
                                     <TextField
                                         label="Giá nhập"
                                         required
                                         size="small"
-                                        defaultValue={"sfds"}
+                                        value={
+                                            currentVariant?.variant
+                                                ?.initialPrice
+                                        }
+                                        onChange={(e) =>
+                                            handleVariantChange(
+                                                currentVariant?.index,
+                                                "initialPrice",
+                                                e.target.value
+                                            )
+                                        }
                                         sx={{ width: "50%" }}
                                     />
                                 </Box>

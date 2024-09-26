@@ -2,14 +2,30 @@ import { Box, Button, CardMedia, TextField, Typography } from "@mui/material";
 import ProductDetailAppBar from "./ProductDetailAppBar";
 import MainBox from "../../../../components/layout/MainBox";
 import LabelInfo from "./LabelInfo";
-import { AddCircle } from "@mui/icons-material";
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ProductResponse, VariantResponse } from "../ProductInterface";
+import { Image } from "@mui/icons-material";
 
 type Props = {};
 
 export default function ProductDetail({}: Props) {
+    const { id } = useParams();
+    const [data, setData] = useState<ProductResponse>({});
+    const [currentVariant, setCurrentVariant] = useState<VariantResponse>();
+    useEffect(() => {
+        fetch(`http://localhost:8080/v1/products/${id}`)
+            .then((res) => res.json())
+            .then((result) => {
+                setData(result.data);
+                setCurrentVariant(result.data.variants[0]);
+                console.log(result.data);
+            });
+    }, []);
+
     return (
         <Box>
-            <ProductDetailAppBar />
+            <ProductDetailAppBar id={id} />
             <MainBox>
                 <Box sx={{ padding: "20px 24px", backgroundColor: "#F0F1F1" }}>
                     <Box
@@ -21,7 +37,7 @@ export default function ProductDetail({}: Props) {
                         }}
                     >
                         <Typography sx={{ fontSize: "20px" }}>
-                            Áo khoác Chino thời thượng
+                            {data.name}
                         </Typography>
                     </Box>
                     <Box>
@@ -54,28 +70,31 @@ export default function ProductDetail({}: Props) {
                                 >
                                     <LabelInfo
                                         label="Loại sản phẩm"
-                                        info="Áo khoác"
+                                        info={data.categoryName}
                                     />
                                     <LabelInfo
                                         label="Ngày khởi tạo"
-                                        info="01/01/2024 10:00"
+                                        info={new Date(
+                                            data.createdOn
+                                        ).toLocaleString()}
                                     />
                                     <LabelInfo
                                         label="Nhãn hiệu"
-                                        info="Uniqlo"
+                                        info={data.brandName}
                                     />
                                     <LabelInfo
                                         label="Ngày cập nhật cuối"
-                                        info="01/01/2024 12:00"
+                                        info={new Date(
+                                            data.updatedOn
+                                        ).toLocaleString()}
                                     />
                                     <TextField
                                         fullWidth
                                         multiline
-                                        disabled
                                         rows={4}
                                         id="outlined-uncontrolled"
                                         label="Mô tả sản phẩm"
-                                        defaultValue="foo"
+                                        value={data.description}
                                         margin="normal"
                                     />
                                 </Box>
@@ -88,36 +107,22 @@ export default function ProductDetail({}: Props) {
                                         justifyContent: "center",
                                     }}
                                 >
-                                    <CardMedia
-                                        component="img"
-                                        sx={{
-                                            borderRadius: 1,
-                                            width: 100,
-                                            height: 100,
-                                        }}
-                                        image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                        alt="Paella dish"
-                                    />
-                                    <CardMedia
-                                        component="img"
-                                        sx={{
-                                            borderRadius: 1,
-                                            width: 100,
-                                            height: 100,
-                                        }}
-                                        image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                        alt="Paella dish"
-                                    />
-                                    <CardMedia
-                                        component="img"
-                                        sx={{
-                                            borderRadius: 1,
-                                            width: 100,
-                                            height: 100,
-                                        }}
-                                        image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                        alt="Paella dish"
-                                    />
+                                    {data?.imagePath?.length > 0 ? (
+                                        data.imagePath.map((path, index) => (
+                                            <CardMedia
+                                                component="img"
+                                                sx={{
+                                                    borderRadius: 1,
+                                                    width: 100,
+                                                    height: 100,
+                                                }}
+                                                key={index}
+                                                image={path}
+                                            />
+                                        ))
+                                    ) : (
+                                        <></>
+                                    )}
                                 </Box>
                             </Box>
                         </Box>
@@ -154,79 +159,64 @@ export default function ProductDetail({}: Props) {
                                     Phiên bản
                                 </Typography>
                             </Box>
-                            <Box sx={{ padding: "3px" }}>
-                                <Box
-                                    sx={{
-                                        backgroundColor: "#08f",
-                                        padding: "16px",
-                                        height: "40px",
-                                        display: "flex",
-                                        gap: "10px",
-                                        borderRadius: "3px",
-                                    }}
-                                >
-                                    <CardMedia
-                                        component="img"
-                                        sx={{
-                                            padding: "0 10px",
-                                            width: 40,
-                                            height: 40,
-                                        }}
-                                        image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                        alt="Paella dish"
-                                    />
-                                    <Box>
-                                        <Typography
-                                            fontSize={"0.9rem"}
-                                            sx={{ color: "white" }}
+                            {data?.variants?.length > 0 ? (
+                                data.variants.map((variant) => (
+                                    <Box
+                                        sx={{ padding: "3px" }}
+                                        key={variant.id}
+                                        onClick={() =>
+                                            setCurrentVariant(variant)
+                                        }
+                                    >
+                                        <Box
+                                            sx={{
+                                                // backgroundColor: "#08f",
+                                                padding: "16px",
+                                                height: "40px",
+                                                display: "flex",
+                                                gap: "10px",
+                                                borderRadius: "3px",
+                                            }}
                                         >
-                                            Áo khoác Chino thời thượng - M -
-                                            Trắng
-                                        </Typography>
-                                        <Typography
-                                            fontSize={"0.9rem"}
-                                            sx={{ color: "white" }}
-                                        >
-                                            Tồn kho: 9
-                                        </Typography>
+                                            {variant.imagePath.length > 0 ? (
+                                                <CardMedia
+                                                    component="img"
+                                                    sx={{
+                                                        padding: "0 10px",
+                                                        width: 40,
+                                                        height: 40,
+                                                    }}
+                                                    image={variant.imagePath}
+                                                />
+                                            ) : (
+                                                <Image
+                                                    sx={{
+                                                        padding: "0 10px",
+                                                        width: 40,
+                                                        height: 40,
+                                                    }}
+                                                />
+                                            )}
+                                            <Box>
+                                                <Typography
+                                                    fontSize={"0.9rem"}
+                                                    // sx={{ color: "white" }}
+                                                >
+                                                    {variant.name}
+                                                </Typography>
+                                                <Typography
+                                                    fontSize={"0.9rem"}
+                                                    // sx={{ color: "white" }}
+                                                >
+                                                    Tồn kho: {variant.quantity}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
                                     </Box>
-                                </Box>
-                            </Box>
-                            <Box sx={{ padding: "3px" }}>
-                                <Box
-                                    sx={{
-                                        padding: "16px",
-                                        height: "40px",
-                                        display: "flex",
-                                        gap: "10px",
-                                        borderRadius: "3px",
-                                    }}
-                                >
-                                    <CardMedia
-                                        component="img"
-                                        sx={{
-                                            padding: "0 10px",
-                                            width: 40,
-                                            height: 40,
-                                        }}
-                                        image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                        alt="Paella dish"
-                                    />
-                                    <Box>
-                                        <Typography fontSize={"0.9rem"}>
-                                            Áo khoác Chino thời thượng - M -
-                                            Trắng
-                                        </Typography>
-                                        <Typography
-                                            fontSize={"0.9rem"}
-                                            color="textDisabled"
-                                        >
-                                            Tồn kho: 9
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                            </Box>
-                            
+                                ))
+                            ) : (
+                                <></>
+                            )}
                         </Box>
                         <Box sx={{ flexGrow: 1 }}>
                             <Box
@@ -258,17 +248,36 @@ export default function ProductDetail({}: Props) {
                                     >
                                         <LabelInfo
                                             label="Tên phiên bản"
-                                            info="Áo khoác Chino thời thượng - M - Trắng"
+                                            info={currentVariant?.name || ""}
                                         />
                                         <LabelInfo
                                             label="Mã SKU"
-                                            info="PVN00001"
+                                            info={currentVariant?.sku || ""}
                                         />
-                                        <LabelInfo label="Kích cỡ" info="M" />
-                                        <LabelInfo
-                                            label="Màu sắc"
-                                            info="Trắng"
-                                        />
+                                        {currentVariant?.size ? (
+                                            <LabelInfo
+                                                label="Kích cỡ"
+                                                info="M"
+                                            />
+                                        ) : (
+                                            <></>
+                                        )}
+                                        {currentVariant?.color ? (
+                                            <LabelInfo
+                                                label="Màu sắc"
+                                                info={currentVariant.color}
+                                            />
+                                        ) : (
+                                            <></>
+                                        )}
+                                        {currentVariant?.material ? (
+                                            <LabelInfo
+                                                label="Chất liệu"
+                                                info={currentVariant.material}
+                                            />
+                                        ) : (
+                                            <></>
+                                        )}
                                     </Box>
                                     <Box
                                         sx={{
@@ -285,7 +294,9 @@ export default function ProductDetail({}: Props) {
                                                 width: 140,
                                                 height: 140,
                                             }}
-                                            image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
+                                            image={
+                                                currentVariant?.imagePath || ""
+                                            }
                                             alt="Paella dish"
                                         />
                                     </Box>
@@ -316,10 +327,17 @@ export default function ProductDetail({}: Props) {
                                         justifyContent: "space-between",
                                     }}
                                 >
-                                    <LabelInfo label="Giá bán" info="480,000" />
+                                    <LabelInfo
+                                        label="Giá bán"
+                                        info={
+                                            currentVariant?.priceForSale || ""
+                                        }
+                                    />
                                     <LabelInfo
                                         label="Giá nhập"
-                                        info="400,000"
+                                        info={
+                                            currentVariant?.initialPrice || ""
+                                        }
                                     />
                                 </Box>
                             </Box>

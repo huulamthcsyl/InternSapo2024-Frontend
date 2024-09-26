@@ -1,7 +1,6 @@
 import {
     Box,
     Button,
-    CardContent,
     CardMedia,
     FormControl,
     InputLabel,
@@ -21,14 +20,173 @@ import MainBox from "../../../../components/layout/MainBox";
 import Add from "@mui/icons-material/Add";
 import Cancel from "@mui/icons-material/Cancel";
 import AddProductAppBar from "./AddProductAppBar";
-import { DataGrid } from "@mui/x-data-grid";
+import { useEffect, useState } from "react";
+import {
+    BrandResponse,
+    CategoryResponse,
+    ProductRequest,
+    VariantRequest,
+} from "../ProductInterface";
+import Property from "../Property";
 
 type Props = {};
 
 export default function AddProduct({}: Props) {
+    const [newProduct, setNewProduct] = useState<ProductRequest>({
+        name: "",
+        categoryId: 0,
+        brandId: 0,
+        description: "",
+        imagePath: [],
+        createdOn: new Date(),
+        updatedOn: new Date(),
+        variants: [],
+    });
+    const [priceForSale, setPriceForSale] = useState(0);
+    const [initialPrice, setInitialPrice] = useState(0);
+    const [sizes, setSizes] = useState<string[]>([]);
+    const [colors, setColors] = useState<string[]>([]);
+    const [materials, setMaterials] = useState<string[]>([]);
+    const [categories, setCategories] = useState<CategoryResponse[]>([]);
+    const [brands, setBrands] = useState<BrandResponse[]>([]);
+    const [variants, setVariants] = useState<VariantRequest[]>([]);
+    const [nameError, setNameError] = useState<boolean>(false);
+    const [selectedImages, setSelectedImages] = useState<File[]>([]);
+
+    function handleDataChange(e) {
+        const { name, value } = e.target;
+        setNewProduct((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+        if (name === "name" && value.trim() === "") {
+            setNameError(true);
+        } else {
+            setNameError(false);
+        }
+    }
+
+    function handleVariantChange(index, field, value) {
+        const updatedVariants = [...variants];
+        updatedVariants[index] = {
+            ...updatedVariants[index],
+            [field]: value,
+        };
+        setVariants(updatedVariants);
+    }
+
+    function handleAddNewProduct() {
+        if (newProduct.name.trim() !== "") {
+            // const formData = new FormData();
+
+            // formData.append("name", newProduct.name);
+            // formData.append("categoryId", newProduct.categoryId.toString());
+            // formData.append("brandId", newProduct.brandId.toString());
+            // formData.append("description", newProduct.description);
+            // formData.append("createdOn", newProduct.createdOn.toISOString());
+            // formData.append("updatedOn", newProduct.updatedOn.toISOString());
+
+            // // Append product images to FormData
+            // selectedImages.forEach((file) => {
+            //     formData.append(`imagePath`, file);
+            // });
+
+            // // Append variants to FormData
+            // variants.forEach((variant) => {
+            //     formData.append(`variants`, JSON.stringify(variant));
+            // });
+            // for (let pair of formData.entries()) {
+            //     console.log(pair[0] + ": " + pair[1]);
+            // }
+            fetch(`http://localhost:8080/v1/products/create`, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    // Authorization: `Bearer ${user?.token}`,
+                },
+                body: JSON.stringify({
+                    ...newProduct,
+                    variants: { ...variants },
+                }),
+            })
+                .then((res) => {
+                    return res.json();
+                })
+                .then((result) => {
+                    window.alert(result.message);
+                });
+        } else {
+            window.alert("Tên sản phẩm không được trống.");
+        }
+    }
+
+    function handleImageChange(e) {
+        const files: File[] = Array.from(e.target.files);
+        const updatedImages: File[] = files.filter(
+            (file) => new Blob([file], { type: file.type })
+        );
+        setSelectedImages([...selectedImages, ...updatedImages]);
+    }
+
+    function handleRemoveImage(indexToRemove) {
+        setSelectedImages((prev) => {
+            return prev.filter((_, index) => index !== indexToRemove);
+        });
+    }
+    console.log(newProduct);
+
+    useEffect(() => {
+        fetch(
+            `http://localhost:8080/v1/products/categories?page=0&limit=10&query=`
+        )
+            .then((res) => res.json())
+            .then((result) => {
+                setCategories(result.data);
+            });
+        fetch(`http://localhost:8080/v1/products/brands?page=0&limit=10&query=`)
+            .then((res) => res.json())
+            .then((result) => {
+                setBrands(result.data);
+            });
+    }, []);
+
+    useEffect(() => {
+        if (sizes.length + colors.length + materials.length > 0) {
+            const updatedVariants: VariantRequest[] = [];
+            const validSizes = sizes.length ? sizes : [""];
+            const validColors = colors.length ? colors : [""];
+            const validMaterials = materials.length ? materials : [""];
+            for (let i = 0; i < validSizes.length; i++) {
+                for (let j = 0; j < validColors.length; j++) {
+                    for (let k = 0; k < validMaterials.length; k++) {
+                        const variant: VariantRequest = {
+                            name:
+                                newProduct.name +
+                                    [sizes[i], colors[j], materials[k]]
+                                        .filter(Boolean)
+                                        .join(" - ") || "",
+                            sku: "",
+                            size: sizes[i] || "",
+                            color: colors[j] || "",
+                            material: materials[k] || "",
+                            imagePath: "",
+                            initialPrice: 0,
+                            priceForSale: 0,
+                        };
+                        console.log(variant);
+                        updatedVariants.push(variant);
+                    }
+                }
+            }
+            setVariants(updatedVariants);
+        } else {
+            setVariants([]);
+        }
+    }, [sizes, materials, colors, newProduct.name]);
+
     return (
         <Box>
-            <AddProductAppBar />
+            <AddProductAppBar submit={handleAddNewProduct} />
             <MainBox>
                 <Box sx={{ padding: "20px 24px", backgroundColor: "#F0F1F1" }}>
                     <Box
@@ -40,7 +198,7 @@ export default function AddProduct({}: Props) {
                         }}
                     >
                         <Typography sx={{ fontSize: "20px" }}>
-                            Áo khoác Chino thời thượng
+                            Thêm sản phẩm
                         </Typography>
                     </Box>
                     <Box sx={{ display: "flex", gap: "24px" }}>
@@ -63,22 +221,32 @@ export default function AddProduct({}: Props) {
                                     </Typography>
                                 </Box>
                                 <Box sx={{ padding: "16px" }}>
-                                    <TextField
-                                        required
-                                        fullWidth
-                                        label="Tên sản phẩm"
-                                        defaultValue="foo"
-                                        margin="normal"
-                                        size="small"
-                                    />
-                                    <TextField
-                                        fullWidth
-                                        multiline
-                                        rows={4}
-                                        label="Mô tả sản phẩm"
-                                        defaultValue="foo"
-                                        margin="normal"
-                                    />
+                                    <FormControl required={true} fullWidth>
+                                        <TextField
+                                            name="name"
+                                            label="Tên sản phẩm"
+                                            value={newProduct.name}
+                                            onChange={handleDataChange}
+                                            error={nameError}
+                                            helperText={
+                                                nameError
+                                                    ? "Tên sản phẩm là bắt buộc"
+                                                    : ""
+                                            }
+                                            margin="normal"
+                                            size="small"
+                                        />
+                                        <TextField
+                                            fullWidth
+                                            multiline
+                                            rows={4}
+                                            name="description"
+                                            label="Mô tả sản phẩm"
+                                            value={newProduct.description}
+                                            onChange={handleDataChange}
+                                            margin="normal"
+                                        />
+                                    </FormControl>
                                 </Box>
                             </Box>
                             <Box
@@ -120,56 +288,70 @@ export default function AddProduct({}: Props) {
                                             borderRadius: 1,
                                             width: 100,
                                             height: 100,
+                                            position: "relative",
+                                            overflow: "hidden",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
                                         }}
                                     >
                                         <Add sx={{ color: "black" }} />
-                                    </Button>
-                                    <Box sx={{ position: "relative" }}>
-                                        <CardMedia
-                                            component="img"
-                                            sx={{
-                                                borderRadius: 1,
-                                                width: 100,
-                                                height: 100,
-                                            }}
-                                            image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                            alt="Paella dish"
-                                        />
-                                        <Cancel
-                                            sx={{
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            style={{
                                                 position: "absolute",
-                                                flexGrow: 1,
                                                 top: 0,
-                                                right: 0,
-                                                width: "15px",
-                                                height: "15px",
-                                                backgroundColor: "white",
-                                                borderRadius: "50%",
+                                                left: 0,
+                                                width: "100%",
+                                                height: "100%",
+                                                opacity: 0,
+                                                cursor: "pointer",
                                             }}
-                                            color="error"
                                         />
-                                    </Box>
-
-                                    <CardMedia
-                                        component="img"
-                                        sx={{
-                                            borderRadius: 1,
-                                            width: 100,
-                                            height: 100,
-                                        }}
-                                        image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                        alt="Paella dish"
-                                    />
-                                    <CardMedia
-                                        component="img"
-                                        sx={{
-                                            borderRadius: 1,
-                                            width: 100,
-                                            height: 100,
-                                        }}
-                                        image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                        alt="Paella dish"
-                                    />
+                                    </Button>
+                                    {selectedImages.map((img, index) => (
+                                        <Box
+                                            sx={{
+                                                position: "relative",
+                                                "&:hover .remove-icon": {
+                                                    visibility: "visible",
+                                                },
+                                                cursor: "pointer",
+                                            }}
+                                            key={index}
+                                        >
+                                            <CardMedia
+                                                component="img"
+                                                sx={{
+                                                    borderRadius: 1,
+                                                    width: 100,
+                                                    height: 100,
+                                                }}
+                                                image={URL.createObjectURL(img)}
+                                            />
+                                            <Cancel
+                                                className="remove-icon"
+                                                sx={{
+                                                    position: "absolute",
+                                                    flexGrow: 1,
+                                                    visibility: "collapse",
+                                                    top: 0,
+                                                    right: 0,
+                                                    width: "15px",
+                                                    height: "15px",
+                                                    backgroundColor: "white",
+                                                    borderRadius: "50%",
+                                                }}
+                                                color="error"
+                                                onClick={() =>
+                                                    handleRemoveImage(index)
+                                                }
+                                            />
+                                        </Box>
+                                    ))}
                                 </Box>
                             </Box>
                             <Box
@@ -199,16 +381,24 @@ export default function AddProduct({}: Props) {
                                 >
                                     <TextField
                                         label="Giá bán"
-                                        required
                                         size="small"
-                                        defaultValue={"sfds"}
+                                        value={priceForSale}
+                                        onChange={(e) =>
+                                            setPriceForSale(
+                                                parseInt(e.target.value)
+                                            )
+                                        }
                                         sx={{ width: "50%" }}
                                     />
                                     <TextField
                                         label="Giá nhập"
-                                        required
                                         size="small"
-                                        defaultValue={"sfds"}
+                                        value={initialPrice}
+                                        onChange={(e) =>
+                                            setInitialPrice(
+                                                parseInt(e.target.value)
+                                            )
+                                        }
                                         sx={{ width: "50%" }}
                                     />
                                 </Box>
@@ -269,13 +459,9 @@ export default function AddProduct({}: Props) {
                                         >
                                             Kích cỡ
                                         </Typography>
-                                        <TextField
-                                            sx={{
-                                                flexGrow: 1,
-                                                fontSize: "0.9rem",
-                                            }}
-                                            size="small"
-                                            defaultValue={"fdsf"}
+                                        <Property
+                                            badges={sizes}
+                                            setBadges={setSizes}
                                         />
                                     </Box>
                                     <Box
@@ -290,13 +476,9 @@ export default function AddProduct({}: Props) {
                                         >
                                             Màu sắc
                                         </Typography>
-                                        <TextField
-                                            sx={{
-                                                flexGrow: 1,
-                                                fontSize: "0.9rem",
-                                            }}
-                                            size="small"
-                                            defaultValue={"fdsf"}
+                                        <Property
+                                            badges={colors}
+                                            setBadges={setColors}
                                         />
                                     </Box>
                                     <Box
@@ -311,13 +493,9 @@ export default function AddProduct({}: Props) {
                                         >
                                             Chất liệu
                                         </Typography>
-                                        <TextField
-                                            sx={{
-                                                flexGrow: 1,
-                                                fontSize: "0.9rem",
-                                            }}
-                                            size="small"
-                                            defaultValue={"fdsf"}
+                                        <Property
+                                            badges={materials}
+                                            setBadges={setMaterials}
                                         />
                                     </Box>
                                 </Box>
@@ -350,12 +528,23 @@ export default function AddProduct({}: Props) {
                                     <Select
                                         labelId="category"
                                         id="category"
+                                        name="categoryId"
                                         label="Loại sản phẩm"
-                                        defaultValue={10}
+                                        value={
+                                            newProduct.categoryId !== undefined
+                                                ? newProduct.categoryId
+                                                : ""
+                                        }
+                                        onChange={handleDataChange}
                                     >
-                                        <MenuItem value={10}>Ten</MenuItem>
-                                        <MenuItem value={20}>Twenty</MenuItem>
-                                        <MenuItem value={30}>Thirty</MenuItem>
+                                        {categories?.map((category) => (
+                                            <MenuItem
+                                                key={category.id}
+                                                value={category.id}
+                                            >
+                                                {category.name}
+                                            </MenuItem>
+                                        ))}
                                     </Select>
                                 </FormControl>
                                 <FormControl fullWidth margin="normal">
@@ -365,102 +554,198 @@ export default function AddProduct({}: Props) {
                                     <Select
                                         labelId="brand"
                                         id="brand"
-                                        label="Nhãn hiệu"
-                                        defaultValue={10}
+                                        name="brandId"
+                                        value={
+                                            newProduct.brandId !== undefined
+                                                ? newProduct.brandId
+                                                : ""
+                                        }
+                                        onChange={handleDataChange}
                                     >
-                                        <MenuItem value={10}>Ten</MenuItem>
-                                        <MenuItem value={20}>Twenty</MenuItem>
-                                        <MenuItem value={30}>Thirty</MenuItem>
+                                        {brands?.map((brand) => (
+                                            <MenuItem
+                                                key={brand.id}
+                                                value={brand.id}
+                                            >
+                                                {brand.name}
+                                            </MenuItem>
+                                        ))}
                                     </Select>
                                 </FormControl>
                             </Box>
                         </Box>
                     </Box>
-
-                    <Box
-                        sx={{
-                            mt: "24px",
-                            borderRadius: "5px",
-                            backgroundColor: "white",
-                            height: "fit-content",
-                        }}
-                    >
+                    {variants.length > 0 ? (
                         <Box
                             sx={{
-                                padding: "16px",
-                                height: "27px",
-                                borderBottom: "1px solid #d9d9d9",
-                                display: "flex",
-                                justifyContent: "space-between",
+                                mt: "24px",
+                                borderRadius: "5px",
+                                backgroundColor: "white",
+                                height: "fit-content",
                             }}
                         >
-                            <Typography sx={{ fontSize: "20px" }}>
-                                Phiên bản
-                            </Typography>
-                            <Button></Button>
-                        </Box>
-                        <Box sx={{ padding: "16px" }}>
-                            <TableContainer component={Paper}>
-                                <Table
-                                    sx={{ minWidth: 650 }}
-                                    aria-label="simple table"
-                                >
-                                    <TableHead sx={{backgroundColor:'#F4F6F8'}}>
-                                        <TableRow>
-                                            <TableCell></TableCell>
-                                            <TableCell width={'400px'}>
-                                                Tên phiên bản
-                                            </TableCell>
-                                            <TableCell width={'200px'} align="center">
-                                                Mã SKU
-                                            </TableCell>
-                                            <TableCell width={'200px'} align="center">
-                                                Giá bán
-                                            </TableCell>
-                                            <TableCell width={'200px'} align="center">
-                                                Giá nhập
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        <TableRow
-                                            sx={{
-                                                "&:last-child td, &:last-child th":
-                                                    { border: 0 },
-                                            }}
+                            <Box
+                                sx={{
+                                    padding: "16px",
+                                    height: "27px",
+                                    borderBottom: "1px solid #d9d9d9",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                }}
+                            >
+                                <Typography sx={{ fontSize: "20px" }}>
+                                    Phiên bản
+                                </Typography>
+                                <Button></Button>
+                            </Box>
+                            {variants?.length > 0 ? (
+                                <Box sx={{ padding: "16px" }}>
+                                    <TableContainer component={Paper}>
+                                        <Table
+                                            sx={{ minWidth: 650 }}
+                                            aria-label="simple table"
                                         >
-                                            <TableCell>
-                                                <CardMedia
-                                                    component="img"
-                                                    sx={{
-                                                        width: 40,
-                                                        height: 40,
-                                                    }}
-                                                    image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                                    alt="Paella dish"
-                                                />
-                                            </TableCell>
-                                            <TableCell
-                                                component="th"
-                                                scope="row"
+                                            <TableHead
+                                                sx={{
+                                                    backgroundColor: "#F4F6F8",
+                                                }}
                                             >
-                                                M - Trắng
-                                            </TableCell>
-                                            <TableCell >
-                                                <TextField size="small"/>
-                                            </TableCell>
-                                            <TableCell >
-                                                <TextField size="small"/>
-                                            </TableCell>
-                                            <TableCell >
-                                                <TextField size="small"/>
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
+                                                <TableRow>
+                                                    <TableCell></TableCell>
+                                                    <TableCell width={"400px"}>
+                                                        Tên phiên bản
+                                                    </TableCell>
+                                                    <TableCell
+                                                        width={"200px"}
+                                                        align="center"
+                                                    >
+                                                        Mã SKU
+                                                    </TableCell>
+                                                    <TableCell
+                                                        width={"200px"}
+                                                        align="center"
+                                                    >
+                                                        Giá bán
+                                                    </TableCell>
+                                                    <TableCell
+                                                        width={"200px"}
+                                                        align="center"
+                                                    >
+                                                        Giá nhập
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {variants.map(
+                                                    (variant, index) => (
+                                                        <TableRow
+                                                            sx={{
+                                                                "&:last-child td, &:last-child th":
+                                                                    {
+                                                                        border: 0,
+                                                                    },
+                                                            }}
+                                                            key={index}
+                                                        >
+                                                            <TableCell>
+                                                                <CardMedia
+                                                                    component="img"
+                                                                    sx={{
+                                                                        width: 40,
+                                                                        height: 40,
+                                                                    }}
+                                                                    image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
+                                                                    alt="Paella dish"
+                                                                />
+                                                            </TableCell>
+                                                            <TableCell
+                                                                component="th"
+                                                                scope="row"
+                                                            >
+                                                                {[
+                                                                    variant.size,
+                                                                    variant.color,
+                                                                    variant.material,
+                                                                ]
+                                                                    .filter(
+                                                                        Boolean
+                                                                    )
+                                                                    .join(
+                                                                        " - "
+                                                                    )}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <TextField
+                                                                    value={
+                                                                        variant.sku ||
+                                                                        ""
+                                                                    }
+                                                                    size="small"
+                                                                    onChange={(
+                                                                        e
+                                                                    ) => {
+                                                                        handleVariantChange(
+                                                                            index,
+                                                                            "sku",
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <TextField
+                                                                    value={
+                                                                        variant.priceForSale
+                                                                    }
+                                                                    size="small"
+                                                                    onChange={(
+                                                                        e
+                                                                    ) => {
+                                                                        handleVariantChange(
+                                                                            index,
+                                                                            "priceForSale",
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <TextField
+                                                                    value={
+                                                                        variant.initialPrice
+                                                                    }
+                                                                    size="small"
+                                                                    onChange={(
+                                                                        e
+                                                                    ) => {
+                                                                        handleVariantChange(
+                                                                            index,
+                                                                            "initialPrice",
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    )
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                </Box>
+                            ) : (
+                                <></>
+                            )}
                         </Box>
-                    </Box>
+                    ) : (
+                        <></>
+                    )}
                 </Box>
             </MainBox>
         </Box>

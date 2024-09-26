@@ -2,64 +2,114 @@ import { Box, Button, ButtonGroup, Divider, InputBase } from "@mui/material";
 import MainBox from "../../../components/layout/MainBox";
 import ProductPageAppBar from "./ProductPageAppBar";
 import Search from "@mui/icons-material/Search";
-import { Add } from "@mui/icons-material";
+import { Add, Image } from "@mui/icons-material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { useEffect, useRef, useState } from "react";
+import SearchField from "./SearchField";
+import { useNavigate } from "react-router-dom";
 
 type Props = {};
 
-const columns: GridColDef[] = [
-    {
-        field: "id",
-        headerName: "ID",
-        // headerClassName: "super-app-theme--header",
-        width: 70,
-    },
-    {
-        field: "firstName",
-        headerName: "First name",
-        // headerClassName: "super-app-theme--header",
-        width: 130,
-    },
-    {
-        field: "lastName",
-        headerName: "Last name",
-        // headerClassName: "super-app-theme--header",
-        width: 130,
-    },
-    {
-        field: "age",
-        headerName: "Age",
-        // headerClassName: "super-app-theme--header",
-        type: "number",
-        width: 90,
-    },
-    {
-        field: "fullName",
-        headerName: "Full name",
-        // headerClassName: "super-app-theme--header",
-        description: "This column has a value getter and is not sortable.",
-        sortable: false,
-        width: 160,
-        valueGetter: (value, row) =>
-            `${row.firstName || ""} ${row.lastName || ""}`,
-    },
-];
-
-const rows = [
-    { id: 1, lastName: "Snow", firstName: "Jon", age: 35 },
-    { id: 2, lastName: "Lannister", firstName: "Cersei", age: 42 },
-    { id: 3, lastName: "Lannister", firstName: "Jaime", age: 45 },
-    { id: 4, lastName: "Stark", firstName: "Arya", age: 16 },
-    { id: 5, lastName: "Targaryen", firstName: "Daenerys", age: null },
-    { id: 6, lastName: "Melisandre", firstName: null, age: 150 },
-    { id: 7, lastName: "Clifford", firstName: "Ferrara", age: 44 },
-    { id: 8, lastName: "Frances", firstName: "Rossini", age: 36 },
-    { id: 9, lastName: "Roxie", firstName: "Harvey", age: 65 },
-];
-
-const paginationModel = { page: 0, pageSize: 5 };
-
 export default function ProductPage({}: Props) {
+    const [data, setData] = useState([]);
+    const [totalNumberOfProducts, setTotalNumberOfProducts] = useState(0);
+    const [query, setQuery] = useState("");
+    const [paginationModel, setPaginationModel] = useState({
+        page: 0,
+        pageSize: 10,
+    });
+    const navigate = useNavigate();
+    const columns: GridColDef[] = [
+        {
+            field: "imagePath",
+            headerName: "Ảnh",
+            renderCell: (params) => {
+                const firstImageUrl =
+                    params.value && params.value.length > 0
+                        ? params.value[0]
+                        : "";
+                return (
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            height: "100%",
+                        }}
+                    >
+                        {firstImageUrl ? (
+                            <img
+                                src={firstImageUrl}
+                                alt="Product"
+                                style={{ width: 30, height: 30 }}
+                            />
+                        ) : (
+                            <Image />
+                        )}
+                    </div>
+                );
+            },
+            width: 70,
+        },
+        {
+            field: "name",
+            headerName: "Tên sản phẩm",
+            width: 130,
+        },
+        {
+            field: "categoryName",
+            headerName: "Loại",
+            width: 130,
+        },
+        {
+            field: "brandName",
+            headerName: "Nhãn hiệu",
+            width: 90,
+        },
+        {
+            field: "totalQuantity",
+            headerName: "Tồn kho",
+            width: 160,
+        },
+        {
+            field: "createdOn",
+            headerName: "Ngày khởi tạo",
+            type: "date",
+            valueGetter: (value) => {
+                // Assuming the value is a string or timestamp and needs to be transformed into a Date object
+                return value ? new Date(value) : "";
+            },
+            width: 160,
+        },
+    ];
+
+    function getListOfProducts() {
+        fetch(
+            `http://localhost:8080/v1/products?page=${paginationModel.page}&limit=${paginationModel.pageSize}&query=${query}`
+        )
+            .then((res) => res.json())
+            .then((result) => {
+                setData(result.data);
+            });
+    }
+
+    function getTotalNumberOfProducts() {
+        fetch(`http://localhost:8080/v1/products/total-products?query=${query}`)
+            .then((res) => res.json())
+            .then((result) => {
+                setTotalNumberOfProducts(result.data);
+            });
+    }
+
+    useEffect(() => {
+        getListOfProducts();
+    }, [paginationModel.pageSize, paginationModel.page]);
+
+    useEffect(() => {
+        getTotalNumberOfProducts();
+        getListOfProducts();
+    }, [query]);
+
     return (
         <Box>
             <ProductPageAppBar />
@@ -83,6 +133,7 @@ export default function ProductPage({}: Props) {
                                     textTransform: "none",
                                     fontSize: "18px",
                                 }}
+                                onClick={() => navigate("/products/categories")}
                             >
                                 Loại sản phẩm
                             </Button>
@@ -99,6 +150,7 @@ export default function ProductPage({}: Props) {
                                     textTransform: "none",
                                     fontSize: "18px",
                                 }}
+                                onClick={() => navigate("/products/brands")}
                             >
                                 Nhãn hiệu
                             </Button>
@@ -107,44 +159,28 @@ export default function ProductPage({}: Props) {
                             variant="contained"
                             startIcon={<Add />}
                             sx={{ textTransform: "none" }}
+                            onClick={() => navigate("/products/create")}
                         >
                             Thêm sản phẩm
                         </Button>
                     </Box>
                     <Box sx={{ backgroundColor: "white" }}>
-                        <Box sx={{ padding: "16px" }}>
-                            <Box
-                                sx={{
-                                    border: "1px solid #d9d9d9",
-                                    alignItems: "center",
-                                    display: "flex",
-                                    borderRadius: "5px",
-                                    padding: "10px 15px",
-                                    gap:'30px'
-                                }}
-                            >
-                                <Search
-                                    sx={{
-                                        color: "#d9d9d9",
-                                        height: "32px",
-                                        width: "32px",
-                                    }}
-                                />
-                                <InputBase
-                                    sx={{ width: "100%" }}
-                                    placeholder="Tìm kiếm sản phẩm theo tên"
-                                />
-                            </Box>
-                        </Box>
+                        <SearchField onKeyPress={setQuery} />
                         <DataGrid
-                            rows={rows}
+                            rows={data}
                             columns={columns}
-                            initialState={{ pagination: { paginationModel } }}
-                            pageSizeOptions={[5, 10]}
-                            checkboxSelection
+                            rowCount={totalNumberOfProducts}
+                            {...data}
+                            paginationMode="server"
+                            paginationModel={paginationModel}
+                            onPaginationModelChange={setPaginationModel}
+                            pageSizeOptions={[10, 20, 30]}
+                            onRowClick={(params) =>
+                                navigate(`/products/${params.row.id}`)
+                            }
+                            // checkboxSelection
                             sx={{
                                 border: 0,
-                                                                
                             }}
                         />
                     </Box>
