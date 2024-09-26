@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, TableContainer, Button } from "@mui/material"
+import { Autocomplete, Box, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, TableContainer, Button, Dialog, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio } from "@mui/material"
 import MainBox from "../../../components/layout/MainBox"
 import CreateOrderAppBar from "./CreateOrderAppBar"
 import { useEffect, useLayoutEffect, useState } from "react"
@@ -14,6 +14,9 @@ import OrderDetail from "../../../models/OrderDetail"
 import { toast, ToastContainer } from "react-toastify"
 import 'react-toastify/dist/ReactToastify.css';
 import { createOrder } from "../../../services/orderAPI"
+import { LocalizationProvider } from "@mui/x-date-pickers"
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 type VariantTableRowProps = {
   index: number,
@@ -61,9 +64,78 @@ function VariantTableRow({ index, orderDetailList, setOrderDetailList }: Variant
   </TableRow>
 }
 
+type DialogProps = {
+  open: boolean,
+  handleClose: () => void
+}
+
+function NewCustomerDialog({ open, handleClose }: DialogProps) {
+  return <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
+    <DialogTitle>Thêm khách hàng mới</DialogTitle>
+    <DialogContent>
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Box>
+          <Typography variant="body1" sx={{ color: '#000' }}>Tên khách hàng <span style={{ color: '#FF4D4D' }}>*</span></Typography>
+          <TextField sx={{ width: '300px' }} />
+        </Box>
+        <Box>
+          <Typography variant="body1" sx={{ color: '#000' }}>Số điện thoại <span style={{ color: '#FF4D4D' }}>*</span></Typography>
+          <TextField sx={{ width: '300px' }} />
+        </Box>
+      </Box>
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Box>
+          <Typography variant="body1" sx={{ color: '#000' }}>Ngày sinh</Typography>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              sx={{ width: '300px' }}
+              value={null}
+              onChange={() => { }}
+            />
+          </LocalizationProvider>
+        </Box>
+        <Box>
+          <Typography variant="body1" sx={{ color: '#000' }}>Email</Typography>
+          <TextField sx={{ width: '300px' }} />
+        </Box>
+      </Box>
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Box sx={{ width: '100%' }}>
+          <Typography variant="body1" sx={{ color: '#000' }}>Địa chỉ</Typography>
+          <TextField sx={{ width: '100%' }} />
+        </Box>
+      </Box>
+      <Box display="flex" justifyContent="space-between">
+        <Box>
+          <Typography variant="body1" sx={{ color: '#000' }}>Giới tính</Typography>
+          <FormControl>
+            <RadioGroup
+              row
+              aria-labelledby="demo-radio-buttons-group-label"
+              defaultValue="female"
+              name="radio-buttons-group"
+            >
+              <FormControlLabel value="female" control={<Radio />} label="Nam" />
+              <FormControlLabel value="male" control={<Radio />} label="Nữ" />
+            </RadioGroup>
+          </FormControl>
+        </Box>
+      </Box>
+    </DialogContent>
+    <Box display="flex" justifyContent="flex-end" p={2}>
+      <Button variant="outlined" onClick={handleClose} sx={{ marginRight: '25px' }}>
+        Thoát
+      </Button>
+      <Button variant="contained">Thêm</Button>
+    </Box>
+  </Dialog>
+}
+
 type Props = {}
 
 export default function CreateOrderPage({ }: Props) {
+
+  const [openAddCustomerDialog, setOpenAddCustomerDialog] = useState<boolean>(false);
 
   const [customersList, setCustomersList] = useState<Customer[]>([]);
   const [customerKeyword, setCustomerKeyword] = useState<string>('');
@@ -140,8 +212,12 @@ export default function CreateOrderPage({ }: Props) {
     <MainBox>
       <CreateOrderAppBar handleCreateOrder={handleCreateOrder} />
       <Box sx={{ backgroundColor: '#F0F1F1', padding: '25px 30px' }} flex={1} display='flex' flexDirection='column'>
+        <NewCustomerDialog open={openAddCustomerDialog} handleClose={() => setOpenAddCustomerDialog(false)} />
         <Box bgcolor="#fff" borderRadius={1} padding="20px 15px" mb={2}>
-          <Typography variant="body1" sx={{ color: '#000', fontWeight: '600', mb: 2 }}>Thông tin khách hàng</Typography>
+          <Box display="flex" justifyContent="space-between">
+            <Typography variant="body1" sx={{ color: '#000', fontWeight: '600', mb: 2 }}>Thông tin khách hàng</Typography>
+            <Button variant="outlined" sx={{ color: '#0088FF', mb: 2 }} onClick={() => setOpenAddCustomerDialog(true)}>Thêm khách hàng mới</Button>
+          </Box>
           <Autocomplete
             disablePortal
             options={customersList}
@@ -243,7 +319,7 @@ export default function CreateOrderPage({ }: Props) {
                 </TableHead>
                 <TableBody>
                   {
-                    orderDetailList.map((_orderDetail, index) => <VariantTableRow key={index} index={index} orderDetailList={orderDetailList} setOrderDetailList={setOrderDetailList}/>)
+                    orderDetailList.map((_orderDetail, index) => <VariantTableRow key={index} index={index} orderDetailList={orderDetailList} setOrderDetailList={setOrderDetailList} />)
                   }
                 </TableBody>
               </Table>
@@ -303,7 +379,7 @@ export default function CreateOrderPage({ }: Props) {
           </Button>
         </Box>
       </Box>
-      <ToastContainer hideProgressBar autoClose={3000}/>
+      <ToastContainer hideProgressBar autoClose={3000} />
     </MainBox>
   )
 }
