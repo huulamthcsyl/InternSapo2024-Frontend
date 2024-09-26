@@ -2,7 +2,7 @@ import { Autocomplete, Box, Paper, Table, TableBody, TableCell, TableHead, Table
 import MainBox from "../../../components/layout/MainBox"
 import CreateOrderAppBar from "./CreateOrderAppBar"
 import { useEffect, useLayoutEffect, useState } from "react"
-import { getCustomersByKeyword } from "../../../services/customerAPI"
+import { createCustomer, getCustomersByKeyword } from "../../../services/customerAPI"
 import Customer from "../../../models/Customer"
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import BadgeIcon from '@mui/icons-material/Badge';
@@ -17,6 +17,7 @@ import { createOrder } from "../../../services/orderAPI"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Dayjs } from "dayjs"
 
 type VariantTableRowProps = {
   index: number,
@@ -70,17 +71,46 @@ type DialogProps = {
 }
 
 function NewCustomerDialog({ open, handleClose }: DialogProps) {
+
+  const [name, setName] = useState<string>('');
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [address, setAddress] = useState<string>('');
+  const [birthday, setBirthday] = useState<Dayjs | null>(null);
+  const [gender, setGender] = useState<boolean>(true);
+
+  const handleCreateCustomer = () => {
+    if(name === '' || phoneNumber === '') {
+      toast.error("Vui lòng nhập tên và số điện thoại khách hàng");
+      return;
+    }
+    const customer = {
+      name: name,
+      phoneNumber: phoneNumber,
+      email: email,
+      address: address,
+      birthday: birthday ? birthday.toISOString() : null,
+      gender: gender
+    }
+    createCustomer(customer).then((_res) => {
+      toast.success("Thêm khách hàng thành công");
+      handleClose();
+    }).catch((error) => {
+      toast.error(error.response.data);
+    });
+  }
+
   return <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
     <DialogTitle>Thêm khách hàng mới</DialogTitle>
     <DialogContent>
       <Box display="flex" justifyContent="space-between" mb={2}>
         <Box>
           <Typography variant="body1" sx={{ color: '#000' }}>Tên khách hàng <span style={{ color: '#FF4D4D' }}>*</span></Typography>
-          <TextField sx={{ width: '300px' }} />
+          <TextField sx={{ width: '300px' }} value={name} onChange={e => setName(e.target.value)} />
         </Box>
         <Box>
           <Typography variant="body1" sx={{ color: '#000' }}>Số điện thoại <span style={{ color: '#FF4D4D' }}>*</span></Typography>
-          <TextField sx={{ width: '300px' }} />
+          <TextField sx={{ width: '300px' }} value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
         </Box>
       </Box>
       <Box display="flex" justifyContent="space-between" mb={2}>
@@ -89,20 +119,21 @@ function NewCustomerDialog({ open, handleClose }: DialogProps) {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               sx={{ width: '300px' }}
-              value={null}
-              onChange={() => { }}
+              value={birthday}
+              onChange={(value) => { setBirthday(value) }}
+              format="DD/MM/YYYY"
             />
           </LocalizationProvider>
         </Box>
         <Box>
           <Typography variant="body1" sx={{ color: '#000' }}>Email</Typography>
-          <TextField sx={{ width: '300px' }} />
+          <TextField sx={{ width: '300px' }} value={email} onChange={e => setEmail(e.target.value)} />
         </Box>
       </Box>
       <Box display="flex" justifyContent="space-between" mb={2}>
         <Box sx={{ width: '100%' }}>
           <Typography variant="body1" sx={{ color: '#000' }}>Địa chỉ</Typography>
-          <TextField sx={{ width: '100%' }} />
+          <TextField sx={{ width: '100%' }} value={address} onChange={e => setAddress(e.target.value)} />
         </Box>
       </Box>
       <Box display="flex" justifyContent="space-between">
@@ -114,9 +145,11 @@ function NewCustomerDialog({ open, handleClose }: DialogProps) {
               aria-labelledby="demo-radio-buttons-group-label"
               defaultValue="female"
               name="radio-buttons-group"
+              value={gender}
+              onChange={(event) => setGender(event.target.value === 'true')}
             >
-              <FormControlLabel value="female" control={<Radio />} label="Nam" />
-              <FormControlLabel value="male" control={<Radio />} label="Nữ" />
+              <FormControlLabel value={false} control={<Radio />} label="Nam" />
+              <FormControlLabel value={true} control={<Radio />} label="Nữ" />
             </RadioGroup>
           </FormControl>
         </Box>
@@ -126,7 +159,7 @@ function NewCustomerDialog({ open, handleClose }: DialogProps) {
       <Button variant="outlined" onClick={handleClose} sx={{ marginRight: '25px' }}>
         Thoát
       </Button>
-      <Button variant="contained">Thêm</Button>
+      <Button variant="contained" onClick={handleCreateCustomer}>Thêm</Button>
     </Box>
   </Dialog>
 }
@@ -222,6 +255,7 @@ export default function CreateOrderPage({ }: Props) {
             disablePortal
             options={customersList}
             getOptionLabel={(option: any) => option.name}
+            noOptionsText="Không tìm thấy khách hàng"
             renderInput={(params) => <TextField {...params} placeholder="Tìm kiếm khách hàng theo tên, số điện thoại" />}
             sx={{ width: '100%', mb: 2 }}
             onChange={(_event: any, value: Customer | null) => {
@@ -273,6 +307,7 @@ export default function CreateOrderPage({ }: Props) {
             disablePortal
             selectOnFocus
             clearOnBlur
+            noOptionsText="Không tìm thấy sản phẩm"
             options={variantList}
             getOptionLabel={(option: any) => `${option.productName} (${option.name})`}
             renderInput={(params) => <TextField {...params} placeholder="Tìm kiếm sản phẩm theo SKU, tên" />}

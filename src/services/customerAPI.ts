@@ -32,4 +32,8 @@ const getCustomerById = async (id: number): Promise<Customer | null> => {
     }
 }
 
-export { getCustomersByKeyword, getCustomerById };
+const createCustomer = async (customer: any): Promise<any> => {
+    return await axios.post(`${BASE_URL}/create`, customer);
+}
+
+export { getCustomersByKeyword, getCustomerById, createCustomer };
