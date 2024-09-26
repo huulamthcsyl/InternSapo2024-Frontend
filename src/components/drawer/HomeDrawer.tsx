@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
 import { Collapse, Divider, Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar } from "@mui/material"
 import DrawerItem from "./DrawerItem"
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
@@ -7,16 +9,30 @@ import HomeIcon from '@mui/icons-material/Home';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import PersonIcon from '@mui/icons-material/Person';
 import { useNavigate } from "react-router-dom";
+=======
+import { Divider, Drawer, List, Toolbar } from "@mui/material"
+import DrawerItem from "./DrawerItem"
+>>>>>>> 7235897 (first commit)
+=======
+import { Divider, Drawer, List, Toolbar } from "@mui/material"
+import DrawerItem from "./DrawerItem"
+>>>>>>> 7235897a29a0ddcf6d2df765244383bc7fcf696a
 
 type Props = {}
 
 export default function HomeDrawer({ }: Props) {
+<<<<<<< HEAD
+<<<<<<< HEAD
 
   const [openOrder, setOpenOrder] = useState(false);
   const [openProduct, setOpenProduct] = useState(false);
 
   const navigate = useNavigate();
 
+=======
+>>>>>>> 7235897 (first commit)
+=======
+>>>>>>> 7235897a29a0ddcf6d2df765244383bc7fcf696a
   return (
     <Drawer sx={{
       width: 240,
@@ -26,16 +42,24 @@ export default function HomeDrawer({ }: Props) {
         boxSizing: 'border-box',
       },
     }}
+<<<<<<< HEAD
+<<<<<<< HEAD
       PaperProps={{
         sx: {
           backgroundColor: '#182537',
         }
       }}
+=======
+>>>>>>> 7235897 (first commit)
+=======
+>>>>>>> 7235897a29a0ddcf6d2df765244383bc7fcf696a
       variant="permanent"
       anchor="left"
     >
       <Toolbar />
       <Divider />
+<<<<<<< HEAD
+<<<<<<< HEAD
       <List sx={{ p: 0 }}>
         <DrawerItem name="Tổng quan" icon={<HomeIcon />} link="/" />
         <ListItemButton onClick={() => setOpenOrder(!openOrder)}>
@@ -77,6 +101,14 @@ export default function HomeDrawer({ }: Props) {
           </List>
         </Collapse>
         <DrawerItem name="Khách hàng" icon={<PersonIcon style={{ color: '#fff' }} />} link="/"/>
+=======
+      <List>
+        <DrawerItem name="Tổng quan" link="/" />
+>>>>>>> 7235897 (first commit)
+=======
+      <List>
+        <DrawerItem name="Tổng quan" link="/" />
+>>>>>>> 7235897a29a0ddcf6d2df765244383bc7fcf696a
       </List>
     </Drawer>
   )
