@@ -8,7 +8,11 @@ type Props = {
 
 export default function MainAppBar({ children }: Props) {
   return (
+<<<<<<< HEAD
     <AppBar sx={{ width: 'calc(100% - 240px)', backgroundColor: '#fff' }} position="fixed">
+=======
+    <AppBar sx={{ width: 'calc(100% - 240px)' }} position="fixed">
+>>>>>>> 7235897 (first commit)
       <Toolbar>
         {children}
       </Toolbar>
