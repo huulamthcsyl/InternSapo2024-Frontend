@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 type Props = {}
 
 export default function LoginPage({}: Props) {
@@ -7,6 +8,8 @@ export default function LoginPage({}: Props) {
   )
 }
 =======
+=======
+>>>>>>> 7235897a29a0ddcf6d2df765244383bc7fcf696a
 import React, { useState } from 'react';  
 import axios from 'axios';  
 import {  
@@ -106,5 +109,9 @@ const LoginPage: React.FC = () => {
     );  
 };  
 
+<<<<<<< HEAD
 export default LoginPage;
 >>>>>>> 7235897 (first commit)
+=======
+export default LoginPage;
+>>>>>>> 7235897a29a0ddcf6d2df765244383bc7fcf696a

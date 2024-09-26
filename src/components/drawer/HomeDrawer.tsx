@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { Collapse, Divider, Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar } from "@mui/material"
 import DrawerItem from "./DrawerItem"
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
@@ -12,10 +13,15 @@ import { useNavigate } from "react-router-dom";
 import { Divider, Drawer, List, Toolbar } from "@mui/material"
 import DrawerItem from "./DrawerItem"
 >>>>>>> 7235897 (first commit)
+=======
+import { Divider, Drawer, List, Toolbar } from "@mui/material"
+import DrawerItem from "./DrawerItem"
+>>>>>>> 7235897a29a0ddcf6d2df765244383bc7fcf696a
 
 type Props = {}
 
 export default function HomeDrawer({ }: Props) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 
   const [openOrder, setOpenOrder] = useState(false);
@@ -25,6 +31,8 @@ export default function HomeDrawer({ }: Props) {
 
 =======
 >>>>>>> 7235897 (first commit)
+=======
+>>>>>>> 7235897a29a0ddcf6d2df765244383bc7fcf696a
   return (
     <Drawer sx={{
       width: 240,
@@ -35,6 +43,7 @@ export default function HomeDrawer({ }: Props) {
       },
     }}
 <<<<<<< HEAD
+<<<<<<< HEAD
       PaperProps={{
         sx: {
           backgroundColor: '#182537',
@@ -42,11 +51,14 @@ export default function HomeDrawer({ }: Props) {
       }}
 =======
 >>>>>>> 7235897 (first commit)
+=======
+>>>>>>> 7235897a29a0ddcf6d2df765244383bc7fcf696a
       variant="permanent"
       anchor="left"
     >
       <Toolbar />
       <Divider />
+<<<<<<< HEAD
 <<<<<<< HEAD
       <List sx={{ p: 0 }}>
         <DrawerItem name="Tổng quan" icon={<HomeIcon />} link="/" />
@@ -93,6 +105,10 @@ export default function HomeDrawer({ }: Props) {
       <List>
         <DrawerItem name="Tổng quan" link="/" />
 >>>>>>> 7235897 (first commit)
+=======
+      <List>
+        <DrawerItem name="Tổng quan" link="/" />
+>>>>>>> 7235897a29a0ddcf6d2df765244383bc7fcf696a
       </List>
     </Drawer>
   )

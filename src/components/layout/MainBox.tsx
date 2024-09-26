@@ -4,6 +4,7 @@ import Toolbar from '@mui/material/Toolbar'
 
 type Props = {
 <<<<<<< HEAD
+<<<<<<< HEAD
     children: React.ReactNode
 }
 
@@ -15,6 +16,8 @@ export default function MainBox({ children }: Props) {
         </Box>
     )
 =======
+=======
+>>>>>>> 7235897a29a0ddcf6d2df765244383bc7fcf696a
   children: React.ReactNode
 }
 
@@ -25,5 +28,8 @@ export default function MainBox({ children }: Props) {
       {children}
     </Box>
   )
+<<<<<<< HEAD
 >>>>>>> 7235897 (first commit)
+=======
+>>>>>>> 7235897a29a0ddcf6d2df765244383bc7fcf696a
 }
