@@ -23,4 +23,13 @@ const getCustomersByKeyword = async (keyword: string): Promise<Customer[]> => {
     }
 }
 
-export { getCustomersByKeyword };
+const getCustomerById = async (id: number): Promise<Customer | null> => {
+    try {
+        const response = await axios.get(`${BASE_URL}/${id}`);
+        return Customer.fromJson(response.data);
+    } catch (error) {
+        return null;
+    }
+}
+
+export { getCustomersByKeyword, getCustomerById };

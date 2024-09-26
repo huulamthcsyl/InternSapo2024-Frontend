@@ -91,7 +91,7 @@ export default function OrderListPage({}: Props) {
     <MainBox>
       <OrderListAppBar />
       <Box sx={{ backgroundColor: '#F0F1F1', padding: '25px 30px' }} flex={1} display='flex' flexDirection='column'>
-        <Button sx={{ alignSelf: 'end', mb: 2 }} variant="contained">Tạo đơn hàng</Button>
+        <Button sx={{ alignSelf: 'end', mb: 2 }} variant="contained" onClick={() => navigate('create')}>Tạo đơn hàng</Button>
         <Box bgcolor="#fff" p={2}>
           <Box display="flex" mb={2} alignItems="center">
             <TextField sx={{ marginRight: '20px', width: '40%' }} label="Tìm kiếm theo mã đơn hàng" variant="outlined" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -135,7 +135,7 @@ export default function OrderListPage({}: Props) {
                       <TableCell>{order.totalQuantity}</TableCell>
                       <TableCell>{formatCurrency(order.totalPayment)}</TableCell>
                       <TableCell>
-                        <Button variant="contained" onClick={() => navigate(`${order.code}`)}>Xem chi tiết</Button>
+                        <Button variant="contained" onClick={() => navigate(`${order.id}`)}>Xem chi tiết</Button>
                       </TableCell>
                     </TableRow>
                   ))

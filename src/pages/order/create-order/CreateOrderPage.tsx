@@ -258,7 +258,7 @@ export default function CreateOrderPage({ }: Props) {
               </Box>
               <Box border="1px dotted #D9D9D9" p={1}>
                 <Typography variant="body1" sx={{ color: '#000' }} mb={1}>Số đơn hàng: {selectedCustomer.numberOfOrder}</Typography>
-                <Typography variant="body1" sx={{ color: '#000' }}>Tổng chi tiêu: {selectedCustomer.totalExpense}</Typography>
+                <Typography variant="body1" sx={{ color: '#000' }}>Tổng chi tiêu: {formatCurrency(selectedCustomer.totalExpense)}</Typography>
               </Box>
             </Box> :
             <Box display="flex" flexDirection="column" alignItems="center">

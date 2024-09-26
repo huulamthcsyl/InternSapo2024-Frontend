@@ -34,8 +34,17 @@ const getNumberOfOrders = async (query: string, startDate: string, endDate: stri
     }
 }
 
+const getOrderDetail = async (orderCode: string | undefined): Promise<any> => {
+    try {
+        const response = await axios.get(`${BASE_URL}/${orderCode}`);
+        return response.data;
+    } catch (error) {
+        return null;
+    }
+}
+
 const createOrder = async (order: any): Promise<any> => {
     return await axios.post(`${BASE_URL}/create`, order);
 }
 
-export { createOrder, getAllOrders, getNumberOfOrders };
+export { createOrder, getAllOrders, getNumberOfOrders, getOrderDetail };
