@@ -1,7 +1,7 @@
 import {
     Box,
     Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormControlLabel, FormLabel, Grid,
-    InputAdornment, InputLabel, MenuItem, Pagination, Radio, RadioGroup, Select,
+    InputAdornment, InputLabel, MenuItem, Pagination, Radio, RadioGroup, Select, Snackbar,
     Table,
     TableBody,
     TableCell,
@@ -71,7 +71,7 @@ export default function CustomerPage({}: Props) {
         })
             .then(response => {
                 if (response.status === 404) {
-                    throw new Error('Không tìm thấy khách hàng với từ khóa đã nhập.');
+                    throw new Error('Không tồn tại khách hàng.');
                 } else if (!response.ok) {
                     throw new Error('Error: ' + response.statusText);
                 }
@@ -85,7 +85,7 @@ export default function CustomerPage({}: Props) {
                 setErrorMessage("");
             })
             .catch(error => {
-                if (error.message.includes('Không tìm thấy khách hàng')) {
+                if (error.message.includes('Không tồn tại khách hàng')) {
                     setCustomers([]); // Đặt danh sách khách hàng thành rỗng
                     setTotalCustomers(0); // Đặt tổng số khách hàng thành 0
                     setErrorMessage(error.message); // Đặt thông báo lỗi
@@ -94,45 +94,12 @@ export default function CustomerPage({}: Props) {
                 }
             });
     };
-    const fetchAllCustomers = () => {
-        fetch(`http://localhost:8000/customers?pageNum=${pageNum}&pageSize=${pageSize}&keyword=${keyword || ''}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'  // Đặt loại nội dung nếu cần thiết
-            }
-        })
-            .then(response => {
-                if (response.status === 404) {
-                    throw new Error('Không tồn tại khách hàng nào.');
-                } else if (!response.ok) {
-                    throw new Error('Error: ' + response.statusText);
-                }
 
-                return response.json();  // Chuyển đổi phản hồi thành JSON
-            })
-            .then(data => {
-                setCustomers(data.content);  // Cập nhật danh sách khách hàng
-                setTotalPages(data.totalPages);// Cập nhật số trang
-                setTotalCustomers(data.totalElements);
-                setErrorMessage("");
-            })
-            .catch(error => {
-                if (error.message.includes('Không tồn tại khách hàng nào.')) {
-                    setCustomers([]); // Đặt danh sách khách hàng thành rỗng
-                    setTotalCustomers(0); // Đặt tổng số khách hàng thành 0
-                    setErrorMessage(error.message); // Đặt thông báo lỗi
-                } else {
-                    console.error('Lỗi khi lấy danh sách khách hàng:', error);
-                }
-            });
-    };
 
     useEffect(() => {
         fetchCustomers();
     }, [pageNum,pageSize, keyword]);
-    useEffect(() => {
-        fetchAllCustomers();
-    }, []);
+
     const handleChangePage = (event, newPage) => {
         setPageNum(newPage);
     };
@@ -201,14 +168,35 @@ export default function CustomerPage({}: Props) {
             .then(data => {
                 console.log("Tạo khách hàng thành công:", data);
                 setSuccessMessage("Tạo khách hàng thành công!"); // Thiết lập thông báo thành công
+                setNewCustomer({
+                    name: '',
+                    phoneNumber: '',
+                    totalExpense: 0,
+                    numberOfOrder: 0,
+                    gender: false,
+                    birthday: null,
+                    email: '',
+                    address: ''
+                });
                 setOpenModal(false);  // Đóng modal sau khi tạo thành công
                 fetchCustomers(); // Gọi lại API để cập nhật danh sách khách hàng
                 // Bạn có thể gọi lại API lấy danh sách khách hàng để cập nhật danh sách
             })
             .catch(error => {
+
                 console.error("Lỗi khi tạo khách hàng:", error.message);
                 setErrorMessage(error.message); // Cập nhật thông báo lỗi
                 // Xử lý hiển thị thông báo lỗi cho người dùng nếu cần thiết
+                setNewCustomer({
+                    name: '',
+                    phoneNumber: '',
+                    totalExpense: 0,
+                    numberOfOrder: 0,
+                    gender: false,
+                    birthday: null,
+                    email: '',
+                    address: ''
+                });
             });
         setOpenModal(false);  // Đóng modal sau khi submit
     };
@@ -261,6 +249,19 @@ export default function CustomerPage({}: Props) {
                             {successMessage}
                         </Alert>
                     )}
+                    {/*<Snackbar*/}
+                    {/*    open={!!successMessage}  // Hiển thị nếu có thông báo thành công*/}
+                    {/*    autoHideDuration={6000}  // 6 giây sau tự ẩn*/}
+                    {/*    onClose={() => setSuccessMessage("")}  // Đóng Snackbar*/}
+                    {/*    message={successMessage}*/}
+                    {/*/>*/}
+
+                    {/*<Snackbar*/}
+                    {/*    open={!!errorMessage}  // Hiển thị nếu có lỗi*/}
+                    {/*    autoHideDuration={6000}*/}
+                    {/*    onClose={() => setErrorMessage("")}*/}
+                    {/*    message={errorMessage}*/}
+                    {/*/>*/}
 
                 </Box>
 
@@ -285,7 +286,7 @@ export default function CustomerPage({}: Props) {
                         <Table sx={{ minWidth: 650 }}>
                             <TableHead>
                                 <TableRow sx={{ backgroundColor: '#e0f7fa' }}>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>ID</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Mã khách hàng</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Tên khách hàng</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số điện thoại</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Tổng chi tiêu</TableCell>
@@ -302,7 +303,7 @@ export default function CustomerPage({}: Props) {
                                             // '&:hover': { backgroundColor: '#e0f7fa' },  // Hover effect
                                         }}
                                     >
-                                        <TableCell>{customer.id}</TableCell>
+                                        <TableCell>{customer.code}</TableCell>
                                         <TableCell>{customer.name}</TableCell>
                                         <TableCell>{customer.phoneNumber}</TableCell>
                                         <TableCell>{customer.totalExpense}</TableCell>
