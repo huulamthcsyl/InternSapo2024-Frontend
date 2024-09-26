@@ -47,13 +47,13 @@ export default function HomeDrawer({ }: Props) {
         </ListItemButton>
         <Collapse in={openOrder} timeout="auto" unmountOnExit>
           <List disablePadding>
-            <ListItemButton sx={{ pl: 4, color: '#fff' }} onClick={() => navigate('/order')}>
+            <ListItemButton sx={{ pl: 4, color: '#fff' }} onClick={() => navigate('/order/create')}>
               <ListItemText primary="Tạo đơn hàng" />
             </ListItemButton>
           </List>
           <List disablePadding>
             <ListItemButton sx={{ pl: 4, color: '#fff' }}>
-              <ListItemText primary="Danh sách đơn hàng" />
+              <ListItemText primary="Danh sách đơn hàng" onClick={() => navigate('/order')}/>
             </ListItemButton>
           </List>
         </Collapse>
