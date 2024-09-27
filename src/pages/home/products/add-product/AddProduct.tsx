@@ -3,8 +3,10 @@ import {
     Button,
     CardMedia,
     FormControl,
+    InputAdornment,
     InputLabel,
     MenuItem,
+    OutlinedInput,
     Paper,
     Select,
     Table,
@@ -17,8 +19,7 @@ import {
     Typography,
 } from "@mui/material";
 import MainBox from "../../../../components/layout/MainBox";
-import Add from "@mui/icons-material/Add";
-import Cancel from "@mui/icons-material/Cancel";
+import { Add, Image, Cancel } from "@mui/icons-material";
 import AddProductAppBar from "./AddProductAppBar";
 import { useEffect, useState } from "react";
 import {
@@ -28,6 +29,8 @@ import {
     VariantRequest,
 } from "../ProductInterface";
 import Property from "../Property";
+import { storage } from "../../../../../firebaseConfig";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 type Props = {};
 
@@ -51,7 +54,8 @@ export default function AddProduct({}: Props) {
     const [brands, setBrands] = useState<BrandResponse[]>([]);
     const [variants, setVariants] = useState<VariantRequest[]>([]);
     const [nameError, setNameError] = useState<boolean>(false);
-    const [selectedImages, setSelectedImages] = useState<File[]>([]);
+    const [images, setImages] = useState<string[]>([]);
+    // const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
     function handleDataChange(e) {
         const { name, value } = e.target;
@@ -66,7 +70,7 @@ export default function AddProduct({}: Props) {
         }
     }
 
-    function handleVariantChange(index, field, value) {
+    function handleVariantChange(index: number, field: string, value: string) {
         const updatedVariants = [...variants];
         updatedVariants[index] = {
             ...updatedVariants[index],
@@ -77,36 +81,20 @@ export default function AddProduct({}: Props) {
 
     function handleAddNewProduct() {
         if (newProduct.name.trim() !== "") {
-            // const formData = new FormData();
-
-            // formData.append("name", newProduct.name);
-            // formData.append("categoryId", newProduct.categoryId.toString());
-            // formData.append("brandId", newProduct.brandId.toString());
-            // formData.append("description", newProduct.description);
-            // formData.append("createdOn", newProduct.createdOn.toISOString());
-            // formData.append("updatedOn", newProduct.updatedOn.toISOString());
-
-            // // Append product images to FormData
-            // selectedImages.forEach((file) => {
-            //     formData.append(`imagePath`, file);
-            // });
-
-            // // Append variants to FormData
-            // variants.forEach((variant) => {
-            //     formData.append(`variants`, JSON.stringify(variant));
-            // });
-            // for (let pair of formData.entries()) {
-            //     console.log(pair[0] + ": " + pair[1]);
+            // if(variants.length==0){
+            //     const emptyVarinant:VariantRequest={}
+            //     setVariants([{...emptyVarinant,name:newProduct.name}]);
             // }
             fetch(`http://localhost:8080/v1/products/create`, {
                 method: "POST",
                 headers: {
-                    Accept: "application/json",
+                    "Content-Type": "application/json",
                     // Authorization: `Bearer ${user?.token}`,
                 },
                 body: JSON.stringify({
                     ...newProduct,
-                    variants: { ...variants },
+                    variants: variants,
+                    imagePath: images,
                 }),
             })
                 .then((res) => {
@@ -120,20 +108,51 @@ export default function AddProduct({}: Props) {
         }
     }
 
-    function handleImageChange(e) {
-        const files: File[] = Array.from(e.target.files);
-        const updatedImages: File[] = files.filter(
-            (file) => new Blob([file], { type: file.type })
-        );
-        setSelectedImages([...selectedImages, ...updatedImages]);
+    function handleImageChange(
+        e: React.ChangeEvent<HTMLInputElement>,
+        directory: string,
+        index?: number
+    ) {
+        const files: File[] = e.target.files ? Array.from(e.target.files) : [];
+        files.map((file) => {
+            if (!file) return;
+            const storageRef = ref(storage, `${directory}/${file.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            // Monitor the upload progress
+            uploadTask.on(
+                "state_changed",
+                (snapshot) => {
+                    //Clearing snapshot cannot upload images
+                    const progressPercent =
+                        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                },
+                (error) => {
+                    console.error("Upload failed:", error);
+                },
+                () => {
+                    getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+                        if (directory == "product")
+                            setImages((prevImages) => [...prevImages, url]);
+                        else if (index !== undefined) {
+                            const updatedVariants = [...variants];
+                            updatedVariants[index] = {
+                                ...updatedVariants[index],
+                                imagePath: url,
+                            };
+                            setVariants(updatedVariants);
+                        }
+                    });
+                }
+            );
+        });
     }
 
-    function handleRemoveImage(indexToRemove) {
-        setSelectedImages((prev) => {
+    function handleRemoveImage(indexToRemove: number) {
+        setImages((prev) => {
             return prev.filter((_, index) => index !== indexToRemove);
         });
     }
-    console.log(newProduct);
 
     useEffect(() => {
         fetch(
@@ -150,6 +169,7 @@ export default function AddProduct({}: Props) {
             });
     }, []);
 
+    console.log(variants);
     useEffect(() => {
         if (sizes.length + colors.length + materials.length > 0) {
             const updatedVariants: VariantRequest[] = [];
@@ -271,6 +291,7 @@ export default function AddProduct({}: Props) {
                                     <Button
                                         variant="text"
                                         sx={{ textTransform: "none" }}
+                                        onClick={() => setImages([])}
                                     >
                                         Xoá tất cả
                                     </Button>
@@ -300,7 +321,9 @@ export default function AddProduct({}: Props) {
                                             type="file"
                                             multiple
                                             accept="image/*"
-                                            onChange={handleImageChange}
+                                            onChange={(e) =>
+                                                handleImageChange(e, "product")
+                                            }
                                             style={{
                                                 position: "absolute",
                                                 top: 0,
@@ -312,7 +335,7 @@ export default function AddProduct({}: Props) {
                                             }}
                                         />
                                     </Button>
-                                    {selectedImages.map((img, index) => (
+                                    {images.map((img, index) => (
                                         <Box
                                             sx={{
                                                 position: "relative",
@@ -330,7 +353,7 @@ export default function AddProduct({}: Props) {
                                                     width: 100,
                                                     height: 100,
                                                 }}
-                                                image={URL.createObjectURL(img)}
+                                                image={img}
                                             />
                                             <Cancel
                                                 className="remove-icon"
@@ -379,28 +402,61 @@ export default function AddProduct({}: Props) {
                                         gap: "20px",
                                     }}
                                 >
-                                    <TextField
-                                        label="Giá bán"
-                                        size="small"
-                                        value={priceForSale}
-                                        onChange={(e) =>
-                                            setPriceForSale(
-                                                parseInt(e.target.value)
-                                            )
-                                        }
-                                        sx={{ width: "50%" }}
-                                    />
-                                    <TextField
-                                        label="Giá nhập"
-                                        size="small"
-                                        value={initialPrice}
-                                        onChange={(e) =>
-                                            setInitialPrice(
-                                                parseInt(e.target.value)
-                                            )
-                                        }
-                                        sx={{ width: "50%" }}
-                                    />
+                                    <FormControl
+                                        sx={{
+                                            width: "50%",
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                        }}
+                                    >
+                                        <InputLabel htmlFor="priceForSale">
+                                            Amount
+                                        </InputLabel>
+                                        <OutlinedInput
+                                            dir="rtl"
+                                            sx={{ textAlign: "right" }}
+                                            id="priceForSale"
+                                            endAdornment={
+                                                <InputAdornment position="end">
+                                                    VND
+                                                </InputAdornment>
+                                            }
+                                            label="Giá bán"
+                                            size="small"
+                                            value={priceForSale}
+                                            onChange={(e) =>
+                                                setPriceForSale(
+                                                    parseInt(e.target.value)
+                                                )
+                                            }
+                                        />
+                                    </FormControl>
+                                    <FormControl
+                                        sx={{
+                                            width: "50%",
+                                        }}
+                                    >
+                                        <InputLabel htmlFor="priceForSale">
+                                            Amount
+                                        </InputLabel>
+                                        <OutlinedInput
+                                            dir="rtl"
+                                            id="initialPrice"
+                                            endAdornment={
+                                                <InputAdornment position="end">
+                                                    VND
+                                                </InputAdornment>
+                                            }
+                                            label="Giá nhập"
+                                            size="small"
+                                            value={initialPrice}
+                                            onChange={(e) =>
+                                                setInitialPrice(
+                                                    parseInt(e.target.value)
+                                                )
+                                            }
+                                        />
+                                    </FormControl>
                                 </Box>
                             </Box>
 
@@ -648,15 +704,69 @@ export default function AddProduct({}: Props) {
                                                             key={index}
                                                         >
                                                             <TableCell>
-                                                                <CardMedia
-                                                                    component="img"
+                                                                <Box
                                                                     sx={{
-                                                                        width: 40,
-                                                                        height: 40,
+                                                                        width: "100%",
+                                                                        height: "100%",
+                                                                        position:
+                                                                            "relative",
+                                                                        overflow:
+                                                                            "hidden",
+                                                                        display:
+                                                                            "flex",
+                                                                        justifyContent:
+                                                                            "center",
+                                                                        alignItems:
+                                                                            "center",
                                                                     }}
-                                                                    image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                                                    alt="Paella dish"
-                                                                />
+                                                                >
+                                                                    {variant.imagePath !==
+                                                                    "" ? (
+                                                                        <CardMedia
+                                                                            component="img"
+                                                                            sx={{
+                                                                                width: 40,
+                                                                                height: 40,
+                                                                            }}
+                                                                            image={
+                                                                                variant.imagePath
+                                                                            }
+                                                                            alt="Paella dish"
+                                                                        />
+                                                                    ) : (
+                                                                        <Image
+                                                                            color="disabled"
+                                                                            sx={{
+                                                                                width: 40,
+                                                                                height: 40,
+                                                                            }}
+                                                                        />
+                                                                    )}
+                                                                    <input
+                                                                        type="file"
+                                                                        multiple
+                                                                        accept="image/*"
+                                                                        onChange={(
+                                                                            e
+                                                                        ) =>
+                                                                            handleImageChange(
+                                                                                e,
+                                                                                "variant",
+                                                                                index
+                                                                            )
+                                                                        }
+                                                                        style={{
+                                                                            position:
+                                                                                "absolute",
+                                                                            top: 0,
+                                                                            left: 0,
+                                                                            width: "100%",
+                                                                            height: "100%",
+                                                                            opacity: 0,
+                                                                            cursor: "pointer",
+                                                                        }}
+                                                                    />
+                                                                </Box>
                                                             </TableCell>
                                                             <TableCell
                                                                 component="th"
@@ -697,7 +807,13 @@ export default function AddProduct({}: Props) {
                                                             <TableCell>
                                                                 <TextField
                                                                     value={
-                                                                        variant.priceForSale
+                                                                        variant.priceForSale !=
+                                                                        0
+                                                                            ? variant.priceForSale
+                                                                            : priceForSale !=
+                                                                                0
+                                                                              ? priceForSale
+                                                                              : 0
                                                                     }
                                                                     size="small"
                                                                     onChange={(
@@ -716,7 +832,13 @@ export default function AddProduct({}: Props) {
                                                             <TableCell>
                                                                 <TextField
                                                                     value={
-                                                                        variant.initialPrice
+                                                                        variant.initialPrice !=
+                                                                        0
+                                                                            ? variant.initialPrice
+                                                                            : initialPrice !=
+                                                                                0
+                                                                              ? initialPrice
+                                                                              : 0
                                                                     }
                                                                     size="small"
                                                                     onChange={(

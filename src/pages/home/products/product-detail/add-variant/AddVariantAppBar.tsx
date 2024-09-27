@@ -2,7 +2,6 @@ import { Typography, Box, Button } from "@mui/material";
 import MainAppBar from "../../../../../components/layout/MainAppBar";
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
 import { useNavigate } from "react-router-dom";
-import { idID } from "@mui/material/locale";
 
 type Props = {
     id: string | undefined;

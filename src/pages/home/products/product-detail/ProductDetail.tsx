@@ -1,4 +1,4 @@
-import { Box, Button, CardMedia, TextField, Typography } from "@mui/material";
+import { Box, CardMedia, TextField, Typography } from "@mui/material";
 import ProductDetailAppBar from "./ProductDetailAppBar";
 import MainBox from "../../../../components/layout/MainBox";
 import LabelInfo from "./LabelInfo";
@@ -12,14 +12,13 @@ type Props = {};
 export default function ProductDetail({}: Props) {
     const { id } = useParams();
     const [data, setData] = useState<ProductResponse>({});
-    const [currentVariant, setCurrentVariant] = useState<VariantResponse>();
+    const [currentVariant, setCurrentVariant] = useState<VariantResponse>({});
     useEffect(() => {
         fetch(`http://localhost:8080/v1/products/${id}`)
             .then((res) => res.json())
             .then((result) => {
                 setData(result.data);
                 setCurrentVariant(result.data.variants[0]);
-                console.log(result.data);
             });
     }, []);
 
@@ -170,7 +169,11 @@ export default function ProductDetail({}: Props) {
                                     >
                                         <Box
                                             sx={{
-                                                // backgroundColor: "#08f",
+                                                backgroundColor:
+                                                    currentVariant.id ==
+                                                    variant.id
+                                                        ? "#1976d2"
+                                                        : "#fff",
                                                 padding: "16px",
                                                 height: "40px",
                                                 display: "flex",
@@ -194,19 +197,42 @@ export default function ProductDetail({}: Props) {
                                                         padding: "0 10px",
                                                         width: 40,
                                                         height: 40,
+                                                        color:
+                                                            currentVariant.id ==
+                                                            variant.id
+                                                                ? "#fff"
+                                                                : "#d9d9d9",
                                                     }}
                                                 />
                                             )}
                                             <Box>
                                                 <Typography
                                                     fontSize={"0.9rem"}
-                                                    // sx={{ color: "white" }}
+                                                    sx={{
+                                                        color:
+                                                            currentVariant.id ==
+                                                            variant.id
+                                                                ? "#fff"
+                                                                : "#000",
+                                                    }}
                                                 >
-                                                    {variant.name}
+                                                    {[
+                                                        variant.size,
+                                                        variant.color,
+                                                        variant.material,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(" - ") || ""}
                                                 </Typography>
                                                 <Typography
                                                     fontSize={"0.9rem"}
-                                                    // sx={{ color: "white" }}
+                                                    sx={{
+                                                        color:
+                                                            currentVariant.id ==
+                                                            variant.id
+                                                                ? "#fff"
+                                                                : "#000",
+                                                    }}
                                                 >
                                                     Tồn kho: {variant.quantity}
                                                 </Typography>
@@ -285,20 +311,32 @@ export default function ProductDetail({}: Props) {
                                             display: "flex",
                                             justifyContent: "center",
                                             alignItems: "center",
+                                            padding: "20px",
                                         }}
                                     >
-                                        <CardMedia
-                                            component="img"
-                                            sx={{
-                                                borderRadius: 1,
-                                                width: 140,
-                                                height: 140,
-                                            }}
-                                            image={
-                                                currentVariant?.imagePath || ""
-                                            }
-                                            alt="Paella dish"
-                                        />
+                                        {currentVariant?.imagePath?.length >
+                                        0 ? (
+                                            <CardMedia
+                                                component="img"
+                                                sx={{
+                                                    borderRadius: 1,
+                                                    width: 120,
+                                                    height: 120,
+                                                }}
+                                                image={
+                                                    currentVariant?.imagePath
+                                                }
+                                                alt="Paella dish"
+                                            />
+                                        ) : (
+                                            <Image
+                                                color="disabled"
+                                                sx={{
+                                                    width: 120,
+                                                    height: 120,
+                                                }}
+                                            />
+                                        )}
                                     </Box>
                                 </Box>
                             </Box>
@@ -330,13 +368,15 @@ export default function ProductDetail({}: Props) {
                                     <LabelInfo
                                         label="Giá bán"
                                         info={
-                                            currentVariant?.priceForSale || ""
+                                            currentVariant?.priceForSale?.toString() ||
+                                            ""
                                         }
                                     />
                                     <LabelInfo
                                         label="Giá nhập"
                                         info={
-                                            currentVariant?.initialPrice || ""
+                                            currentVariant?.initialPrice?.toString() ||
+                                            ""
                                         }
                                     />
                                 </Box>

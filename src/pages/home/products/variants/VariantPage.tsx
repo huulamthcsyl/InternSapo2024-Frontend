@@ -11,32 +11,27 @@ const columns: GridColDef[] = [
     {
         field: "id",
         headerName: "ID",
-        headerClassName: "super-app-theme--header",
         width: 70,
     },
     {
         field: "firstName",
         headerName: "First name",
-        headerClassName: "super-app-theme--header",
         width: 130,
     },
     {
         field: "lastName",
         headerName: "Last name",
-        headerClassName: "super-app-theme--header",
         width: 130,
     },
     {
         field: "age",
         headerName: "Age",
-        headerClassName: "super-app-theme--header",
         type: "number",
         width: 90,
     },
     {
         field: "fullName",
         headerName: "Full name",
-        headerClassName: "super-app-theme--header",
         description: "This column has a value getter and is not sortable.",
         sortable: false,
         width: 160,

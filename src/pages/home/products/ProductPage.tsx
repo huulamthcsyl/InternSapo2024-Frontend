@@ -1,10 +1,9 @@
-import { Box, Button, ButtonGroup, Divider, InputBase } from "@mui/material";
+import { Box, Button, ButtonGroup, Divider } from "@mui/material";
 import MainBox from "../../../components/layout/MainBox";
 import ProductPageAppBar from "./ProductPageAppBar";
-import Search from "@mui/icons-material/Search";
 import { Add, Image } from "@mui/icons-material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import SearchField from "./SearchField";
 import { useNavigate } from "react-router-dom";
 
@@ -44,7 +43,7 @@ export default function ProductPage({}: Props) {
                                 style={{ width: 30, height: 30 }}
                             />
                         ) : (
-                            <Image />
+                            <Image color="disabled" />
                         )}
                     </div>
                 );

@@ -39,7 +39,7 @@ export interface ProductRequest {
     categoryId: number;
     brandId: number;
     description: string;
-    imagePath: File[] | [];
+    imagePath: string[] | [];
     createdOn: Date;
     updatedOn: Date;
     variants: VariantRequest[];
@@ -49,11 +49,12 @@ export interface VariantRequest {
     id?: number;
     name: string;
     productId?: number;
+    quantity?: number;
     sku: string;
     size: string;
     color: string;
     material: string;
-    imagePath: File | "";
+    imagePath: string | "";
     initialPrice: number;
     priceForSale: number;
 }

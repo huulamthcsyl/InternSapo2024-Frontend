@@ -1,21 +1,12 @@
-import {
-    Box,
-    Button,
-    CardMedia,
-    FormControl,
-    InputLabel,
-    MenuItem,
-    Select,
-    TextField,
-    Typography,
-} from "@mui/material";
+import { Box, Button, CardMedia, TextField, Typography } from "@mui/material";
 import MainBox from "../../../../../components/layout/MainBox";
-import { AddCircle } from "@mui/icons-material";
+import { Image } from "@mui/icons-material";
 import AddVariantAppBar from "./AddVariantAppBar";
 import { useEffect, useState } from "react";
 import { ProductResponse, VariantRequest } from "../../ProductInterface";
-import LabelInfo from "../LabelInfo";
 import { useParams } from "react-router-dom";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { storage } from "../../../../../../firebaseConfig";
 
 type Props = {};
 
@@ -23,6 +14,7 @@ export default function AddVariant({}: Props) {
     const { id } = useParams();
     const [product, setProduct] = useState<ProductResponse>({});
     const [newVariant, setNewVariant] = useState<VariantRequest>({});
+    // const [image,setImage] =useState<string>("");
 
     useEffect(() => {
         fetch(`http://localhost:8080/v1/products/${id}`)
@@ -63,7 +55,34 @@ export default function AddVariant({}: Props) {
                 window.alert(result.message);
             });
     }
-    console.log(newVariant);
+
+    function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file: File | undefined = e.target.files
+            ? Array.from(e.target.files).at(0)
+            : undefined;
+        if (file) {
+            const storageRef = ref(storage, `variants/${file.name}`); 
+            const uploadTask = uploadBytesResumable(storageRef, file); 
+
+            uploadTask.on(
+                "state_changed",
+                (snapshot) => {
+                    //Clearing snapshot cannot upload images
+                    const progressPercent =
+                        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                },
+                (error) => {
+                    console.error("Upload failed:", error);
+                },
+                () => {
+                    getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+                        setNewVariant({ ...newVariant, imagePath: url });
+                    });
+                }
+            );
+        }
+    }
+
     return (
         <Box>
             <AddVariantAppBar id={id} submit={handleAddNewVariant} />
@@ -117,22 +136,42 @@ export default function AddVariant({}: Props) {
                                                 borderRadius: "3px",
                                             }}
                                         >
-                                            <CardMedia
-                                                component="img"
-                                                sx={{
-                                                    padding: "0 10px",
-                                                    width: 40,
-                                                    height: 40,
-                                                }}
-                                                image={variant.imagePath}
-                                                alt="Paella dish"
-                                            />
+                                            {variant?.imagePath?.length > 0 ? (
+                                                <CardMedia
+                                                    component="img"
+                                                    sx={{
+                                                        padding: "0 10px",
+                                                        width: 40,
+                                                        height: 40,
+                                                    }}
+                                                    image={variant.imagePath}
+                                                    alt="Paella dish"
+                                                />
+                                            ) : (
+                                                <Image
+                                                    color="disabled"
+                                                    sx={{
+                                                        padding: "0 10px",
+                                                        width: 40,
+                                                        height: 40,
+                                                    }}
+                                                />
+                                            )}
                                             <Box>
                                                 <Typography
                                                     fontSize={"0.9rem"}
                                                     // sx={{ color: "white" }}
                                                 >
-                                                    {variant.name}
+                                                    {[
+                                                        variant.size ||
+                                                            newVariant.size,
+                                                        variant.color ||
+                                                            newVariant.color,
+                                                        variant.material ||
+                                                            newVariant.material,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(" - ")}
                                                 </Typography>
                                                 <Typography
                                                     fontSize={"0.9rem"}
@@ -212,21 +251,51 @@ export default function AddVariant({}: Props) {
                                                 justifyContent: "center",
                                             }}
                                         >
-                                            <CardMedia
-                                                component="img"
-                                                sx={{
-                                                    borderRadius: 1,
-                                                    width: 100,
-                                                    height: 100,
-                                                }}
-                                                image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                                alt="Paella dish"
-                                            />
+                                            {newVariant?.imagePath?.length >
+                                            0 ? (
+                                                <CardMedia
+                                                    component="img"
+                                                    sx={{
+                                                        borderRadius: 1,
+                                                        width: 100,
+                                                        height: 100,
+                                                    }}
+                                                    image={newVariant.imagePath}
+                                                    alt="Paella dish"
+                                                />
+                                            ) : (
+                                                <Image
+                                                    color="disabled"
+                                                    sx={{
+                                                        width: 100,
+                                                        height: 100,
+                                                    }}
+                                                />
+                                            )}
                                             <Button
                                                 variant="text"
                                                 color="primary"
-                                                sx={{ textTransform: "none" }}
+                                                sx={{
+                                                    textTransform: "none",
+                                                    position: "relative",
+                                                    overflow: "hidden",
+                                                }}
                                             >
+                                                <input
+                                                    type="file"
+                                                    multiple
+                                                    accept="image/*"
+                                                    onChange={handleImageChange}
+                                                    style={{
+                                                        position: "absolute",
+                                                        top: 0,
+                                                        left: 0,
+                                                        width: "100%",
+                                                        height: "100%",
+                                                        opacity: 0,
+                                                        cursor: "pointer",
+                                                    }}
+                                                />
                                                 Thay đổi ảnh
                                             </Button>
                                         </Box>
@@ -260,45 +329,47 @@ export default function AddVariant({}: Props) {
                                         justifyContent: "space-between",
                                     }}
                                 >
-                                    {product?.size?.length > 0 ? (
-                                        <TextField
-                                            label="Kích cỡ"
-                                            required
-                                            name="size"
-                                            size="small"
-                                            value={newVariant.size}
-                                            onChange={handleVariantChange}
-                                            sx={{ width: "48.5%" }}
-                                        />
-                                    ) : (
-                                        <></>
-                                    )}
-                                    {product?.color?.length > 0 ? (
-                                        <TextField
-                                            label="Màu sắc"
-                                            required
-                                            name="color"
-                                            value={newVariant.color}
-                                            onChange={handleVariantChange}
-                                            size="small"
-                                            sx={{ width: "48.5%" }}
-                                        />
-                                    ) : (
-                                        <></>
-                                    )}
-                                    {product?.material?.length > 0 ? (
-                                        <TextField
-                                            label="Chất liệu"
-                                            required
-                                            name="material"
-                                            value={newVariant.material}
-                                            onChange={handleVariantChange}
-                                            size="small"
-                                            sx={{ width: "48.5%" }}
-                                        />
-                                    ) : (
-                                        <></>
-                                    )}
+                                    <TextField
+                                        label="Kích cỡ"
+                                        required={
+                                            product.size.length > 0
+                                                ? true
+                                                : false
+                                        }
+                                        name="size"
+                                        size="small"
+                                        value={newVariant.size}
+                                        onChange={handleVariantChange}
+                                        sx={{ width: "48.5%" }}
+                                    />
+
+                                    <TextField
+                                        label="Màu sắc"
+                                        required={
+                                            product.color.length > 0
+                                                ? true
+                                                : false
+                                        }
+                                        name="color"
+                                        value={newVariant.color}
+                                        onChange={handleVariantChange}
+                                        size="small"
+                                        sx={{ width: "48.5%" }}
+                                    />
+
+                                    <TextField
+                                        label="Chất liệu"
+                                        required={
+                                            product.material.length > 0
+                                                ? true
+                                                : false
+                                        }
+                                        name="material"
+                                        value={newVariant.material}
+                                        onChange={handleVariantChange}
+                                        size="small"
+                                        sx={{ width: "48.5%" }}
+                                    />
                                 </Box>
                             </Box>
                             <Box

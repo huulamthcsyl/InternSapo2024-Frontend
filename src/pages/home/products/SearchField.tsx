@@ -9,13 +9,13 @@ type Props = {
 export default function SearchField({ onKeyPress }: Props) {
     const [searchQuery, setSearchQuery] = useState("");
 
-    function handleEnterPress(e) {
+    function handleEnterPress(e: React.KeyboardEvent<HTMLInputElement>) {
         if (e.key === "Enter") {
             onKeyPress(searchQuery);
         }
     }
 
-    function handleSearchChange(e) {
+    function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
         setSearchQuery(e.target.value);
     }
 

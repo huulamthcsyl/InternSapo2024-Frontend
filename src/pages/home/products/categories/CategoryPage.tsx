@@ -1,15 +1,12 @@
-import { Box, Button, InputBase, TextField, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import MainBox from "../../../../components/layout/MainBox";
-import Search from "@mui/icons-material/Search";
 import { Add } from "@mui/icons-material";
 import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
 import CategoryPageAppBar from "./CategoryPageAppBar";
-import Close from "@mui/icons-material/Close";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import SearchField from "../SearchField";
 import UpdateOrAdd from "./UpdateOrAdd";
 import { CategoryResponse } from "../ProductInterface";
+import SearchField from "../SearchField";
 
 type Props = {};
 
@@ -85,8 +82,11 @@ export default function CategoryPage({}: Props) {
         getTotalNumberOfCategories();
         getListOfCategories();
     }
-    function handleRowClick(params: GridRowParams<any>, e) {
-        e.preventDefault();
+    function handleRowClick(
+        params: GridRowParams<CategoryResponse>
+        // e: GridEventListener<"rowClick">
+    ) {
+        // e.preventDefault();
         setIsUpdate(1);
         setSelectedCategory(params.row);
     }

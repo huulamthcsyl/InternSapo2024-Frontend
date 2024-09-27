@@ -1,7 +1,6 @@
 import {
     Box,
     Button,
-    CardContent,
     CardMedia,
     FormControl,
     InputLabel,
@@ -12,9 +11,7 @@ import {
 } from "@mui/material";
 import ProductEditAppBar from "./ProductEditAppBar";
 import MainBox from "../../../../../components/layout/MainBox";
-import Add from "@mui/icons-material/Add";
-import Cancel from "@mui/icons-material/Cancel";
-import { AddCircle } from "@mui/icons-material";
+import { AddCircle, Add, Cancel, Image } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
@@ -24,6 +21,8 @@ import {
     VariantRequest,
 } from "../../ProductInterface";
 import Property from "../../Property";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { storage } from "../../../../../../firebaseConfig";
 
 type Props = {};
 
@@ -40,45 +39,70 @@ export default function ProductDetail({}: Props) {
         []
     );
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
-    const [currentVariant, setCurrentVariant] = useState<{
-        variant: VariantRequest;
-        index: number;
-    }>({
-        variant: {
-            name: "",
-            sku: "",
-            size: "",
-            color: "",
-            material: "",
-            imagePath: "",
-            initialPrice: 0,
-            priceForSale: 0,
-        },
-        index: 0,
-    });
+    const [currentVariant, setCurrentVariant] = useState<number>(0);
     const [brands, setBrands] = useState<BrandResponse[]>([]);
     const [variants, setVariants] = useState<VariantRequest[]>([]);
+    const [images, setImages] = useState<string[]>([]);
 
-    function handleProductChange(e) {
+    function handleProductChange(e: React.ChangeEvent<HTMLInputElement>) {
         setProduct({ ...product, [e.target.name]: e.target.value });
     }
 
-    function handleVariantChange(index, field, value) {
-        console.log(index, field, value);
+    function handleVariantChange(index: number, field: string, value: string) {
         const updatedVariants = [...variants];
         updatedVariants[index] = {
             ...updatedVariants[index],
             [field]: value,
         };
         setVariants(updatedVariants);
-        if (index === currentVariant?.index) {
-            setCurrentVariant({
-                ...currentVariant,
-                variant: updatedVariants[index],
-            });
-        }
     }
 
+    function handleImageChange(
+        e: React.ChangeEvent<HTMLInputElement>,
+        directory: string,
+        index?: number
+    ) {
+        const files: File[] = e.target.files ? Array.from(e.target.files) : [];
+        files.map((file) => {
+            if (!file) return;
+            const storageRef = ref(storage, `${directory}/${file.name}`); // Create a reference to the file location
+            const uploadTask = uploadBytesResumable(storageRef, file); // Upload the file
+
+            // Monitor the upload progress
+            uploadTask.on(
+                "state_changed",
+                (snapshot) => {
+                    //Clearing snapshot cannot upload images
+                    const progressPercent =
+                        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                },
+                (error) => {
+                    console.error("Upload failed:", error);
+                },
+                () => {
+                    // Handle successful upload
+                    getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+                        if (directory == "product")
+                            setImages((prevImages) => [...prevImages, url]);
+                        else if (index !== undefined) {
+                            const updatedVariants = [...variants];
+                            updatedVariants[index] = {
+                                ...updatedVariants[index],
+                                imagePath: url,
+                            };
+                            setVariants(updatedVariants);
+                        }
+                    });
+                }
+            );
+        });
+    }
+
+    function handleRemoveImage(indexToRemove: number) {
+        setImages((prev) => {
+            return prev.filter((_, index) => index !== indexToRemove);
+        });
+    }
     function handleUpdateProduct() {
         fetch(`http://localhost:8080/v1/products/${id}/edit`, {
             method: "PUT",
@@ -86,7 +110,11 @@ export default function ProductDetail({}: Props) {
                 "Content-Type": "application/json",
                 // Authorization: `Bearer ${user?.token}`,
             },
-            body: JSON.stringify({ ...product, variants: variants }),
+            body: JSON.stringify({
+                ...product,
+                variants: variants,
+                imagePath: images,
+            }),
         })
             .then((res) => {
                 return res.json();
@@ -95,7 +123,6 @@ export default function ProductDetail({}: Props) {
                 window.alert(result.message);
             });
     }
-
     useEffect(() => {
         fetch(`http://localhost:8080/v1/products/${id}`)
             .then((res) => res.json())
@@ -104,11 +131,8 @@ export default function ProductDetail({}: Props) {
                 setSizes(result.data.size);
                 setColors(result.data.color);
                 setMaterials(result.data.material);
-                setCurrentVariant({
-                    variant: result.data.variants[0],
-                    index: 0,
-                });
-                setVariants(result.data.variants);
+                setVariants([...result.data.variants]);
+                setImages([...result.data.imagePath]);
             });
         fetch(
             `http://localhost:8080/v1/products/categories?page=0&limit=10&query=`
@@ -123,8 +147,64 @@ export default function ProductDetail({}: Props) {
                 setBrands(result.data);
             });
     }, []);
-    console.log(variants);
-    console.log(currentVariant.index);
+
+    useEffect(() => {
+        if (colors[0] === "" && additionalColors.length === 1) {
+            setVariants((prevVariants) =>
+                prevVariants.map((variant) => ({
+                    ...variant,
+                    color: additionalColors[0],
+                }))
+            );
+        }
+        if (colors[0] === "" && additionalColors.length === 0) {
+            setVariants((prevVariants) =>
+                prevVariants.map((variant) => ({
+                    ...variant,
+                    color: "",
+                }))
+            );
+        }
+        if (sizes[0] === "" && additionalSizes.length === 1) {
+            setVariants((prevVariants) =>
+                prevVariants.map((variant) => ({
+                    ...variant,
+                    size: additionalSizes[0],
+                }))
+            );
+        }
+        if (sizes[0] === "" && additionalSizes.length === 0) {
+            setVariants((prevVariants) =>
+                prevVariants.map((variant) => ({
+                    ...variant,
+                    size: "",
+                }))
+            );
+        }
+        if (materials[0] === "" && additionalMaterials.length === 1) {
+            setVariants((prevVariants) =>
+                prevVariants.map((variant) => ({
+                    ...variant,
+                    material: additionalMaterials[0],
+                }))
+            );
+        }
+        if (materials[0] === "" && additionalMaterials.length === 0) {
+            setVariants((prevVariants) =>
+                prevVariants.map((variant) => ({
+                    ...variant,
+                    material: "",
+                }))
+            );
+        }
+    }, [
+        additionalColors,
+        additionalMaterials,
+        additionalSizes,
+        colors,
+        materials,
+        sizes,
+    ]);
     return (
         <Box>
             <ProductEditAppBar id={id} submit={handleUpdateProduct} />
@@ -139,7 +219,7 @@ export default function ProductDetail({}: Props) {
                         }}
                     >
                         <Typography sx={{ fontSize: "20px" }}>
-                            {product.name}
+                            {product?.name}
                         </Typography>
                     </Box>
                     <Box sx={{ display: "flex", gap: "24px" }}>
@@ -167,7 +247,7 @@ export default function ProductDetail({}: Props) {
                                         fullWidth
                                         name="name"
                                         label="Tên sản phẩm"
-                                        value={product.name}
+                                        value={product?.name}
                                         onChange={handleProductChange}
                                         margin="normal"
                                         size="small"
@@ -176,7 +256,7 @@ export default function ProductDetail({}: Props) {
                                         fullWidth
                                         multiline
                                         name="description"
-                                        value={product.description}
+                                        value={product?.description}
                                         onChange={handleProductChange}
                                         rows={4}
                                         label="Mô tả sản phẩm"
@@ -207,6 +287,7 @@ export default function ProductDetail({}: Props) {
                                     <Button
                                         variant="text"
                                         sx={{ textTransform: "none" }}
+                                        onClick={() => setImages([])}
                                     >
                                         Xoá tất cả
                                     </Button>
@@ -224,56 +305,72 @@ export default function ProductDetail({}: Props) {
                                             borderRadius: 1,
                                             width: 100,
                                             height: 100,
+                                            position: "relative",
+                                            overflow: "hidden",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
                                         }}
                                     >
                                         <Add sx={{ color: "black" }} />
-                                    </Button>
-                                    <Box sx={{ position: "relative" }}>
-                                        <CardMedia
-                                            component="img"
-                                            sx={{
-                                                borderRadius: 1,
-                                                width: 100,
-                                                height: 100,
-                                            }}
-                                            image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                            alt="Paella dish"
-                                        />
-                                        <Cancel
-                                            sx={{
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            onChange={(e) =>
+                                                handleImageChange(e, "product")
+                                            }
+                                            style={{
                                                 position: "absolute",
-                                                flexGrow: 1,
                                                 top: 0,
-                                                right: 0,
-                                                width: "15px",
-                                                height: "15px",
-                                                backgroundColor: "white",
-                                                borderRadius: "50%",
+                                                left: 0,
+                                                width: "100%",
+                                                height: "100%",
+                                                opacity: 0,
+                                                cursor: "pointer",
                                             }}
-                                            color="error"
                                         />
-                                    </Box>
-
-                                    <CardMedia
-                                        component="img"
-                                        sx={{
-                                            borderRadius: 1,
-                                            width: 100,
-                                            height: 100,
-                                        }}
-                                        image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                        alt="Paella dish"
-                                    />
-                                    <CardMedia
-                                        component="img"
-                                        sx={{
-                                            borderRadius: 1,
-                                            width: 100,
-                                            height: 100,
-                                        }}
-                                        image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                        alt="Paella dish"
-                                    />
+                                    </Button>
+                                    {images.map((img, index) => (
+                                        <Box
+                                            sx={{
+                                                position: "relative",
+                                                "&:hover .remove-icon": {
+                                                    visibility: "visible",
+                                                },
+                                                cursor: "pointer",
+                                            }}
+                                            key={index}
+                                        >
+                                            <CardMedia
+                                                component="img"
+                                                sx={{
+                                                    borderRadius: 1,
+                                                    width: 100,
+                                                    height: 100,
+                                                }}
+                                                image={img}
+                                            />
+                                            <Cancel
+                                                className="remove-icon"
+                                                sx={{
+                                                    position: "absolute",
+                                                    flexGrow: 1,
+                                                    visibility: "collapse",
+                                                    top: 0,
+                                                    right: 0,
+                                                    width: "15px",
+                                                    height: "15px",
+                                                    backgroundColor: "white",
+                                                    borderRadius: "50%",
+                                                }}
+                                                color="error"
+                                                onClick={() =>
+                                                    handleRemoveImage(index)
+                                                }
+                                            />
+                                        </Box>
+                                    ))}
                                 </Box>
                             </Box>
                             <Box
@@ -335,6 +432,8 @@ export default function ProductDetail({}: Props) {
                                             fixedBadges={sizes}
                                             badges={additionalSizes}
                                             setBadges={setAdditionalSizes}
+                                            prop="size"
+                                            id={id}
                                         />
                                     </Box>
                                     <Box
@@ -353,6 +452,8 @@ export default function ProductDetail({}: Props) {
                                             fixedBadges={colors}
                                             badges={additionalColors}
                                             setBadges={setAdditionalColors}
+                                            prop="color"
+                                            id={id}
                                         />
                                     </Box>
                                     <Box
@@ -371,6 +472,8 @@ export default function ProductDetail({}: Props) {
                                             fixedBadges={materials}
                                             badges={additionalMaterials}
                                             setBadges={setAdditionalMaterials}
+                                            prop="material"
+                                            id={id}
                                         />
                                     </Box>
                                 </Box>
@@ -406,8 +509,8 @@ export default function ProductDetail({}: Props) {
                                         name="categoryId"
                                         label="Loại sản phẩm"
                                         value={
-                                            product.categoryId !== undefined
-                                                ? product.categoryId
+                                            product?.categoryId !== undefined
+                                                ? product?.categoryId
                                                 : ""
                                         }
                                         onChange={handleProductChange}
@@ -431,8 +534,8 @@ export default function ProductDetail({}: Props) {
                                         id="brand"
                                         name="brandId"
                                         value={
-                                            product.brandId !== undefined
-                                                ? product.brandId
+                                            product?.brandId !== undefined
+                                                ? product?.brandId
                                                 : ""
                                         }
                                         onChange={handleProductChange}
@@ -485,21 +588,19 @@ export default function ProductDetail({}: Props) {
                                 </Typography>
                                 <Button></Button>
                             </Box>
-                            {product?.variants?.length > 0 ? (
-                                product.variants.map((variant, index) => (
+                            {variants?.length > 0 ? (
+                                variants.map((variant, index) => (
                                     <Box
                                         sx={{ padding: "3px" }}
                                         key={variant.id}
-                                        onClick={() =>
-                                            setCurrentVariant({
-                                                variant,
-                                                index,
-                                            })
-                                        }
+                                        onClick={() => setCurrentVariant(index)}
                                     >
                                         <Box
                                             sx={{
-                                                // backgroundColor: "#08f",
+                                                backgroundColor:
+                                                    currentVariant == index
+                                                        ? "#1976d2"
+                                                        : "#fff",
                                                 padding: "16px",
                                                 height: "40px",
                                                 display: "flex",
@@ -507,26 +608,59 @@ export default function ProductDetail({}: Props) {
                                                 borderRadius: "3px",
                                             }}
                                         >
-                                            <CardMedia
-                                                component="img"
-                                                sx={{
-                                                    padding: "0 10px",
-                                                    width: 40,
-                                                    height: 40,
-                                                }}
-                                                image={variant.imagePath}
-                                                alt="Paella dish"
-                                            />
+                                            {variant.imagePath.length > 0 ? (
+                                                <CardMedia
+                                                    component="img"
+                                                    sx={{
+                                                        padding: "0 10px",
+                                                        width: 40,
+                                                        height: 40,
+                                                    }}
+                                                    image={variant.imagePath}
+                                                    alt="Paella dish"
+                                                />
+                                            ) : (
+                                                <Image
+                                                    sx={{
+                                                        padding: "0 10px",
+                                                        width: 40,
+                                                        height: 40,
+                                                        color:
+                                                            currentVariant ==
+                                                            index
+                                                                ? "#fff"
+                                                                : "#d9d9d9",
+                                                    }}
+                                                />
+                                            )}
                                             <Box>
                                                 <Typography
                                                     fontSize={"0.9rem"}
-                                                    // sx={{ color: "white" }}
+                                                    sx={{
+                                                        color:
+                                                            currentVariant ==
+                                                            index
+                                                                ? "#fff"
+                                                                : "#000",
+                                                    }}
                                                 >
-                                                    {variant.name}
+                                                    {[
+                                                        variant.size,
+                                                        variant.color,
+                                                        variant.material,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(" - ") || ""}
                                                 </Typography>
                                                 <Typography
                                                     fontSize={"0.9rem"}
-                                                    // sx={{ color: "white" }}
+                                                    sx={{
+                                                        color:
+                                                            currentVariant ==
+                                                            index
+                                                                ? "#fff"
+                                                                : "#000",
+                                                    }}
                                                 >
                                                     Tồn kho: {variant.quantity}
                                                 </Typography>
@@ -564,312 +698,403 @@ export default function ProductDetail({}: Props) {
                                 </Button>
                             </Box>
                         </Box>
-                        <Box sx={{ flexGrow: 1 }}>
-                            <Box
-                                sx={{
-                                    borderRadius: "5px",
-                                    backgroundColor: "white",
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        padding: "16px",
-                                        height: "27px",
-                                        borderBottom: "1px solid #d9d9d9",
-                                    }}
-                                >
-                                    <Typography sx={{ fontSize: "20px" }}>
-                                        Thông tin chi tiết phiên bản
-                                    </Typography>
-                                </Box>
-                                <Box sx={{ display: "flex" }}>
+                        {variants.map((variant, index) =>
+                            currentVariant == index ? (
+                                <Box sx={{ flexGrow: 1 }}>
                                     <Box
                                         sx={{
-                                            width: "60%",
-                                            padding: "16px",
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            gap: "10px",
-                                        }}
-                                    >
-                                        <TextField
-                                            required
-                                            label="Tên phiên bản"
-                                            value={
-                                                currentVariant?.variant?.name
-                                            }
-                                            onChange={(e) =>
-                                                handleVariantChange(
-                                                    currentVariant?.index,
-                                                    "name",
-                                                    e.target.value
-                                                )
-                                            }
-                                            fullWidth
-                                            size="small"
-                                            margin="normal"
-                                        />
-                                        <TextField
-                                            label="Mã SKU"
-                                            value={currentVariant?.variant?.sku}
-                                            onChange={(e) =>
-                                                handleVariantChange(
-                                                    currentVariant?.index,
-                                                    "sku",
-                                                    e.target.value
-                                                )
-                                            }
-                                            sx={{ width: "50%" }}
-                                            size="small"
-                                            margin="normal"
-                                        />
-                                    </Box>
-                                    <Box
-                                        sx={{
-                                            flexGrow: 1,
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            alignItems: "center",
+                                            borderRadius: "5px",
+                                            backgroundColor: "white",
                                         }}
                                     >
                                         <Box
                                             sx={{
-                                                mt: 2,
-                                                display: "flex",
-                                                flexDirection: "column",
-                                                justifyContent: "center",
+                                                padding: "16px",
+                                                height: "27px",
+                                                borderBottom:
+                                                    "1px solid #d9d9d9",
                                             }}
                                         >
-                                            <CardMedia
-                                                component="img"
-                                                sx={{
-                                                    borderRadius: 1,
-                                                    width: 100,
-                                                    height: 100,
-                                                }}
-                                                image="https://firebasestorage.googleapis.com/v0/b/group1-sapo.appspot.com/o/products%2Fbachmahoangtu.jpg?alt=media&token=8bd45827-b5d6-49d6-81a9-91c856472dd7"
-                                                alt="Paella dish"
-                                            />
-                                            <Button
-                                                variant="text"
-                                                color="primary"
-                                                sx={{ textTransform: "none" }}
+                                            <Typography
+                                                sx={{ fontSize: "20px" }}
                                             >
-                                                Thay đổi ảnh
-                                            </Button>
+                                                Thông tin chi tiết phiên bản
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ display: "flex" }}>
+                                            <Box
+                                                sx={{
+                                                    width: "60%",
+                                                    padding: "16px",
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    gap: "10px",
+                                                }}
+                                            >
+                                                <TextField
+                                                    required
+                                                    label="Tên phiên bản"
+                                                    value={variant?.name}
+                                                    onChange={(e) =>
+                                                        handleVariantChange(
+                                                            index,
+                                                            "name",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    fullWidth
+                                                    size="small"
+                                                    margin="normal"
+                                                />
+                                                <TextField
+                                                    label="Mã SKU"
+                                                    value={variant?.sku}
+                                                    onChange={(e) =>
+                                                        handleVariantChange(
+                                                            index,
+                                                            "sku",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    sx={{ width: "50%" }}
+                                                    size="small"
+                                                    margin="normal"
+                                                />
+                                            </Box>
+                                            <Box
+                                                sx={{
+                                                    flexGrow: 1,
+                                                    display: "flex",
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+                                                }}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        mt: 2,
+                                                        display: "flex",
+                                                        flexDirection: "column",
+                                                        justifyContent:
+                                                            "center",
+                                                    }}
+                                                >
+                                                    {variant.imagePath.length >
+                                                    0 ? (
+                                                        <CardMedia
+                                                            component="img"
+                                                            sx={{
+                                                                borderRadius: 1,
+                                                                width: 100,
+                                                                height: 100,
+                                                            }}
+                                                            image={
+                                                                variant.imagePath
+                                                            }
+                                                            alt="Paella dish"
+                                                        />
+                                                    ) : (
+                                                        <Image
+                                                            color="disabled"
+                                                            sx={{
+                                                                width: 100,
+                                                                height: 100,
+                                                            }}
+                                                        />
+                                                    )}
+                                                    <Button
+                                                        variant="text"
+                                                        color="primary"
+                                                        sx={{
+                                                            textTransform:
+                                                                "none",
+                                                            position:
+                                                                "relative",
+                                                            overflow: "hidden",
+                                                        }}
+                                                    >
+                                                        <input
+                                                            type="file"
+                                                            multiple
+                                                            accept="image/*"
+                                                            onChange={(e) =>
+                                                                handleImageChange(
+                                                                    e,
+                                                                    "variant",
+                                                                    index
+                                                                )
+                                                            }
+                                                            style={{
+                                                                position:
+                                                                    "absolute",
+                                                                top: 0,
+                                                                left: 0,
+                                                                width: "100%",
+                                                                height: "100%",
+                                                                opacity: 0,
+                                                                cursor: "pointer",
+                                                            }}
+                                                        />
+                                                        Thay đổi ảnh
+                                                    </Button>
+                                                </Box>
+                                            </Box>
+                                        </Box>
+                                    </Box>
+                                    <Box
+                                        sx={{
+                                            borderRadius: "5px",
+                                            backgroundColor: "white",
+                                        }}
+                                    >
+                                        <Box
+                                            sx={{
+                                                mt: "24px",
+                                                padding: "16px",
+                                                height: "27px",
+                                                borderBottom:
+                                                    "1px solid #d9d9d9",
+                                            }}
+                                        >
+                                            <Typography
+                                                sx={{ fontSize: "20px" }}
+                                            >
+                                                Thuộc tính
+                                            </Typography>
+                                        </Box>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                flexWrap: "wrap",
+                                                padding: "16px",
+                                                justifyContent: "space-between",
+                                            }}
+                                        >
+                                            {sizes[0] !== "" ||
+                                            additionalSizes.length > 0 ? (
+                                                <FormControl
+                                                    sx={{ width: "48.5%" }}
+                                                    margin="normal"
+                                                    size="small"
+                                                >
+                                                    <InputLabel id="category">
+                                                        Kích cỡ
+                                                    </InputLabel>
+                                                    <Select
+                                                        labelId="size"
+                                                        id="size"
+                                                        label="Kích cỡ"
+                                                        value={
+                                                            variant?.size !==
+                                                            undefined
+                                                                ? variant?.size
+                                                                : additionalSizes.length >
+                                                                    0
+                                                                  ? additionalSizes[0]
+                                                                  : ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleVariantChange(
+                                                                index,
+                                                                "size",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                    >
+                                                        {[
+                                                            ...sizes,
+                                                            ...additionalSizes,
+                                                        ].map((size, index) => (
+                                                            <MenuItem
+                                                                value={size}
+                                                                key={index}
+                                                            >
+                                                                {size}
+                                                            </MenuItem>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                            ) : (
+                                                <></>
+                                            )}
+                                            {colors[0] !== "" ||
+                                            additionalColors.length > 0 ? (
+                                                <FormControl
+                                                    sx={{ width: "48.5%" }}
+                                                    margin="normal"
+                                                    size="small"
+                                                >
+                                                    <InputLabel id="color">
+                                                        Màu sắc
+                                                    </InputLabel>
+                                                    <Select
+                                                        labelId="color"
+                                                        id="color"
+                                                        label="Màu sắc"
+                                                        value={
+                                                            variant?.color !==
+                                                            undefined
+                                                                ? variant?.color
+                                                                : additionalColors.length >
+                                                                    0
+                                                                  ? additionalColors[0]
+                                                                  : ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleVariantChange(
+                                                                index,
+                                                                "color",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                    >
+                                                        {[
+                                                            ...colors,
+                                                            ...additionalColors,
+                                                        ].map(
+                                                            (color, index) => (
+                                                                <MenuItem
+                                                                    value={
+                                                                        color
+                                                                    }
+                                                                    key={index}
+                                                                >
+                                                                    {color}
+                                                                </MenuItem>
+                                                            )
+                                                        )}
+                                                    </Select>
+                                                </FormControl>
+                                            ) : (
+                                                <></>
+                                            )}
+                                            {materials[0] !== "" ||
+                                            additionalMaterials.length > 0 ? (
+                                                <FormControl
+                                                    sx={{ width: "48.5%" }}
+                                                    margin="normal"
+                                                    size="small"
+                                                >
+                                                    <InputLabel id="material">
+                                                        Chất liệu
+                                                    </InputLabel>
+                                                    <Select
+                                                        labelId="material"
+                                                        id="material"
+                                                        label="Chất liệu"
+                                                        value={
+                                                            variant?.material !==
+                                                            undefined
+                                                                ? variant?.material
+                                                                : additionalMaterials.length >
+                                                                    0
+                                                                  ? additionalMaterials[0]
+                                                                  : ""
+                                                        }
+                                                        defaultValue={
+                                                            variant?.material !==
+                                                            undefined
+                                                                ? variant?.material
+                                                                : additionalMaterials.length >
+                                                                    0
+                                                                  ? additionalMaterials[0]
+                                                                  : ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleVariantChange(
+                                                                index,
+                                                                "material",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                    >
+                                                        {[
+                                                            ...materials,
+                                                            ...additionalMaterials,
+                                                        ].map(
+                                                            (
+                                                                material,
+                                                                index
+                                                            ) => (
+                                                                <MenuItem
+                                                                    value={
+                                                                        material
+                                                                    }
+                                                                    key={index}
+                                                                >
+                                                                    {material}
+                                                                </MenuItem>
+                                                            )
+                                                        )}
+                                                    </Select>
+                                                </FormControl>
+                                            ) : (
+                                                <></>
+                                            )}
+                                        </Box>
+                                    </Box>
+                                    <Box
+                                        sx={{
+                                            borderRadius: "5px",
+                                            backgroundColor: "white",
+                                        }}
+                                    >
+                                        <Box
+                                            sx={{
+                                                mt: "24px",
+                                                padding: "16px",
+                                                height: "27px",
+                                                borderBottom:
+                                                    "1px solid #d9d9d9",
+                                            }}
+                                        >
+                                            <Typography
+                                                sx={{ fontSize: "20px" }}
+                                            >
+                                                Giá sản phẩm
+                                            </Typography>
+                                        </Box>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                padding: "16px",
+                                                gap: "20px",
+                                            }}
+                                        >
+                                            <TextField
+                                                label="Giá bán"
+                                                required
+                                                size="small"
+                                                value={variant?.priceForSale}
+                                                onChange={(e) =>
+                                                    handleVariantChange(
+                                                        index,
+                                                        "priceForSale",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                sx={{ width: "50%" }}
+                                            />
+                                            <TextField
+                                                label="Giá nhập"
+                                                required
+                                                size="small"
+                                                value={variant?.initialPrice}
+                                                onChange={(e) =>
+                                                    handleVariantChange(
+                                                        index,
+                                                        "initialPrice",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                sx={{ width: "50%" }}
+                                            />
                                         </Box>
                                     </Box>
                                 </Box>
-                            </Box>
-                            <Box
-                                sx={{
-                                    borderRadius: "5px",
-                                    backgroundColor: "white",
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        mt: "24px",
-                                        padding: "16px",
-                                        height: "27px",
-                                        borderBottom: "1px solid #d9d9d9",
-                                    }}
-                                >
-                                    <Typography sx={{ fontSize: "20px" }}>
-                                        Thuộc tính
-                                    </Typography>
-                                </Box>
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        flexWrap: "wrap",
-                                        padding: "16px",
-                                        justifyContent: "space-between",
-                                    }}
-                                >
-                                    <FormControl
-                                        sx={{ width: "48.5%" }}
-                                        margin="normal"
-                                        size="small"
-                                    >
-                                        <InputLabel id="category">
-                                            Kích cỡ
-                                        </InputLabel>
-                                        <Select
-                                            labelId="size"
-                                            id="size"
-                                            label="Kích cỡ"
-                                            value={
-                                                currentVariant?.variant
-                                                    ?.size !== undefined
-                                                    ? currentVariant?.variant
-                                                          ?.size
-                                                    : ""
-                                            }
-                                            onChange={(e) =>
-                                                handleVariantChange(
-                                                    currentVariant?.index,
-                                                    "size",
-                                                    e.target.value
-                                                )
-                                            }
-                                        >
-                                            {[...sizes, ...additionalSizes].map(
-                                                (size, index) => (
-                                                    <MenuItem
-                                                        value={size}
-                                                        key={index}
-                                                    >
-                                                        {size}
-                                                    </MenuItem>
-                                                )
-                                            )}
-                                        </Select>
-                                    </FormControl>
-                                    <FormControl
-                                        sx={{ width: "48.5%" }}
-                                        margin="normal"
-                                        size="small"
-                                    >
-                                        <InputLabel id="color">
-                                            Màu sắc
-                                        </InputLabel>
-                                        <Select
-                                            labelId="color"
-                                            id="color"
-                                            label="Màu sắc"
-                                            value={
-                                                currentVariant?.variant
-                                                    ?.color !== undefined
-                                                    ? currentVariant?.variant
-                                                          ?.color
-                                                    : ""
-                                            }
-                                            onChange={(e) =>
-                                                handleVariantChange(
-                                                    currentVariant?.index,
-                                                    "color",
-                                                    e.target.value
-                                                )
-                                            }
-                                        >
-                                            {[
-                                                ...colors,
-                                                ...additionalColors,
-                                            ].map((color, index) => (
-                                                <MenuItem
-                                                    value={color}
-                                                    key={index}
-                                                >
-                                                    {color}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                    <FormControl
-                                        sx={{ width: "48.5%" }}
-                                        margin="normal"
-                                        size="small"
-                                    >
-                                        <InputLabel id="material">
-                                            Chất liệu
-                                        </InputLabel>
-                                        <Select
-                                            labelId="material"
-                                            id="material"
-                                            label="Chất liệu"
-                                            value={
-                                                currentVariant?.variant
-                                                    ?.material !== undefined
-                                                    ? currentVariant?.variant
-                                                          ?.material
-                                                    : ""
-                                            }
-                                            onChange={(e) =>
-                                                handleVariantChange(
-                                                    currentVariant?.index,
-                                                    "material",
-                                                    e.target.value
-                                                )
-                                            }
-                                        >
-                                            {[
-                                                ...materials,
-                                                ...additionalMaterials,
-                                            ].map((material, index) => (
-                                                <MenuItem
-                                                    value={material}
-                                                    key={index}
-                                                >
-                                                    {material}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                </Box>
-                            </Box>
-                            <Box
-                                sx={{
-                                    borderRadius: "5px",
-                                    backgroundColor: "white",
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        mt: "24px",
-                                        padding: "16px",
-                                        height: "27px",
-                                        borderBottom: "1px solid #d9d9d9",
-                                    }}
-                                >
-                                    <Typography sx={{ fontSize: "20px" }}>
-                                        Giá sản phẩm
-                                    </Typography>
-                                </Box>
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        padding: "16px",
-                                        gap: "20px",
-                                    }}
-                                >
-                                    <TextField
-                                        label="Giá bán"
-                                        required
-                                        size="small"
-                                        value={
-                                            currentVariant?.variant
-                                                ?.priceForSale
-                                        }
-                                        onChange={(e) =>
-                                            handleVariantChange(
-                                                currentVariant?.index,
-                                                "priceForSale",
-                                                e.target.value
-                                            )
-                                        }
-                                        sx={{ width: "50%" }}
-                                    />
-                                    <TextField
-                                        label="Giá nhập"
-                                        required
-                                        size="small"
-                                        value={
-                                            currentVariant?.variant
-                                                ?.initialPrice
-                                        }
-                                        onChange={(e) =>
-                                            handleVariantChange(
-                                                currentVariant?.index,
-                                                "initialPrice",
-                                                e.target.value
-                                            )
-                                        }
-                                        sx={{ width: "50%" }}
-                                    />
-                                </Box>
-                            </Box>
-                        </Box>
+                            ) : (
+                                <></>
+                            )
+                        )}
                     </Box>
                 </Box>
             </MainBox>

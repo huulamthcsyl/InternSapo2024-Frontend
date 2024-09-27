@@ -2,7 +2,6 @@ import { Typography, Box, TextField, Button } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { useState } from "react";
 import { CategoryRequest, CategoryResponse } from "../ProductInterface";
-import { useNavigate } from "react-router-dom";
 
 type Props = {
     isUpdate: number;
