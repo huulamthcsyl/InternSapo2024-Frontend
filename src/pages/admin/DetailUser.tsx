@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-  Alert,
   Box,
   Typography,
   Button,
-  Paper,
   CircularProgress,
   Grid,
   Card,
@@ -18,10 +16,8 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
-import dayjs, { Dayjs } from "dayjs";
 
 interface Role {
   id: number;
@@ -48,12 +44,10 @@ interface UserDetail {
 }
 
 export default function DetailUser() {
-  const { id } = useParams<{ id: number }>();
+  const { id } = useParams<{ id: string }>();
   const [user, setUser] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -147,10 +141,11 @@ export default function DetailUser() {
       if (response.ok) {
         const updatedUser = await response.json();
         if (updatedUser && updatedUser.data) {
-          setUser((prevUser) => ({
-            ...prevUser,
-            status: updatedUser.data.status ?? updatedStatus, // Use updated status if returned, otherwise use the toggled status
-          }));
+          // setUser((prevUser) => ({
+          //   ...prevUser,
+          //   status: updatedUser.data.status ?? updatedStatus, // Use updated status if returned, otherwise use the toggled status
+          // }));
+          setUser(updatedUser.data);
           alert(" Successfully");
         }
       } else {
