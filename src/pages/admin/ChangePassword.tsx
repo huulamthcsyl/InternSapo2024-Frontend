@@ -12,7 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const ChangePassword: React.FC = () => {
-  const { id } = useParams<{ id: number }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const [newPassword, setNewPassword] = useState('');

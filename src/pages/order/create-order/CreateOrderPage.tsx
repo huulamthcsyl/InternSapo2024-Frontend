@@ -324,10 +324,14 @@ export default function CreateOrderPage({ }: Props) {
             }}
             renderOption={(props, option) => {
               const { key, ...rest } = props;
-              return <Box component="li" sx={{ '& > img': { mr: 2, borderRadius: '50%' } }} key={key} {...rest}>
-                <Box>
+              return <Box component="li" sx={{ '& > img': { mr: 2 } }} key={key} {...rest} display="flex">
+                <Box flex={1}>
                   <Typography variant="body1" sx={{ color: '#000', fontWeight: '600' }}>{`${option.productName} (${option.name})`}</Typography>
                   <Typography variant="body2" sx={{ color: '#747C87' }}>{option.sku}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body1" sx={{ color: '#000', fontWeight: '600', ml: 2 }}>{formatCurrency(option.priceForSale)}</Typography>
+                  <Typography variant="body2" sx={{ color: '#747C87', ml: 2 }}>{option.quantity} sản phẩm</Typography>
                 </Box>
               </Box>
             }}

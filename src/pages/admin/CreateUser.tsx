@@ -10,13 +10,13 @@ import {
   FormControl,
   Grid,
   IconButton,
-  Alert
+  SelectChangeEvent
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
 import { LocalizationProvider, DesktopDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 
 type Props = {};
 
@@ -61,7 +61,7 @@ export default function CreateUser({}: Props) {
   };
 
   // Handle role change
-  const handleRoleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+  const handleRoleChange = (event: SelectChangeEvent) => {
     setRole(event.target.value as string);
   };
 
@@ -285,10 +285,9 @@ export default function CreateUser({}: Props) {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DesktopDatePicker
               label="Ngày sinh"
-              inputFormat="DD/MM/YYYY"
+              format="DD/MM/YYYY"
               value={dateOfBirth}
               onChange={handleDateChange}
-              renderInput={(params) => <TextField {...params} fullWidth />}
             />
           </LocalizationProvider>
         </Grid>

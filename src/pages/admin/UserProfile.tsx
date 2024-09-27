@@ -75,10 +75,10 @@ const UserProfile: React.FC = () => {
           Vai trò: {user?.roles.map((role) => role.name).join(", ")}
         </Typography>
         <Typography variant="body2">
-          Ngày tạo: {new Date(user?.createdOn).toLocaleString()}
+          Ngày tạo: {user?.createdOn && new Date(user.createdOn).toLocaleString()}
         </Typography>
         <Typography variant="body2">
-          Cập nhật lần cuối: {new Date(user?.updateOn).toLocaleString()}
+          Cập nhật lần cuối: {user?.updateOn && new Date(user?.updateOn).toLocaleString()}
         </Typography>
         <Button
           color="primary"
