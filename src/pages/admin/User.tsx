@@ -58,13 +58,13 @@ const roleMap: { [key: string]: string } = {
   ROLE_SUPPORT: "NHÂN VIÊN CHĂM SÓC",
 };
 
-export default function User({}: Props) {
+export default function User({ }: Props) {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
   const [totalPage, setTotalPage] = useState<number>(1);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [currentUser, setCurrentUser] = useState<{ name: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const navigate = useNavigate(); // Initialize useNavigate
 
   const fetchUsers = async (page: number) => {
@@ -106,7 +106,7 @@ export default function User({}: Props) {
   }, [page]);
 
   const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
+    _event: React.ChangeEvent<unknown>,
     value: number
   ) => {
     setPage(value);
@@ -125,31 +125,31 @@ export default function User({}: Props) {
           Danh sách nhân viên
         </Typography>
         <Typography>
-    {currentUser ? (
-        <>
-            <Button
+          {currentUser ? (
+            <>
+              <Button
                 aria-controls="simple-menu"
                 aria-haspopup="true"
                 onClick={(event) => setAnchorEl(event.currentTarget)}
-            >
+              >
                 {currentUser.name} <ArrowDropDownIcon />
-            </Button>
-            <Menu
+              </Button>
+              <Menu
                 anchorEl={anchorEl}
                 keepMounted
                 open={Boolean(anchorEl)}
                 onClose={() => setAnchorEl(null)}
-            >
+              >
                 <MenuItem onClick={() => navigate(`/account/${currentUser.id}`)}>
-                    Thông tin cá nhân
+                  Thông tin cá nhân
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
-            </Menu>
-        </>
-    ) : (
-        <Button onClick={() => navigate("/login")}>Đăng nhập</Button>
-    )}
-</Typography>
+              </Menu>
+            </>
+          ) : (
+            <Button onClick={() => navigate("/login")}>Đăng nhập</Button>
+          )}
+        </Typography>
 
       </Toolbar>
 

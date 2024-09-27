@@ -11,11 +11,10 @@ import {
   CardContent,
   InputLabel,
   FormControl,
+  SelectChangeEvent,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { LocalizationProvider, DesktopDatePicker } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 
 // Role options that match backend roles
@@ -78,11 +77,7 @@ const UpdateUser = () => {
     });
   };
 
-  const handleDateChange = (newValue: Dayjs | null) => {
-    setDateOfBirth(newValue);
-  };
-
-  const handleRoleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+  const handleRoleChange = (event: SelectChangeEvent) => {
     setRole(event.target.value as string);
   };
   const handleSubmit = async () => {
