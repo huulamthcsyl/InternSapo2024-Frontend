@@ -303,8 +303,8 @@ export default function CustomerDetailPage({}: Props) {
                             fontWeight: 600,
                             lineHeight: 'normal',
                         }} >
-                            {customer?.gender ? 'Anh ' : 'Chị '}
-                            {customer?.name}
+                            {tempCustomerRef.current?.gender ? 'Anh ' : 'Chị '}
+                            {tempCustomerRef.current?.name}
                         </Typography>
                     </Box>
                     <Box display="flex">
