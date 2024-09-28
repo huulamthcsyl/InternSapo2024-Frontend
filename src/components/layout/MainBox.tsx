@@ -3,14 +3,14 @@ import { Box } from '@mui/material'
 import Toolbar from '@mui/material/Toolbar'
 
 type Props = {
-    children: React.ReactNode
+  children: React.ReactNode
 }
 
 export default function MainBox({ children }: Props) {
-    return (
-        <Box component="main" sx={{ backgroundColor: '#F0F1F1'}}>
-            <Toolbar />
-            {children}
-        </Box>
-    )
+  return (
+    <Box component="main" sx={{ backgroundColor: '#F0F1F1', height: '100vh' }}>
+      <Toolbar />
+      {children}
+    </Box>
+  )
 }

@@ -103,13 +103,13 @@ export default function CustomerPage({}: Props) {
     const handleChangePage = (event, newPage) => {
         setPageNum(newPage);
     };
-    const handleChangeRowsPerPage = (event) => {
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPageSize(parseInt(event.target.value, 10)); // Cập nhật số hàng trên mỗi trang
         setPageNum(0); // Reset về trang đầu khi thay đổi số hàng
     };
 
     // Hàm xử lý khi người dùng nhấn phím
-    const handleKeyPress = (event) => {
+    const handleKeyPress = (event: React.KeyboardEvent) => {
         if (event.key === 'Enter') {
             setKeyword(searchTerm); // Cập nhật từ khóa và gọi API tìm kiếm
             setPageNum(0); // Reset lại trang đầu tiên
@@ -202,14 +202,14 @@ export default function CustomerPage({}: Props) {
     };
 
     // Cập nhật state khi nhập dữ liệu vào form
-    const handleChangeNewCustomer = (e) => {
+    const handleChangeNewCustomer = (e: any) => {
         setNewCustomer({
             ...newCustomer,
             [e.target.name]: e.target.value
         });
     };
 
-    const handleDetailsClick = (customerId) => {
+    const handleDetailsClick = (customerId : string) => {
         navigate(`/customers/${customerId}`); // Chuyển hướng tới trang chi tiết của khách hàng
     };
 
@@ -295,7 +295,7 @@ export default function CustomerPage({}: Props) {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {customers.map((customer) => (
+                                {customers.map((customer: any) => (
                                     <TableRow
                                         key={customer.id}
                                         sx={{

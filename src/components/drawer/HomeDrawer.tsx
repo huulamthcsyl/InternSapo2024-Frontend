@@ -11,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 type Props = {}
 
 export default function HomeDrawer({ }: Props) {
-
   const [openOrder, setOpenOrder] = useState(false);
   const [openProduct, setOpenProduct] = useState(false);
 

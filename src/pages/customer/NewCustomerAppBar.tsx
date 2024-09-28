@@ -6,7 +6,7 @@ type Props = {}
 
 export default function NewCustomerPageAppBar({}: Props) {
     return (
-        <MainAppBar sx={{ backgroundColor: 'white'}}>
+        <MainAppBar>
             <Box sx={{ display: 'flex' }}>
                 <Typography variant="h6" sx={{ color: 'black',fontWeight: '700'   }}>Thêm mới khách hàng</Typography>
             </Box>
