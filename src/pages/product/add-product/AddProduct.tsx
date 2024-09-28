@@ -3,10 +3,8 @@ import {
     Button,
     CardMedia,
     FormControl,
-    InputAdornment,
     InputLabel,
     MenuItem,
-    OutlinedInput,
     Paper,
     Select,
     Table,
@@ -31,6 +29,7 @@ import {
 import Property from "../Property";
 import { storage } from "../../../../firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import NumericFormatCustom from "../../../utils/NumericFormatCustom";
 
 type Props = {};
 
@@ -56,6 +55,25 @@ export default function AddProduct({}: Props) {
     const [nameError, setNameError] = useState<boolean>(false);
     const [images, setImages] = useState<string[]>([]);
     // const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+    function setAllInitialPrices(newInitialPrice: number) {
+        setInitialPrice(newInitialPrice);
+        const updatedVariants = variants.map((variant) => ({
+            ...variant,
+            initialPrice: newInitialPrice,
+        }));
+        setVariants(updatedVariants);
+    }
+
+    function setAllPriceForSale(newPriceForSale: number) {
+        setPriceForSale(newPriceForSale);
+        const updatedVariants = variants.map((variant) => ({
+            ...variant,
+            priceForSale: newPriceForSale,
+        }));
+
+        setVariants(updatedVariants);
+    }
 
     function handleDataChange(e) {
         const { name, value } = e.target;
@@ -169,7 +187,6 @@ export default function AddProduct({}: Props) {
             });
     }, []);
 
-    console.log(variants);
     useEffect(() => {
         if (sizes.length + colors.length + materials.length > 0) {
             const updatedVariants: VariantRequest[] = [];
@@ -402,61 +419,42 @@ export default function AddProduct({}: Props) {
                                         gap: "20px",
                                     }}
                                 >
-                                    <FormControl
-                                        sx={{
-                                            width: "50%",
-                                            display: "flex",
-                                            justifyContent: "space-between",
+                                    <TextField
+                                        label="Giá bán"
+                                        size="small"
+                                        value={priceForSale}
+                                        name="priceForSale"
+                                        onChange={(e) => {
+                                            setAllPriceForSale(
+                                                parseInt(e.target.value)
+                                            );
                                         }}
-                                    >
-                                        <InputLabel htmlFor="priceForSale">
-                                            Amount
-                                        </InputLabel>
-                                        <OutlinedInput
-                                            dir="rtl"
-                                            sx={{ textAlign: "right" }}
-                                            id="priceForSale"
-                                            endAdornment={
-                                                <InputAdornment position="end">
-                                                    VND
-                                                </InputAdornment>
-                                            }
-                                            label="Giá bán"
-                                            size="small"
-                                            value={priceForSale}
-                                            onChange={(e) =>
-                                                setPriceForSale(
-                                                    parseInt(e.target.value)
-                                                )
-                                            }
-                                        />
-                                    </FormControl>
-                                    <FormControl
-                                        sx={{
-                                            width: "50%",
+                                        sx={{ width: "50%" }}
+                                        slotProps={{
+                                            input: {
+                                                inputComponent:
+                                                    NumericFormatCustom as any,
+                                            },
                                         }}
-                                    >
-                                        <InputLabel htmlFor="priceForSale">
-                                            Amount
-                                        </InputLabel>
-                                        <OutlinedInput
-                                            dir="rtl"
-                                            id="initialPrice"
-                                            endAdornment={
-                                                <InputAdornment position="end">
-                                                    VND
-                                                </InputAdornment>
-                                            }
-                                            label="Giá nhập"
-                                            size="small"
-                                            value={initialPrice}
-                                            onChange={(e) =>
-                                                setInitialPrice(
-                                                    parseInt(e.target.value)
-                                                )
-                                            }
-                                        />
-                                    </FormControl>
+                                    />
+                                    <TextField
+                                        label="Giá nhập"
+                                        size="small"
+                                        value={initialPrice}
+                                        name="initialPrice"
+                                        onChange={(e) => {
+                                            setAllInitialPrices(
+                                                parseInt(e.target.value)
+                                            );
+                                        }}
+                                        sx={{ width: "50%" }}
+                                        slotProps={{
+                                            input: {
+                                                inputComponent:
+                                                    NumericFormatCustom as any,
+                                            },
+                                        }}
+                                    />
                                 </Box>
                             </Box>
 
@@ -810,10 +808,7 @@ export default function AddProduct({}: Props) {
                                                                         variant.priceForSale !=
                                                                         0
                                                                             ? variant.priceForSale
-                                                                            : priceForSale !=
-                                                                                0
-                                                                              ? priceForSale
-                                                                              : 0
+                                                                            : priceForSale
                                                                     }
                                                                     size="small"
                                                                     onChange={(
@@ -827,6 +822,12 @@ export default function AddProduct({}: Props) {
                                                                                 .value
                                                                         );
                                                                     }}
+                                                                    slotProps={{
+                                                                        input: {
+                                                                            inputComponent:
+                                                                                NumericFormatCustom as any,
+                                                                        },
+                                                                    }}
                                                                 />
                                                             </TableCell>
                                                             <TableCell>
@@ -835,10 +836,7 @@ export default function AddProduct({}: Props) {
                                                                         variant.initialPrice !=
                                                                         0
                                                                             ? variant.initialPrice
-                                                                            : initialPrice !=
-                                                                                0
-                                                                              ? initialPrice
-                                                                              : 0
+                                                                            : initialPrice
                                                                     }
                                                                     size="small"
                                                                     onChange={(
@@ -851,6 +849,12 @@ export default function AddProduct({}: Props) {
                                                                                 .target
                                                                                 .value
                                                                         );
+                                                                    }}
+                                                                    slotProps={{
+                                                                        input: {
+                                                                            inputComponent:
+                                                                                NumericFormatCustom as any,
+                                                                        },
                                                                     }}
                                                                 />
                                                             </TableCell>

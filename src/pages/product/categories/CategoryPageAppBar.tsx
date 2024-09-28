@@ -19,6 +19,11 @@ export default function CategoryPageAppBar({}: Props) {
                             sx={{ width: "30px", height: "30px" }}
                         />
                     }
+                    sx={{
+                        textTransform: "none",
+                        color: "rgba(0,0,0,0.38)",
+                        fontSize: "1rem",
+                    }}
                 >
                     Quay lại danh sách sản phẩm
                 </Button>

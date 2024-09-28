@@ -6,6 +6,7 @@ import {
     InputLabel,
     MenuItem,
     Select,
+    SelectChangeEvent,
     TextField,
     Typography,
 } from "@mui/material";
@@ -23,6 +24,7 @@ import {
 import Property from "../../Property";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { storage } from "../../../../../firebaseConfig";
+import NumericFormatCustom from "../../../../utils/NumericFormatCustom";
 
 type Props = {};
 
@@ -44,7 +46,7 @@ export default function ProductDetail({}: Props) {
     const [variants, setVariants] = useState<VariantRequest[]>([]);
     const [images, setImages] = useState<string[]>([]);
 
-    function handleProductChange(e: React.ChangeEvent<HTMLInputElement>) {
+    function handleProductChange(e: any) {
         setProduct({ ...product, [e.target.name]: e.target.value });
     }
 
@@ -149,7 +151,7 @@ export default function ProductDetail({}: Props) {
     }, []);
 
     useEffect(() => {
-        if (colors[0] === "" && additionalColors.length === 1) {
+        if (colors.length===0 && additionalColors.length === 1) {
             setVariants((prevVariants) =>
                 prevVariants.map((variant) => ({
                     ...variant,
@@ -157,7 +159,7 @@ export default function ProductDetail({}: Props) {
                 }))
             );
         }
-        if (colors[0] === "" && additionalColors.length === 0) {
+        if (colors.length===0 && additionalColors.length === 0) {
             setVariants((prevVariants) =>
                 prevVariants.map((variant) => ({
                     ...variant,
@@ -165,7 +167,7 @@ export default function ProductDetail({}: Props) {
                 }))
             );
         }
-        if (sizes[0] === "" && additionalSizes.length === 1) {
+        if (sizes.length===0 && additionalSizes.length === 1) {
             setVariants((prevVariants) =>
                 prevVariants.map((variant) => ({
                     ...variant,
@@ -173,7 +175,7 @@ export default function ProductDetail({}: Props) {
                 }))
             );
         }
-        if (sizes[0] === "" && additionalSizes.length === 0) {
+        if (sizes.length===0 && additionalSizes.length === 0) {
             setVariants((prevVariants) =>
                 prevVariants.map((variant) => ({
                     ...variant,
@@ -181,7 +183,7 @@ export default function ProductDetail({}: Props) {
                 }))
             );
         }
-        if (materials[0] === "" && additionalMaterials.length === 1) {
+        if (materials.length===0 && additionalMaterials.length === 1) {
             setVariants((prevVariants) =>
                 prevVariants.map((variant) => ({
                     ...variant,
@@ -189,7 +191,7 @@ export default function ProductDetail({}: Props) {
                 }))
             );
         }
-        if (materials[0] === "" && additionalMaterials.length === 0) {
+        if (materials.length===0 && additionalMaterials.length === 0) {
             setVariants((prevVariants) =>
                 prevVariants.map((variant) => ({
                     ...variant,
@@ -869,7 +871,7 @@ export default function ProductDetail({}: Props) {
                                                 justifyContent: "space-between",
                                             }}
                                         >
-                                            {sizes[0] !== "" ||
+                                            {sizes.length>0 ||
                                             additionalSizes.length > 0 ? (
                                                 <FormControl
                                                     sx={{ width: "48.5%" }}
@@ -916,7 +918,7 @@ export default function ProductDetail({}: Props) {
                                             ) : (
                                                 <></>
                                             )}
-                                            {colors[0] !== "" ||
+                                            {colors.length>0 ||
                                             additionalColors.length > 0 ? (
                                                 <FormControl
                                                     sx={{ width: "48.5%" }}
@@ -967,7 +969,7 @@ export default function ProductDetail({}: Props) {
                                             ) : (
                                                 <></>
                                             )}
-                                            {materials[0] !== "" ||
+                                            {materials.length>0 ||
                                             additionalMaterials.length > 0 ? (
                                                 <FormControl
                                                     sx={{ width: "48.5%" }}
@@ -1062,7 +1064,6 @@ export default function ProductDetail({}: Props) {
                                         >
                                             <TextField
                                                 label="Giá bán"
-                                                required
                                                 size="small"
                                                 value={variant?.priceForSale}
                                                 onChange={(e) =>
@@ -1072,11 +1073,15 @@ export default function ProductDetail({}: Props) {
                                                         e.target.value
                                                     )
                                                 }
-                                                sx={{ width: "50%" }}
+                                                slotProps={{
+                                                    input: {
+                                                      inputComponent: NumericFormatCustom as any,
+                                                    },
+                                                  }}
+                                                sx={{ width: "50%",textAlign:'right' }}
                                             />
                                             <TextField
                                                 label="Giá nhập"
-                                                required
                                                 size="small"
                                                 value={variant?.initialPrice}
                                                 onChange={(e) =>
@@ -1086,7 +1091,13 @@ export default function ProductDetail({}: Props) {
                                                         e.target.value
                                                     )
                                                 }
+                                                slotProps={{
+                                                    input: {
+                                                      inputComponent: NumericFormatCustom as any,
+                                                    },
+                                                  }}
                                                 sx={{ width: "50%" }}
+                                                
                                             />
                                         </Box>
                                     </Box>

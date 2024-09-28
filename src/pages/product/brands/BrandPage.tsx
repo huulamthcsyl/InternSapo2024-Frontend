@@ -1,76 +1,120 @@
-import { Box, Button, InputBase, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import MainBox from "../../../components/layout/MainBox";
-import Search from "@mui/icons-material/Search";
 import { Add } from "@mui/icons-material";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import CategoryPageAppBar from "./BrandPageAppBar";
-import { useState } from "react";
-import Close from "@mui/icons-material/Close";
+import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
+import BrandPageAppBar from "./BrandPageAppBar";
+import { useEffect, useState } from "react";
+import { BrandResponse } from "../ProductInterface";
+import SearchField from "../SearchField";
+import UpdateOrAddBrand from "./UpdateOrAddBrand";
 
 type Props = {};
 
-const columns: GridColDef[] = [
-    {
-        field: "id",
-        headerName: "ID",
-        headerClassName: "super-app-theme--header",
-        width: 70,
-    },
-    {
-        field: "firstName",
-        headerName: "First name",
-        headerClassName: "super-app-theme--header",
-        width: 130,
-    },
-    {
-        field: "lastName",
-        headerName: "Last name",
-        headerClassName: "super-app-theme--header",
-        width: 130,
-    },
-    {
-        field: "age",
-        headerName: "Age",
-        headerClassName: "super-app-theme--header",
-        type: "number",
-        width: 90,
-    },
-    {
-        field: "fullName",
-        headerName: "Full name",
-        headerClassName: "super-app-theme--header",
-        description: "This column has a value getter and is not sortable.",
-        sortable: false,
-        width: 160,
-        valueGetter: (value, row) =>
-            `${row.firstName || ""} ${row.lastName || ""}`,
-    },
-];
-
-const rows = [
-    { id: 1, lastName: "Snow", firstName: "Jon", age: 35 },
-    { id: 2, lastName: "Lannister", firstName: "Cersei", age: 42 },
-    { id: 3, lastName: "Lannister", firstName: "Jaime", age: 45 },
-    { id: 4, lastName: "Stark", firstName: "Arya", age: 16 },
-    { id: 5, lastName: "Targaryen", firstName: "Daenerys", age: null },
-    { id: 6, lastName: "Melisandre", firstName: null, age: 150 },
-    { id: 7, lastName: "Clifford", firstName: "Ferrara", age: 44 },
-    { id: 8, lastName: "Frances", firstName: "Rossini", age: 36 },
-    { id: 9, lastName: "Roxie", firstName: "Harvey", age: 65 },
-];
-
-const paginationModel = { page: 0, pageSize: 5 };
-
 export default function BrandPage({}: Props) {
-    const [openPopup, setOpenPopup] = useState(false);
+    const [data, setData] = useState<BrandResponse[]>([]);
+    const [totalNumberOfBrands, setTotalNumberOfBrands] = useState(0);
+    const [query, setQuery] = useState("");
+    const [paginationModel, setPaginationModel] = useState({
+        page: 0,
+        pageSize: 5,
+    });
+    const [isUpdate, setIsUpdate] = useState(0);
+    const [selectedBrand, setSelectedBrand] = useState<BrandResponse | null>(
+        {}
+    );
+    const customLocaleText = {
+        MuiTablePagination: {
+            labelRowsPerPage: "Số hàng mỗi trang:",
+            labelDisplayedRows: ({ from, to, count }) =>
+                `${from}-${to} trên tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
+        },
+    };
+    const columns: GridColDef[] = [
+        {
+            field: "name",
+            headerName: "Tên nhãn hiệu",
+            width: 280,
+        },
+        {
+            field: "code",
+            headerName: "Mã nhãn hiệu",
+            width: 220,
+        },
+        {
+            field: "description",
+            headerName: "Ghi chú",
+            width: 280,
+        },
+        {
+            field: "createdOn",
+            headerName: "Ngày tạo",
+            type: "date",
+            valueGetter: (value) => {
+                return value ? new Date(value) : "";
+            },
+            width: 230,
+        },
+        {
+            field: "updatedOn",
+            headerName: "Ngày cập nhật cuối",
+            type: "date",
+            valueGetter: (value) => {
+                // Assuming the value is a string or timestamp and needs to be transformed into a Date object
+                return value ? new Date(value) : "";
+            },
+            width: 230,
+        },
+    ];
 
+    function getListOfBrands() {
+        fetch(
+            `http://localhost:8080/v1/products/brands?page=${paginationModel.page}&limit=${paginationModel.pageSize}&query=${query}`
+        )
+            .then((res) => res.json())
+            .then((result) => {
+                setData(result.data);
+            });
+    }
+
+    function getTotalNumberOfBrands() {
+        fetch(
+            `http://localhost:8080/v1/products/brands/total-brands?query=${query}`
+        )
+            .then((res) => res.json())
+            .then((result) => {
+                setTotalNumberOfBrands(result.data);
+            });
+    }
+
+    function updateListOfProducts() {
+        getTotalNumberOfBrands();
+        getListOfBrands();
+    }
+    function handleRowClick(
+        params: GridRowParams<BrandResponse>
+        // e: GridEventListener<"rowClick">
+    ) {
+        // e.preventDefault();
+        setIsUpdate(1);
+        setSelectedBrand(params.row);
+    }
+
+    useEffect(() => {
+        getListOfBrands();
+    }, [paginationModel.pageSize, paginationModel.page]);
+
+    useEffect(() => {
+        getTotalNumberOfBrands();
+        getListOfBrands();
+    }, [query]);
     return (
         <Box>
-            <CategoryPageAppBar />
+            <BrandPageAppBar />
             <MainBox>
                 <Box sx={{ padding: "20px 24px", backgroundColor: "#F0F1F1" }}>
                     <Box
                         sx={{
+                            flexGrow: 1,
                             display: "flex",
                             padding: "11px 0",
                             height: "38px",
@@ -78,48 +122,33 @@ export default function BrandPage({}: Props) {
                         }}
                     >
                         <Typography sx={{ fontSize: "20px" }}>
-                            Nhãn hiệu
+                            Loại sản phẩm
                         </Typography>
                         <Button
                             variant="contained"
                             startIcon={<Add />}
                             sx={{ textTransform: "none" }}
-                            onClick={() => setOpenPopup(!openPopup)}
+                            onClick={() => setIsUpdate(2)}
                         >
-                            Thêm nhãn hiệu
+                            Thêm loại sản phẩm
                         </Button>
                     </Box>
                     <Box sx={{ backgroundColor: "white" }}>
-                        <Box sx={{ padding: "16px" }}>
-                            <Box
-                                sx={{
-                                    border: "1px solid #d9d9d9",
-                                    alignItems: "center",
-                                    display: "flex",
-                                    borderRadius: "5px",
-                                    padding: "10px 15px",
-                                    gap: "30px",
-                                }}
-                            >
-                                <Search
-                                    sx={{
-                                        color: "#d9d9d9",
-                                        height: "32px",
-                                        width: "32px",
-                                    }}
-                                />
-                                <InputBase
-                                    sx={{ width: "100%" }}
-                                    placeholder="Tìm kiếm nhãn hiệu theo tên"
-                                />
-                            </Box>
-                        </Box>
+                        <SearchField
+                            onKeyPress={setQuery}
+                            placeHolder="Tìm kiếm nhãn hiệu theo tên ..."
+                        />
                         <DataGrid
-                            rows={rows}
+                            rows={data}
                             columns={columns}
-                            initialState={{ pagination: { paginationModel } }}
-                            pageSizeOptions={[5, 10]}
-                            checkboxSelection
+                            rowCount={totalNumberOfBrands}
+                            onRowClick={handleRowClick}
+                            {...data}
+                            paginationMode="server"
+                            paginationModel={paginationModel}
+                            onPaginationModelChange={setPaginationModel}
+                            pageSizeOptions={[5, 10, 15]}
+                            localeText={customLocaleText}
                             sx={{
                                 border: 0,
                             }}
@@ -127,144 +156,17 @@ export default function BrandPage({}: Props) {
                     </Box>
                 </Box>
             </MainBox>
-            <Box
-                visibility={openPopup ? "visible" : "collapse"}
-                sx={{
-                    position: "fixed",
-                    top: "0",
-                    left: "0",
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-            >
-                {/* <Box
-                    sx={{
-                        backgroundColor: "white",
-                        width: "600px",
-                        height: "auto",
-                        padding: "10px 30px 30px 30px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "10px",
-                        border: "1px solid black",
-                        borderRadius: "5px",
-                    }}
-                >
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            padding: "10px 0",
-                            borderBottom: "1px solid #d9d9d9",
-                        }}
-                    >
-                        <Typography variant="h5">
-                            Thêm mới nhãn hiệu
-                        </Typography>
-                        <Close color="disabled" />
-                    </Box>
-                    <Box
-                        sx={{
-                            display: "flex",
-                            gap: "20px",
-                        }}
-                    >
-                        <TextField
-                            sx={{ width: "50%" }}
-                            required
-                            size="small"
-                            label="Tên nhãn hiệu"
-                            defaultValue="foo"
-                            margin="normal"
-                        />
-                        <TextField
-                            sx={{ width: "50%" }}
-                            size="small"
-                            label="Mã loại"
-                            defaultValue="foo"
-                            margin="normal"
-                        />
-                    </Box>
-                    <TextField
-                        fullWidth
-                        multiline
-                        rows={4}
-                        id="outlined-uncontrolled"
-                        label="Ghi chú"
-                        defaultValue="foo"
-                        margin="normal"
-                    />
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            gap: "25px",
-                        }}
-                    >
-                        <Button variant="outlined" color="error">
-                            Xóa
-                        </Button>
-                        <Button
-                            onClick={() => setOpenPopup(!openPopup)}
-                            variant="outlined"
-                            color="primary"
-                        >
-                            Thoát
-                        </Button>
-                        <Button variant="contained">Lưu</Button>
-                    </Box> */}
-                <Box
-                    sx={{
-                        backgroundColor: "white",
-                        width: "600px",
-                        height: "auto",
-                        padding: "10px 30px 30px 30px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "20px",
-                        border: "1px solid black",
-                        borderRadius: "5px",
-                    }}
-                >
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            padding: "10px 0",
-                            borderBottom: "1px solid #d9d9d9",
-                        }}
-                    >
-                        <Typography variant="h5">Xóa nhãn hiệu</Typography>
-                        <Close color="disabled" />
-                    </Box>
-                    <Typography>
-                        Thao tác này sẽ xóa nhãn hiệu bạn đã chọn. Thao tác
-                        này không thể khôi phục.
-                    </Typography>
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            gap: "25px",
-                        }}
-                    >
-                        <Button
-                            onClick={() => setOpenPopup(!openPopup)}
-                            variant="outlined"
-                            color="error"
-                        >
-                            Thoát
-                        </Button>
-                        <Button variant="contained" color="error">
-                            Xóa
-                        </Button>
-                    </Box>
-                </Box>
-            </Box>
+            {isUpdate != 0 ? (
+                <UpdateOrAddBrand
+                    isUpdate={isUpdate}
+                    selectedBrand={selectedBrand}
+                    setSelectedBrand={setSelectedBrand}
+                    setIsUpdate={setIsUpdate}
+                    onUpdate={updateListOfProducts}
+                />
+            ) : (
+                <></>
+            )}
         </Box>
     );
 }

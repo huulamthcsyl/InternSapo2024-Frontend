@@ -4,9 +4,10 @@ import { useState } from "react";
 
 type Props = {
     onKeyPress: React.Dispatch<React.SetStateAction<string>>;
+    placeHolder: string;
 };
 
-export default function SearchField({ onKeyPress }: Props) {
+export default function SearchField({ onKeyPress, placeHolder }: Props) {
     const [searchQuery, setSearchQuery] = useState("");
 
     function handleEnterPress(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -43,7 +44,7 @@ export default function SearchField({ onKeyPress }: Props) {
                     value={searchQuery}
                     onKeyDown={handleEnterPress}
                     sx={{ width: "100%" }}
-                    placeholder="Tìm kiếm sản phẩm theo tên"
+                    placeholder={placeHolder}
                 />
             </Box>
         </Box>

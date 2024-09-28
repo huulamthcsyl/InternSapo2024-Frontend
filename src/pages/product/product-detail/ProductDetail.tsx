@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ProductResponse, VariantResponse } from "../ProductInterface";
 import { Image } from "@mui/icons-material";
+import { formatCurrency } from "../../../utils/formatCurrency";
 
 type Props = {};
 
@@ -36,7 +37,7 @@ export default function ProductDetail({}: Props) {
                         }}
                     >
                         <Typography sx={{ fontSize: "20px" }}>
-                            {data.name}
+                            {data?.name}
                         </Typography>
                     </Box>
                     <Box>
@@ -69,22 +70,22 @@ export default function ProductDetail({}: Props) {
                                 >
                                     <LabelInfo
                                         label="Loại sản phẩm"
-                                        info={data.categoryName}
+                                        info={data?.categoryName}
                                     />
                                     <LabelInfo
                                         label="Ngày khởi tạo"
                                         info={new Date(
-                                            data.createdOn
+                                            data?.createdOn
                                         ).toLocaleString()}
                                     />
                                     <LabelInfo
                                         label="Nhãn hiệu"
-                                        info={data.brandName}
+                                        info={data?.brandName}
                                     />
                                     <LabelInfo
                                         label="Ngày cập nhật cuối"
                                         info={new Date(
-                                            data.updatedOn
+                                            data?.updatedOn
                                         ).toLocaleString()}
                                     />
                                     <TextField
@@ -93,7 +94,7 @@ export default function ProductDetail({}: Props) {
                                         rows={4}
                                         id="outlined-uncontrolled"
                                         label="Mô tả sản phẩm"
-                                        value={data.description}
+                                        value={data?.description}
                                         margin="normal"
                                     />
                                 </Box>
@@ -367,17 +368,15 @@ export default function ProductDetail({}: Props) {
                                 >
                                     <LabelInfo
                                         label="Giá bán"
-                                        info={
-                                            currentVariant?.priceForSale?.toString() ||
-                                            ""
-                                        }
+                                        info={formatCurrency(
+                                            currentVariant?.priceForSale
+                                        )}
                                     />
                                     <LabelInfo
                                         label="Giá nhập"
-                                        info={
-                                            currentVariant?.initialPrice?.toString() ||
-                                            ""
-                                        }
+                                        info={formatCurrency(
+                                            currentVariant?.initialPrice
+                                        )}
                                     />
                                 </Box>
                             </Box>

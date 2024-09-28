@@ -21,21 +21,28 @@ export default function CategoryPage({}: Props) {
     const [isUpdate, setIsUpdate] = useState(0);
     const [selectedCategory, setSelectedCategory] =
         useState<CategoryResponse | null>({});
+    const customLocaleText = {
+        MuiTablePagination: {
+            labelRowsPerPage: "Số hàng mỗi trang:",
+            labelDisplayedRows: ({ from, to, count }) =>
+                `${from}-${to} trên tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
+        },
+    };
     const columns: GridColDef[] = [
         {
             field: "name",
             headerName: "Tên loại sản phẩm",
-            width: 130,
+            width: 280,
         },
         {
             field: "code",
             headerName: "Mã loại",
-            width: 130,
+            width: 220,
         },
         {
             field: "description",
             headerName: "Ghi chú",
-            width: 90,
+            width: 280,
         },
         {
             field: "createdOn",
@@ -44,7 +51,7 @@ export default function CategoryPage({}: Props) {
             valueGetter: (value) => {
                 return value ? new Date(value) : "";
             },
-            width: 160,
+            width: 230,
         },
         {
             field: "updatedOn",
@@ -54,7 +61,7 @@ export default function CategoryPage({}: Props) {
                 // Assuming the value is a string or timestamp and needs to be transformed into a Date object
                 return value ? new Date(value) : "";
             },
-            width: 160,
+            width: 230,
         },
     ];
 
@@ -126,7 +133,10 @@ export default function CategoryPage({}: Props) {
                         </Button>
                     </Box>
                     <Box sx={{ backgroundColor: "white" }}>
-                        <SearchField onKeyPress={setQuery} />
+                        <SearchField
+                            onKeyPress={setQuery}
+                            placeHolder="Tìm kiếm loại sản phẩm theo tên ..."
+                        />
                         <DataGrid
                             rows={data}
                             columns={columns}
@@ -137,7 +147,7 @@ export default function CategoryPage({}: Props) {
                             paginationModel={paginationModel}
                             onPaginationModelChange={setPaginationModel}
                             pageSizeOptions={[5, 10, 15]}
-                            // checkboxSelection
+                            localeText={customLocaleText}
                             sx={{
                                 border: 0,
                             }}

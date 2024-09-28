@@ -24,7 +24,8 @@ const NumericFormatCustom = React.forwardRef<NumericFormatProps, CustomProps>(
         }}
         thousandSeparator
         valueIsNumericString
-        prefix="VND"
+        dir="rtl"
+        onFocus={(e) => e.target.select()}
       />
     );
   },

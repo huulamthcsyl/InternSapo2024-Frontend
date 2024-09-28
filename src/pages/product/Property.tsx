@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Chip, InputBase, Paper } from "@mui/material";
 import { Clear } from "@mui/icons-material";
-import DeletePropertyDialog from "./product-detail/DeletePropertyDialog";
+import DeletePropertyDialog from "./product-detail/product-edit/DeletePropertyDialog";
 
 type Props = {
     badges: string[];

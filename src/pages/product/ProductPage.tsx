@@ -6,6 +6,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import SearchField from "./SearchField";
 import { useNavigate } from "react-router-dom";
+import { viVN } from "@mui/x-date-pickers/locales";
 
 type Props = {};
 
@@ -18,6 +19,13 @@ export default function ProductPage({}: Props) {
         pageSize: 10,
     });
     const navigate = useNavigate();
+    const customLocaleText = {
+        MuiTablePagination: {
+            labelRowsPerPage: "Số hàng mỗi trang:",
+            labelDisplayedRows: ({ from, to, count }) =>
+                `${from}-${to} trên tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
+        },
+    };
     const columns: GridColDef[] = [
         {
             field: "imagePath",
@@ -48,27 +56,30 @@ export default function ProductPage({}: Props) {
                     </div>
                 );
             },
-            width: 70,
+            width: 100,
         },
         {
             field: "name",
             headerName: "Tên sản phẩm",
-            width: 130,
+            width: 300,
         },
         {
             field: "categoryName",
             headerName: "Loại",
-            width: 130,
+            width: 200,
         },
         {
             field: "brandName",
             headerName: "Nhãn hiệu",
-            width: 90,
+            width: 200,
         },
         {
             field: "totalQuantity",
             headerName: "Tồn kho",
             width: 160,
+            valueGetter: (value) => {
+                return value ? value : 0;
+            },
         },
         {
             field: "createdOn",
@@ -164,7 +175,10 @@ export default function ProductPage({}: Props) {
                         </Button>
                     </Box>
                     <Box sx={{ backgroundColor: "white" }}>
-                        <SearchField onKeyPress={setQuery} />
+                        <SearchField
+                            onKeyPress={setQuery}
+                            placeHolder="Tìm kiếm sản phẩm theo tên ..."
+                        />
                         <DataGrid
                             rows={data}
                             columns={columns}
@@ -174,6 +188,7 @@ export default function ProductPage({}: Props) {
                             paginationModel={paginationModel}
                             onPaginationModelChange={setPaginationModel}
                             pageSizeOptions={[10, 20, 30]}
+                            localeText={customLocaleText}
                             onRowClick={(params) =>
                                 navigate(`/products/${params.row.id}`)
                             }

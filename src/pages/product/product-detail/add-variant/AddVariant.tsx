@@ -7,6 +7,7 @@ import { ProductResponse, VariantRequest } from "../../ProductInterface";
 import { useParams } from "react-router-dom";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { storage } from "../../../../../firebaseConfig";
+import NumericFormatCustom from "../../../../utils/NumericFormatCustom";
 
 type Props = {};
 
@@ -332,7 +333,7 @@ export default function AddVariant({}: Props) {
                                     <TextField
                                         label="Kích cỡ"
                                         required={
-                                            product.size.length > 0
+                                            product?.size?.length > 0
                                                 ? true
                                                 : false
                                         }
@@ -346,7 +347,7 @@ export default function AddVariant({}: Props) {
                                     <TextField
                                         label="Màu sắc"
                                         required={
-                                            product.color.length > 0
+                                            product?.color?.length > 0
                                                 ? true
                                                 : false
                                         }
@@ -360,7 +361,7 @@ export default function AddVariant({}: Props) {
                                     <TextField
                                         label="Chất liệu"
                                         required={
-                                            product.material.length > 0
+                                            product?.material?.length > 0
                                                 ? true
                                                 : false
                                         }
@@ -405,6 +406,11 @@ export default function AddVariant({}: Props) {
                                         name="priceForSale"
                                         onChange={handleVariantChange}
                                         sx={{ width: "50%" }}
+                                        slotProps={{
+                                            input: {
+                                              inputComponent: NumericFormatCustom as any,
+                                            },
+                                          }}
                                     />
                                     <TextField
                                         label="Giá nhập"
@@ -413,6 +419,11 @@ export default function AddVariant({}: Props) {
                                         size="small"
                                         value={newVariant.initialPrice}
                                         name="initialPrice"
+                                        slotProps={{
+                                            input: {
+                                              inputComponent: NumericFormatCustom as any,
+                                            },
+                                          }}
                                         sx={{ width: "50%" }}
                                     />
                                 </Box>
