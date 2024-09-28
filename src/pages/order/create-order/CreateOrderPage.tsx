@@ -1,7 +1,7 @@
 import { Autocomplete, Box, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, TableContainer, Button, Dialog, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio } from "@mui/material"
 import MainBox from "../../../components/layout/MainBox"
 import CreateOrderAppBar from "./CreateOrderAppBar"
-import { useEffect, useLayoutEffect, useState } from "react"
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createCustomer, getCustomersByKeyword } from "../../../services/customerAPI"
 import Customer from "../../../models/Customer"
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -18,6 +18,9 @@ import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Dayjs } from "dayjs"
+import { useNavigate } from "react-router-dom"
+import { useReactToPrint } from "react-to-print"
+import { ReceiptToPrint } from "./Receipt"
 
 type VariantTableRowProps = {
   index: number,
@@ -181,6 +184,23 @@ export default function CreateOrderPage({ }: Props) {
   const [cashReceived, setCashReceived] = useState<number>(0);
   const [note, setNote] = useState<string>('');
 
+  const newOrderReceipt = useRef<any>({
+    createdOn: "",
+    creatorId: 0,
+    code: "",
+    orderDetails: [],
+    total: 0,
+    cashReceive: 0,
+    cashRepay: 0
+  });
+
+  const receiptRef = useRef(null);
+  const handlePrint = useReactToPrint({
+    content: () => receiptRef.current
+  });
+
+  const navigate = useNavigate();
+
   useEffect(() => {
     getCustomersByKeyword(customerKeyword).then((res) => {
       setCustomersList(res);
@@ -217,7 +237,7 @@ export default function CreateOrderPage({ }: Props) {
       toast.error("Số tiền nhận của khách không đủ");
       return;
     }
-    const order = {
+    const newOrder = {
       customerId: selectedCustomer.id,
       creatorId: 1,
       totalQuantity: totalQuantity,
@@ -234,8 +254,12 @@ export default function CreateOrderPage({ }: Props) {
         }
       }),
     }
-    createOrder(order).then((_res) => {
+    createOrder(newOrder).then((res) => {
       toast.success("Tạo đơn hàng thành công");
+      console.log(res.data);
+      newOrderReceipt.current = res.data;
+      handlePrint();
+      // navigate('/order')
     }).catch((error) => {
       toast.error(error.response.data);
     });
@@ -243,7 +267,10 @@ export default function CreateOrderPage({ }: Props) {
 
   return (
     <MainBox>
-      <CreateOrderAppBar handleCreateOrder={handleCreateOrder} />
+      <Box display="none">
+        <ReceiptToPrint ref={receiptRef} order={newOrderReceipt.current}/>
+      </Box>
+      <CreateOrderAppBar handleCreateOrder={handleCreateOrder}/>
       <Box sx={{ backgroundColor: '#F0F1F1', padding: '25px 30px' }} flex={1} display='flex' flexDirection='column'>
         <NewCustomerDialog open={openAddCustomerDialog} handleClose={() => setOpenAddCustomerDialog(false)} />
         <Box bgcolor="#fff" borderRadius={1} padding="20px 15px" mb={2}>

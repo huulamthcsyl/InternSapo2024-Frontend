@@ -99,7 +99,12 @@ export default function OrderListPage({}: Props) {
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
                 value={startDate}
-                onChange={(newValue) => setStartDate(newValue)}
+                onChange={(newValue) => {
+                  if (newValue && endDate && newValue.isAfter(endDate)) {
+                    setEndDate(newValue)
+                  }
+                  setStartDate(newValue)
+                }}
                 format="DD/MM/YYYY"
               />
             </LocalizationProvider>
@@ -107,7 +112,12 @@ export default function OrderListPage({}: Props) {
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
                 value={endDate}
-                onChange={(newValue) => setEndDate(newValue)}
+                onChange={(newValue) => {
+                  if (newValue && startDate && newValue.isBefore(startDate)) {
+                    setStartDate(newValue)
+                  }
+                  setEndDate(newValue)
+                }}
                 format="DD/MM/YYYY"
               />
             </LocalizationProvider>
@@ -122,21 +132,17 @@ export default function OrderListPage({}: Props) {
                   <TableCell>Khách hàng</TableCell>
                   <TableCell>Số sản phẩm</TableCell>
                   <TableCell>Số tiền thanh toán</TableCell>
-                  <TableCell></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {
                   orderData.map((order: any) => (
-                    <TableRow key={order.code}>
-                      <TableCell>{order.code}</TableCell>
+                    <TableRow sx={{ cursor: 'pointer' }} key={order.code} hover onClick={() => navigate(`${order.id}`)}>
+                      <TableCell sx={{ color: '#08F' }}>{order.code}</TableCell>
                       <TableCell>{formatDate(order.createdOn)}</TableCell>
                       <TableCell>{order.customerName}</TableCell>
                       <TableCell>{order.totalQuantity}</TableCell>
                       <TableCell>{formatCurrency(order.totalPayment)}</TableCell>
-                      <TableCell>
-                        <Button variant="contained" onClick={() => navigate(`${order.id}`)}>Xem chi tiết</Button>
-                      </TableCell>
                     </TableRow>
                   ))
                 }
