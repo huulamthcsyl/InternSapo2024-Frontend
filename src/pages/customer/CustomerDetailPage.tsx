@@ -433,66 +433,431 @@ export default function CustomerDetailPage({ }: Props) {
                     Thông tin tích điểm
                   </Typography>
                 </Box>
-              </Box>
-              <Box>
-                <Grid container>
-                  <Grid item xs={12} display="flex" alignItems="center" sx={{ padding: '16px' }} >
-                    <Typography variant="subtitle1" sx={{ flex: 1 }}>Điểm hiện tại</Typography>
-                    <Typography variant="body1" sx={{ flex: 1 }}>:KH001</Typography> {/* Giá trị trường */}
-                  </Grid>
+            </MainAppBar>
+            <MainBox>
+                <Box>
+                    {/* Hiển thị thông báo lỗi nếu có */}
+                    {errorMessage && (
+                        <Alert severity="error" sx={{ marginTop: '16px' }}>
+                            {errorMessage}
+                        </Alert>
+                    )}
 
-                  <Grid item xs={12} display="flex" alignItems="center" sx={{ padding: '16px' }}>
-                    <Typography variant="subtitle1" sx={{ flex: 1 }}>Xếp hạng</Typography>
-                    <Typography variant="body1" sx={{ flex: 1 }}>:123 ABC Street</Typography> {/* Giá trị trường */}
-                  </Grid>
+                    {/* Hiển thị thông báo thành công nếu có */}
+                    {successMessage && (
+                        <Alert severity="success" sx={{ marginTop: '16px' }}>
+                            {successMessage}
+                        </Alert>
+                    )}
+                    {/*<Snackbar*/}
+                    {/*    open={!!successMessage}  // Hiển thị nếu có thông báo thành công*/}
+                    {/*    autoHideDuration={6000}  // 6 giây sau tự ẩn*/}
+                    {/*    onClose={() => setSuccessMessage("")}  // Đóng Snackbar*/}
+                    {/*    message={successMessage}*/}
+                    {/*/>*/}
 
-                </Grid>
-              </Box>
+                    {/*<Snackbar*/}
+                    {/*    open={!!errorMessage}  // Hiển thị nếu có lỗi*/}
+                    {/*    autoHideDuration={6000}*/}
+                    {/*    onClose={() => setErrorMessage("")}*/}
+                    {/*    message={errorMessage}*/}
+                    {/*/>*/}
+                    <Box sx={{ padding: '16px 24px 16px 24px' }}>
+                        <Typography variant="h6" sx={{
+                            color: '#000',
+                            fontFamily: 'Segoe UI',
+                            fontSize: '20px',
+                            fontStyle: 'normal',
+                            fontWeight: 600,
+                            lineHeight: 'normal',
+                        }} >
+                            {tempCustomerRef.current?.gender ? 'Anh ' : 'Chị '}
+                            {tempCustomerRef.current?.name}
+                        </Typography>
+                    </Box>
+                    <Box display="flex">
+                        <Box sx={{ flexBasis: '70%' }}>
+                            <Box sx={{backgroundColor: 'white', margin: '16px 24px'}}>
+                                <Box sx={{
+                                    width: '100%',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    borderBottom: '1px solid var(--sub-color, #D9D9D9)'  // Thêm border-bottom
+                                }}>
+                                    <Box sx={{ padding: '16px' }}>
+                                        <Typography variant="h6" sx={{  fontWeight: 600, fontSize: '20px', color: 'black'  }} >
+                                            Thông tin cá nhân
+                                        </Typography>
+                                    </Box>
 
-            </Box>
+                                    <Box sx={{ padding: '16px' }}>
+                                        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '20px', cursor: 'pointer', color: 'var(--primary-color, #08F)'  }} onClick={handleUpdateCustomerClick}>
+                                            Cập nhật
+                                        </Typography>
+                                    </Box>
 
-          </Box>
-          <Box sx={{ backgroundColor: 'white', margin: '16px 24px' }}>
-            <Box sx={{ width: '100%', typography: 'body1' }}>
-              <TabContext value={value}>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <TabList onChange={handleChange} aria-label="customer detail tabs">
-                    <Tab label="Lịch sử đơn hàng" value="1" sx={{
-                      fontWeight: 600,
-                      fontSize: '15px',
-                      cursor: 'pointer',
-                      color: value === "1" ? 'var(--primary-color, #08F)' : '#747C87' // Thay đổi màu chữ
-                    }} />
-                    <Tab label="Ghi chú" value="2" sx={{
-                      fontWeight: 600,
-                      fontSize: '15px',
-                      cursor: 'pointer',
-                      color: value === "2" ? 'var(--primary-color, #08F)' : '#747C87' // Thay đổi màu chữ
-                    }} />
-                  </TabList>
-                </Box>
-                <TabPanel value="1">
-                  <Box sx={{ backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-                    <Table sx={{ minWidth: 650 }}>
-                      <TableHead>
-                        <TableRow sx={{ backgroundColor: '#f1f1f1' }}>
-                          <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Mã đơn hàng</TableCell>
-                          <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Ngày tạo đơn</TableCell>
-                          <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số lượng sản phẩm</TableCell>
-                          <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số tiền thanh toán</TableCell>
-                          {/*<TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Nhân viên xử lý đơn</TableCell>*/}
-                          <TableCell></TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {Array.isArray(customer?.orders) && customer.orders.length > 0 ? (
-                          customer.orders.map((order, index) => (
-                            <TableRow
-                              key={order.id}
-                              sx={{
-                                '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
-                                '&:hover': { backgroundColor: '#e0f7fa' }, // Hover effect
-                              }}
+
+
+                                </Box>
+                                <Box>
+                                    <Grid container >
+                                        {/* Cột đầu tiên */}
+                                        <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }} >
+                                            <Typography variant="subtitle1" sx={{ flex: 1 }}>Mã khách hàng</Typography>
+                                            <Typography variant="body1" sx={{ flex: 1 }}>:{tempCustomerRef.current?.id}</Typography> {/* Giá trị trường */}
+                                        </Grid>
+
+                                        <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
+                                            <Typography variant="subtitle1" sx={{ flex: 1 }}>Địa chỉ</Typography>
+                                            <Typography variant="body1" sx={{ flex: 1 }}>:{tempCustomerRef.current?.address}</Typography> {/* Giá trị trường */}
+                                        </Grid>
+
+                                        <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
+                                            <Typography variant="subtitle1" sx={{ flex: 1 }}>Số điện thoại</Typography>
+                                            <Typography variant="body1" sx={{ flex: 1 }}>:{tempCustomerRef.current?.phoneNumber}</Typography> {/* Giá trị trường */}
+                                        </Grid>
+
+                                        <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
+                                            <Typography variant="subtitle1" sx={{ flex: 1 }}>Ngày sinh</Typography>
+                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current.birthday) : 'N/A'}</Typography> {/* Giá trị trường */}
+                                        </Grid>
+
+                                        {/* Cột thứ hai */}
+                                        <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
+                                            <Typography variant="subtitle1" sx={{ flex: 1 }}>Email</Typography>
+                                            <Typography variant="body1" sx={{ flex: 1 }}>:{tempCustomerRef.current?.email}</Typography> {/* Giá trị trường */}
+                                        </Grid>
+
+                                        <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
+                                            <Typography variant="subtitle1" sx={{ flex: 1 }}>Ngày tạo</Typography>
+                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current.createdOn) : 'N/A'}</Typography> {/* Giá trị trường */}
+                                        </Grid>
+
+                                        <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
+                                            <Typography variant="subtitle1" sx={{ flex: 1 }}>Giới tính</Typography>
+                                            <Typography variant="body1" sx={{ flex: 1 }}>:{tempCustomerRef.current?.gender ? 'Nam' : 'Nữ'}</Typography> {/* Giá trị trường */}
+                                        </Grid>
+
+                                        <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
+                                            <Typography variant="subtitle1" sx={{ flex: 1 }}>Ngày cập nhật cuối cùng</Typography>
+                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current.updatedOn) : 'N/A'}</Typography> {/* Giá trị trường */}
+                                        </Grid>
+
+                                    </Grid>
+
+                                </Box>
+
+                            </Box>
+                            <Box sx={{backgroundColor: 'white', margin: '16px 24px'}}>
+                                <Box sx={{
+                                    width: '100%',
+                                    borderBottom: '1px solid var(--sub-color, #D9D9D9)'  // Thêm border-bottom
+                                }}>
+                                    <Box sx={{ padding: '16px' }}>
+                                        <Typography variant="h6" sx={{  fontWeight: 600, fontSize: '20px', color: 'black'  }} >
+                                            Thông tin mua hàng
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                                <Box>
+                                    <Grid container>
+                                        <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }} >
+                                            <Typography variant="subtitle1" sx={{ flex: 1 }}>Tổng chi tiêu</Typography>
+                                            <Typography variant="body1" sx={{ flex: 1 }}>:{tempCustomerRef.current?.totalExpense}</Typography> {/* Giá trị trường */}
+                                        </Grid>
+
+                                        <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
+                                            <Typography variant="subtitle1" sx={{ flex: 1 }}>Ngày đầu tiên mua hàng</Typography>
+                                            <Typography variant="body1" sx={{ flex: 1 }}>:</Typography> {/* Giá trị trường */}
+                                        </Grid>
+
+                                        <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
+                                            <Typography variant="subtitle1" sx={{ flex: 1 }}>Tổng SL đơn hàng</Typography>
+                                            <Typography variant="body1" sx={{ flex: 1 }}>:{tempCustomerRef.current?.numberOfOrder}</Typography> {/* Giá trị trường */}
+                                        </Grid>
+
+                                        <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
+                                            <Typography variant="subtitle1" sx={{ flex: 1 }}>Ngày mua hàng gần nhất</Typography>
+                                            <Typography variant="body1" sx={{ flex: 1 }}>:01/01/1990</Typography> {/* Giá trị trường */}
+                                        </Grid>
+                                    </Grid>
+
+                                </Box>
+
+                            </Box>
+                        </Box>
+                        <Box sx={{ flexBasis: '30%', display: 'inline-block',backgroundColor: 'white', margin: '16px 24px' }}>
+                            <Box sx={{
+                                width: '100%',
+                                borderBottom: '1px solid var(--sub-color, #D9D9D9)'  // Thêm border-bottom
+                            }}>
+                                <Box sx={{ padding: '16px' }}>
+                                    <Typography variant="h6" sx={{  fontWeight: 600, fontSize: '20px',  color: 'black'  }} >
+                                        Thông tin tích điểm
+                                    </Typography>
+                                </Box>
+                            </Box>
+                            <Box>
+                                <Grid container>
+                                    <Grid item xs={12} display="flex" alignItems="center" sx={{ padding: '16px' }} >
+                                        <Typography variant="subtitle1" sx={{ flex: 1 }}>Điểm hiện tại</Typography>
+                                        <Typography variant="body1" sx={{ flex: 1 }}>:KH001</Typography> {/* Giá trị trường */}
+                                    </Grid>
+
+                                    <Grid item xs={12} display="flex" alignItems="center" sx={{ padding: '16px' }}>
+                                        <Typography variant="subtitle1" sx={{ flex: 1 }}>Xếp hạng</Typography>
+                                        <Typography variant="body1" sx={{ flex: 1 }}>:123 ABC Street</Typography> {/* Giá trị trường */}
+                                    </Grid>
+
+                                </Grid>
+                            </Box>
+
+                        </Box>
+
+                    </Box>
+                    <Box sx={{ backgroundColor: 'white', margin: '16px 24px' }}>
+                        <Box sx={{ width: '100%', typography: 'body1' }}>
+                            <TabContext value={value}>
+                                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                    <TabList onChange={handleChange} aria-label="customer detail tabs">
+                                        <Tab label="Lịch sử đơn hàng" value="1" sx={{
+                                            fontWeight: 600,
+                                            fontSize: '15px',
+                                            cursor: 'pointer',
+                                            color: value === "1" ? 'var(--primary-color, #08F)' : '#747C87' // Thay đổi màu chữ
+                                        }}  />
+                                        <Tab label="Ghi chú" value="2" sx={{
+                                            fontWeight: 600,
+                                            fontSize: '15px',
+                                            cursor: 'pointer',
+                                            color: value === "2" ? 'var(--primary-color, #08F)' : '#747C87' // Thay đổi màu chữ
+                                        }}  />
+                                    </TabList>
+                                </Box>
+                                <TabPanel value="1">
+                                    <Box sx={{ backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+                                        <Table sx={{ minWidth: 650 }}>
+                                            <TableHead>
+                                                <TableRow sx={{ backgroundColor: '#f1f1f1' }}>
+                                                    <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Mã đơn hàng</TableCell>
+                                                    <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Ngày tạo đơn</TableCell>
+                                                    <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số lượng sản phẩm</TableCell>
+                                                    <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số tiền thanh toán</TableCell>
+                                                    {/*<TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Nhân viên xử lý đơn</TableCell>*/}
+                                                    <TableCell></TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {Array.isArray(customer?.orders) && customer.orders.length > 0 ? (
+                                                    customer.orders.map((order, index) => (
+                                                        <TableRow
+                                                            key={order.id}
+                                                            sx={{
+                                                                '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
+                                                                '&:hover': { backgroundColor: '#e0f7fa' }, // Hover effect
+                                                            }}
+                                                        >
+                                                            <TableCell>{order.id}</TableCell>
+                                                            <TableCell>{order.createdOn}</TableCell>
+                                                            <TableCell>{order.totalQuantity}</TableCell>
+                                                            <TableCell>{order.totalPayment}</TableCell>
+                                                            <TableCell>
+                                                                <Typography
+                                                                    // onClick={() => handleDetailsClick(customer.id)} // Chuyển hướng khi nhấn vào
+                                                                    sx={{
+                                                                        color: 'blue',
+                                                                        textDecoration: 'underline',
+                                                                        cursor: 'pointer',
+                                                                        '&:hover': {
+                                                                            color: 'darkblue', // Đổi màu khi hover
+                                                                        },
+                                                                    }}
+                                                                >
+                                                                    Chi tiết
+                                                                </Typography>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                ) : (
+                                                    <TableRow>
+                                                        <TableCell colSpan={5}>Không có đơn hàng nào</TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </TableBody>
+
+                                        </Table>
+
+                                        <TablePagination
+                                            component="div"
+                                            count={customer?.orders.length} // Tổng số lượng đơn hàng
+                                            page={pageNum}
+                                            onPageChange={handleChangePage}
+                                            rowsPerPage={pageSize}
+                                            onRowsPerPageChange={handleChangeRowsPerPage}
+                                            rowsPerPageOptions={[5, 10]} // Các tùy chọn số hàng
+                                            sx={{ mt: 2 }} // Margin top
+                                        />
+                                    </Box>
+                                </TabPanel>
+                                <TabPanel value="2">
+                                    {/* Nội dung Ghi chú */}
+
+                                    <textarea
+                                        rows={4}
+                                        style={{ width: '100%', padding: '8px',fontFamily: 'Segoe UI' }}
+                                        placeholder="Nhập ghi chú ở đây..."
+                                        value={customer?.note} // Hiển thị ghi chú từ customer.note
+                                        onChange={(e) => {
+                                            // Xử lý khi người dùng thay đổi ghi chú
+                                            setCustomer({ ...customer, note: e.target.value });
+                                        }}
+                                    />
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() => updateCustomer(customer?.id)}
+                                        >
+                                            Lưu
+                                        </Button>
+                                    </Box>
+                                </TabPanel>
+
+                            </TabContext>
+                        </Box>
+
+                    </Box>
+                    <Dialog sx={{padding: '10px'}} open={openModal} onClose={handleCloseModal}>
+                        <DialogTitle sx={{fontWeight: '700'}}>Cập nhật thông tin khách hàng </DialogTitle>
+                        <Divider/>
+                        <DialogContent>
+                            <Grid container spacing={2}>
+                                {/* Tên khách hàng */}
+                                <Grid item xs={6}>
+                                    <TextField
+
+                                        margin="dense"
+                                        label="Tên khách hàng"
+                                        name="name"
+                                        fullWidth
+                                        value={customer?.name}
+                                        onChange={handleChangeCustomer}
+                                    />
+                                </Grid>
+
+                                {/* Số điện thoại */}
+                                <Grid item xs={6}>
+                                    <TextField
+                                        margin="dense"
+                                        label="Số điện thoại"
+                                        name="phoneNumber"
+                                        fullWidth
+                                        value={customer?.phoneNumber}
+                                        onChange={handleChangeCustomer}
+                                    />
+                                </Grid>
+
+                                {/* Ngày sinh */}
+                                <Grid item xs={6}>
+                                    <TextField
+                                        margin="dense"
+                                        label="Ngày sinh"
+                                        name="birthday"
+                                        type="date"
+                                        fullWidth
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                        value={customer?.birthday}
+                                        onChange={handleChangeCustomer}
+                                    />
+                                </Grid>
+
+                                {/* Email */}
+                                <Grid item xs={6}>
+                                    <TextField
+                                        margin="dense"
+                                        label="Email"
+                                        name="email"
+                                        type="email"
+                                        fullWidth
+                                        value={customer?.email}
+                                        onChange={handleChangeCustomer}
+                                    />
+                                </Grid>
+
+                                {/* Địa chỉ */}
+                                <Grid item xs={12}>
+                                    <TextField
+                                        margin="dense"
+                                        label="Địa chỉ"
+                                        name="address"
+                                        fullWidth
+                                        value={customer?.address}
+                                        onChange={handleChangeCustomer}
+                                    />
+                                </Grid>
+
+                                {/* Giới tính */}
+                                <Grid item xs={12}>
+                                    <FormControl component="fieldset" margin="dense">
+                                        <FormLabel component="legend">Giới tính</FormLabel>
+                                        <RadioGroup
+                                            row
+                                            aria-label="gender"
+                                            name="gender"
+                                            value={customer?.gender ? "male" : "female"}  // Hiển thị đúng giới tính theo boolean
+                                            onChange={(e) => setCustomer({
+                                                ...customer,
+                                                gender: e.target.value === "male"  // Cập nhật giá trị boolean
+                                            })}
+                                        >
+                                            <FormControlLabel value="male" control={<Radio />} label="Nam" />
+                                            <FormControlLabel value="female" control={<Radio />} label="Nữ" />
+
+                                        </RadioGroup>
+                                    </FormControl>
+                                </Grid>
+                            </Grid>
+
+                        </DialogContent>
+                        <Divider/>
+                        <DialogActions>
+                            <Button
+                                onClick={handleCloseModal}
+                                color="secondary"
+                                sx={{
+                                    borderRadius: '5px',
+                                    border: '1px solid var(--primary-color, #08F)',
+                                    color: '#08F',
+                                    background: 'none', // Hoặc bỏ thuộc tính này nếu muốn màu nền mặc định
+                                    padding: '8px 16px', // Có thể thêm padding để nút đẹp hơn
+                                    '&:hover': {
+                                        background: 'var(--primary-color, #08F)', // Đổi màu nền khi hover
+                                        color: 'white', // Đổi màu chữ khi hover
+                                    }
+                                }}
+                            >
+                                Thoát
+                            </Button>
+                            <Button
+                                onClick={() => {
+
+                                    updateCustomer(customer.id); // Gọi hàm cập nhật
+                                    handleCloseModal();
+                                    // setOpenModal(false);
+                                }}
+                                sx={{
+                                    borderRadius: '5px',
+                                    border: '1px solid var(--primary-color, #08F)',
+                                    background: 'var(--primary-color, #08F)', // Màu nền cho nút Lưu
+                                    color: 'white', // Màu chữ cho nút Lưu
+                                    padding: '8px 16px', // Có thể thêm padding
+                                    '&:hover': {
+                                        background: 'darken(var(--primary-color, #08F), 10%)', // Tối màu nền khi hover
+                                    }
+                                }}
                             >
                               <TableCell>{order.id}</TableCell>
                               <TableCell>{order.createdOn}</TableCell>
