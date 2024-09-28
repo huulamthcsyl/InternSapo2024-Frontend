@@ -1,5 +1,5 @@
 import { Box, Button, ButtonGroup, Divider } from "@mui/material";
-import MainBox from "../../../components/layout/MainBox";
+import MainBox from "../../components/layout/MainBox";
 import ProductPageAppBar from "./ProductPageAppBar";
 import { Add, Image } from "@mui/icons-material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";

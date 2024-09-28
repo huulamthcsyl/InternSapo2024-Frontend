@@ -18,7 +18,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import MainBox from "../../../../components/layout/MainBox";
+import MainBox from "../../../components/layout/MainBox";
 import { Add, Image, Cancel } from "@mui/icons-material";
 import AddProductAppBar from "./AddProductAppBar";
 import { useEffect, useState } from "react";
@@ -29,7 +29,7 @@ import {
     VariantRequest,
 } from "../ProductInterface";
 import Property from "../Property";
-import { storage } from "../../../../../firebaseConfig";
+import { storage } from "../../../../firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 type Props = {};

@@ -1,5 +1,5 @@
 import { Typography, Box } from '@mui/material'
-import MainAppBar from '../../../components/layout/MainAppBar'
+import MainAppBar from '../../components/layout/MainAppBar'
 
 type Props = {}
 

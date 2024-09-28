@@ -1,12 +1,12 @@
 import { Box, Button, CardMedia, TextField, Typography } from "@mui/material";
-import MainBox from "../../../../../components/layout/MainBox";
+import MainBox from "../../../../components/layout/MainBox";
 import { Image } from "@mui/icons-material";
 import AddVariantAppBar from "./AddVariantAppBar";
 import { useEffect, useState } from "react";
 import { ProductResponse, VariantRequest } from "../../ProductInterface";
 import { useParams } from "react-router-dom";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { storage } from "../../../../../../firebaseConfig";
+import { storage } from "../../../../../firebaseConfig";
 
 type Props = {};
 

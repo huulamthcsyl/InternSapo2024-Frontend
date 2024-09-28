@@ -10,7 +10,7 @@ import {
     Typography,
 } from "@mui/material";
 import ProductEditAppBar from "./ProductEditAppBar";
-import MainBox from "../../../../../components/layout/MainBox";
+import MainBox from "../../../../components/layout/MainBox";
 import { AddCircle, Add, Cancel, Image } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -22,7 +22,7 @@ import {
 } from "../../ProductInterface";
 import Property from "../../Property";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { storage } from "../../../../../../firebaseConfig";
+import { storage } from "../../../../../firebaseConfig";
 
 type Props = {};
 

@@ -1,5 +1,5 @@
 import { Typography, Box, Button } from "@mui/material";
-import MainAppBar from "../../../../../components/layout/MainAppBar";
+import MainAppBar from "../../../../components/layout/MainAppBar";
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
 import { useNavigate } from "react-router-dom";
 
@@ -8,7 +8,7 @@ type Props = {
     submit: () => void;
 };
 
-export default function AddVariantAppBar({ id, submit }: Props) {
+export default function ProductEditAppBar({ id, submit }: Props) {
     const navigate = useNavigate();
     return (
         <MainAppBar>
@@ -21,14 +21,14 @@ export default function AddVariantAppBar({ id, submit }: Props) {
             >
                 <Box
                     sx={{ display: "flex", gap: "20px" }}
-                    onClick={() => navigate(`/products/${id}/edit`)}
+                    onClick={() => navigate(`/products/${id}`)}
                 >
                     <NavigateBefore
                         color="disabled"
                         sx={{ width: "30px", height: "30px" }}
                     />
                     <Typography color="textDisabled">
-                        Quay lại sản phẩm gốc
+                        Quay lại chi tiết sản phẩm
                     </Typography>
                 </Box>
                 <Box sx={{ display: "flex", gap: "20px" }}>

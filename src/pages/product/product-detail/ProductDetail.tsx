@@ -1,6 +1,6 @@
 import { Box, CardMedia, TextField, Typography } from "@mui/material";
 import ProductDetailAppBar from "./ProductDetailAppBar";
-import MainBox from "../../../../components/layout/MainBox";
+import MainBox from "../../../components/layout/MainBox";
 import LabelInfo from "./LabelInfo";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";

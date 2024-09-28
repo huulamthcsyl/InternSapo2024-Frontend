@@ -1,5 +1,5 @@
 import { Box, Button, ButtonGroup, Divider, InputBase } from "@mui/material";
-import MainBox from "../../../../components/layout/MainBox";
+import MainBox from "../../../components/layout/MainBox";
 import Search from "@mui/icons-material/Search";
 import { Add } from "@mui/icons-material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";

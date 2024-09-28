@@ -1,5 +1,5 @@
 import { Box, Button, Typography } from "@mui/material";
-import MainBox from "../../../../components/layout/MainBox";
+import MainBox from "../../../components/layout/MainBox";
 import { Add } from "@mui/icons-material";
 import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
 import CategoryPageAppBar from "./CategoryPageAppBar";

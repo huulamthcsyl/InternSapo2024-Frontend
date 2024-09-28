@@ -1,14 +1,29 @@
 import { Typography, Box, Button } from "@mui/material";
-import MainAppBar from "../../../../components/layout/MainAppBar";
+import MainAppBar from "../../../components/layout/MainAppBar";
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
 import { useNavigate } from "react-router-dom";
 
 type Props = {
-    submit: () => void;
+    id: string | undefined;
 };
 
-export default function AddProductAppBar({ submit }: Props) {
+export default function ProductDetailAppBar({ id }: Props) {
     const navigate = useNavigate();
+    function handleDeleteProduct() {
+        fetch(`http://localhost:8080/v1/products/${id}`, {
+            method: "DELETE",
+            headers: {
+                // "Content-Type": "application/json",
+                // Authorization: `Bearer ${user?.token}`,
+            },
+        })
+            .then((res) => {
+                return res.json();
+            })
+            .then((result) => {
+                window.alert(result.message);
+            });
+    }
     return (
         <MainAppBar>
             <Box
@@ -33,17 +48,17 @@ export default function AddProductAppBar({ submit }: Props) {
                 <Box sx={{ display: "flex", gap: "20px" }}>
                     <Button
                         variant="outlined"
-                        color="primary"
-                        onClick={() => navigate("/products")}
+                        color="error"
+                        onClick={handleDeleteProduct}
                     >
-                        Hủy
+                        Xóa
                     </Button>
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={submit}
+                        onClick={() => navigate(`/products/${id}/edit`)}
                     >
-                        Lưu
+                        Sửa sản phẩm
                     </Button>
                 </Box>
             </Box>
