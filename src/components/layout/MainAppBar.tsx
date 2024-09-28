@@ -8,7 +8,7 @@ type Props = {
 
 export default function MainAppBar({ children }: Props) {
   return (
-    <AppBar sx={{ width: 'calc(100% - 240px)', backgroundColor:"white" }} position="fixed">
+    <AppBar sx={{ width: 'calc(100% - 240px)', backgroundColor: '#fff' }} position="fixed">
       <Toolbar>
         {children}
       </Toolbar>
