@@ -36,7 +36,7 @@ export default function HomeDrawer({ }: Props) {
       <Toolbar />
       <Divider />
       <List sx={{ p: 0 }}>
-        <DrawerItem name="Tổng quan" icon={<HomeIcon />} link="/" />
+        <DrawerItem name="Tổng quan" icon={<HomeIcon />} link="/overview" />
         <ListItemButton onClick={() => setOpenOrder(!openOrder)}>
           <ListItemIcon sx={{ color: "#fff" }}>
             <ReceiptLongIcon />
@@ -75,7 +75,7 @@ export default function HomeDrawer({ }: Props) {
             </ListItemButton>
           </List>
         </Collapse>
-        <DrawerItem name="Khách hàng" icon={<PersonIcon style={{ color: '#fff' }} />} link="/"/>
+        <DrawerItem name="Khách hàng" icon={<PersonIcon style={{ color: '#fff' }} />} link="/customers"/>
       </List>
     </Drawer>
   )
