@@ -3,11 +3,17 @@ import MainBox from "../../../../components/layout/MainBox";
 import { Image } from "@mui/icons-material";
 import AddVariantAppBar from "./AddVariantAppBar";
 import { useEffect, useState } from "react";
-import { ProductResponse, VariantRequest } from "../../ProductInterface";
+import {
+    ProductResponse,
+    VariantRequest,
+} from "../../../../services/ProductInterface";
 import { useParams } from "react-router-dom";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { storage } from "../../../../../firebaseConfig";
 import NumericFormatCustom from "../../../../utils/NumericFormatCustom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { createVariant, getProductById } from "../../../../services/productAPI";
 
 type Props = {};
 
@@ -18,22 +24,19 @@ export default function AddVariant({}: Props) {
     // const [image,setImage] =useState<string>("");
 
     useEffect(() => {
-        fetch(`http://localhost:8080/v1/products/${id}`)
-            .then((res) => res.json())
-            .then((result) => {
-                setProduct(result.data);
-                setNewVariant({
-                    name: result.data.name,
-                    sku: "",
-                    size: "",
-                    color: "",
-                    material: "",
-                    imagePath: "",
-                    initialPrice: 0,
-                    priceForSale: 0,
-                });
-                console.log(result.data);
+        getProductById(id).then((res) => {
+            setProduct(res);
+            setNewVariant({
+                name: res.name,
+                sku: "",
+                size: "",
+                color: "",
+                material: "",
+                imagePath: "",
+                initialPrice: 0,
+                priceForSale: 0,
             });
+        });
     }, []);
 
     function handleVariantChange(e) {
@@ -41,19 +44,12 @@ export default function AddVariant({}: Props) {
     }
 
     function handleAddNewVariant() {
-        fetch(`http://localhost:8080/v1/products/${id}/variants/create`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                // Authorization: `Bearer ${user?.token}`,
-            },
-            body: JSON.stringify({ ...newVariant }),
-        })
+        createVariant(id, newVariant)
             .then((res) => {
-                return res.json();
+                toast.success("Tạo phiên bản mới thành công");
             })
-            .then((result) => {
-                window.alert(result.message);
+            .catch((error) => {
+                toast.error(error.response.data.message);
             });
     }
 
@@ -62,8 +58,8 @@ export default function AddVariant({}: Props) {
             ? Array.from(e.target.files).at(0)
             : undefined;
         if (file) {
-            const storageRef = ref(storage, `variants/${file.name}`); 
-            const uploadTask = uploadBytesResumable(storageRef, file); 
+            const storageRef = ref(storage, `variants/${file.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
 
             uploadTask.on(
                 "state_changed",
@@ -408,9 +404,10 @@ export default function AddVariant({}: Props) {
                                         sx={{ width: "50%" }}
                                         slotProps={{
                                             input: {
-                                              inputComponent: NumericFormatCustom as any,
+                                                inputComponent:
+                                                    NumericFormatCustom as any,
                                             },
-                                          }}
+                                        }}
                                     />
                                     <TextField
                                         label="Giá nhập"
@@ -421,9 +418,10 @@ export default function AddVariant({}: Props) {
                                         name="initialPrice"
                                         slotProps={{
                                             input: {
-                                              inputComponent: NumericFormatCustom as any,
+                                                inputComponent:
+                                                    NumericFormatCustom as any,
                                             },
-                                          }}
+                                        }}
                                         sx={{ width: "50%" }}
                                     />
                                 </Box>
@@ -432,6 +430,7 @@ export default function AddVariant({}: Props) {
                     </Box>
                 </Box>
             </MainBox>
+            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }

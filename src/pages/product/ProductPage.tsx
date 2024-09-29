@@ -7,13 +7,18 @@ import { useEffect, useState } from "react";
 import SearchField from "./SearchField";
 import { useNavigate } from "react-router-dom";
 import { viVN } from "@mui/x-date-pickers/locales";
+import {
+    getListOfProducts,
+    getNumberOfProducts,
+} from "../../services/productAPI";
+import { ProductResponse } from "../../services/ProductInterface";
 
 type Props = {};
 
 export default function ProductPage({}: Props) {
-    const [data, setData] = useState([]);
-    const [totalNumberOfProducts, setTotalNumberOfProducts] = useState(0);
-    const [query, setQuery] = useState("");
+    const [data, setData] = useState<ProductResponse[]>([]);
+    const [numberOfProducts, setNumberOfProducts] = useState<number>(0);
+    const [query, setQuery] = useState<string>("");
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 10,
@@ -86,38 +91,33 @@ export default function ProductPage({}: Props) {
             headerName: "Ngày khởi tạo",
             type: "date",
             valueGetter: (value) => {
-                // Assuming the value is a string or timestamp and needs to be transformed into a Date object
                 return value ? new Date(value) : "";
             },
             width: 160,
         },
     ];
 
-    function getListOfProducts() {
-        fetch(
-            `http://localhost:8080/v1/products?page=${paginationModel.page}&limit=${paginationModel.pageSize}&query=${query}`
-        )
-            .then((res) => res.json())
-            .then((result) => {
-                setData(result.data);
-            });
-    }
-
-    function getTotalNumberOfProducts() {
-        fetch(`http://localhost:8080/v1/products/total-products?query=${query}`)
-            .then((res) => res.json())
-            .then((result) => {
-                setTotalNumberOfProducts(result.data);
-            });
-    }
-
     useEffect(() => {
-        getListOfProducts();
+        getListOfProducts(
+            paginationModel.page,
+            paginationModel.pageSize,
+            query
+        ).then((res) => {
+            setData(res);
+        });
     }, [paginationModel.pageSize, paginationModel.page]);
 
     useEffect(() => {
-        getTotalNumberOfProducts();
-        getListOfProducts();
+        getNumberOfProducts(query).then((res) => {
+            setNumberOfProducts(res);
+        });
+        getListOfProducts(
+            paginationModel.page,
+            paginationModel.pageSize,
+            query
+        ).then((res) => {
+            setData(res);
+        });
     }, [query]);
 
     return (
@@ -182,7 +182,7 @@ export default function ProductPage({}: Props) {
                         <DataGrid
                             rows={data}
                             columns={columns}
-                            rowCount={totalNumberOfProducts}
+                            rowCount={numberOfProducts}
                             {...data}
                             paginationMode="server"
                             paginationModel={paginationModel}

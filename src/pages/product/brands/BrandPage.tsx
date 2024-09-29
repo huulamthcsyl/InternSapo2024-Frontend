@@ -4,15 +4,16 @@ import { Add } from "@mui/icons-material";
 import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
 import BrandPageAppBar from "./BrandPageAppBar";
 import { useEffect, useState } from "react";
-import { BrandResponse } from "../ProductInterface";
+import { BrandResponse } from "../../../services/ProductInterface";
 import SearchField from "../SearchField";
 import UpdateOrAddBrand from "./UpdateOrAddBrand";
+import { getListOfBrands, getNumberOfBrands } from "../../../services/brandAPI";
 
 type Props = {};
 
 export default function BrandPage({}: Props) {
     const [data, setData] = useState<BrandResponse[]>([]);
-    const [totalNumberOfBrands, setTotalNumberOfBrands] = useState(0);
+    const [numberOfBrands, setNumberOfBrands] = useState(0);
     const [query, setQuery] = useState("");
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
@@ -66,29 +67,17 @@ export default function BrandPage({}: Props) {
         },
     ];
 
-    function getListOfBrands() {
-        fetch(
-            `http://localhost:8080/v1/products/brands?page=${paginationModel.page}&limit=${paginationModel.pageSize}&query=${query}`
-        )
-            .then((res) => res.json())
-            .then((result) => {
-                setData(result.data);
-            });
-    }
-
-    function getTotalNumberOfBrands() {
-        fetch(
-            `http://localhost:8080/v1/products/brands/total-brands?query=${query}`
-        )
-            .then((res) => res.json())
-            .then((result) => {
-                setTotalNumberOfBrands(result.data);
-            });
-    }
-
     function updateListOfProducts() {
-        getTotalNumberOfBrands();
-        getListOfBrands();
+        getNumberOfBrands(query).then((res) => {
+            setNumberOfBrands(res);
+        });
+        getListOfBrands(
+            paginationModel.page,
+            paginationModel.pageSize,
+            query
+        ).then((res) => {
+            setData(res);
+        });
     }
     function handleRowClick(
         params: GridRowParams<BrandResponse>
@@ -100,12 +89,26 @@ export default function BrandPage({}: Props) {
     }
 
     useEffect(() => {
-        getListOfBrands();
+        getListOfBrands(
+            paginationModel.page,
+            paginationModel.pageSize,
+            query
+        ).then((res) => {
+            setData(res);
+        });
     }, [paginationModel.pageSize, paginationModel.page]);
 
     useEffect(() => {
-        getTotalNumberOfBrands();
-        getListOfBrands();
+        getNumberOfBrands(query).then((res) => {
+            setNumberOfBrands(res);
+        });
+        getListOfBrands(
+            paginationModel.page,
+            paginationModel.pageSize,
+            query
+        ).then((res) => {
+            setData(res);
+        });
     }, [query]);
     return (
         <Box>
@@ -141,7 +144,7 @@ export default function BrandPage({}: Props) {
                         <DataGrid
                             rows={data}
                             columns={columns}
-                            rowCount={totalNumberOfBrands}
+                            rowCount={numberOfBrands}
                             onRowClick={handleRowClick}
                             {...data}
                             paginationMode="server"

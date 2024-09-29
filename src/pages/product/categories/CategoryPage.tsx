@@ -5,14 +5,18 @@ import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
 import CategoryPageAppBar from "./CategoryPageAppBar";
 import { useEffect, useState } from "react";
 import UpdateOrAdd from "./UpdateOrAdd";
-import { CategoryResponse } from "../ProductInterface";
+import { CategoryResponse } from "../../../services/ProductInterface";
 import SearchField from "../SearchField";
+import {
+    getListOfCategories,
+    getNumberOfCategories,
+} from "../../../services/categoryAPI";
 
 type Props = {};
 
 export default function CategoryPage({}: Props) {
     const [data, setData] = useState<CategoryResponse[]>([]);
-    const [totalNumberOfCategories, setTotalNumberOfCategories] = useState(0);
+    const [numberOfCategories, setNumberOfCategories] = useState(0);
     const [query, setQuery] = useState("");
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
@@ -58,54 +62,52 @@ export default function CategoryPage({}: Props) {
             headerName: "Ngày cập nhật cuối",
             type: "date",
             valueGetter: (value) => {
-                // Assuming the value is a string or timestamp and needs to be transformed into a Date object
                 return value ? new Date(value) : "";
             },
             width: 230,
         },
     ];
 
-    function getListOfCategories() {
-        fetch(
-            `http://localhost:8080/v1/products/categories?page=${paginationModel.page}&limit=${paginationModel.pageSize}&query=${query}`
-        )
-            .then((res) => res.json())
-            .then((result) => {
-                setData(result.data);
-            });
-    }
-
-    function getTotalNumberOfCategories() {
-        fetch(
-            `http://localhost:8080/v1/products/categories/total-categories?query=${query}`
-        )
-            .then((res) => res.json())
-            .then((result) => {
-                setTotalNumberOfCategories(result.data);
-            });
-    }
-
     function updateListOfProducts() {
-        getTotalNumberOfCategories();
-        getListOfCategories();
+        getNumberOfCategories(query).then((res) => {
+            setNumberOfCategories(res);
+        });
+        getListOfCategories(
+            paginationModel.page,
+            paginationModel.pageSize,
+            query
+        ).then((res) => {
+            setData(res);
+        });
     }
-    function handleRowClick(
-        params: GridRowParams<CategoryResponse>
-        // e: GridEventListener<"rowClick">
-    ) {
-        // e.preventDefault();
+    function handleRowClick(params: GridRowParams<CategoryResponse>) {
         setIsUpdate(1);
         setSelectedCategory(params.row);
     }
 
     useEffect(() => {
-        getListOfCategories();
+        getListOfCategories(
+            paginationModel.page,
+            paginationModel.pageSize,
+            query
+        ).then((res) => {
+            setData(res);
+        });
     }, [paginationModel.pageSize, paginationModel.page]);
 
     useEffect(() => {
-        getTotalNumberOfCategories();
-        getListOfCategories();
+        getNumberOfCategories(query).then((res) => {
+            setNumberOfCategories(res);
+        });
+        getListOfCategories(
+            paginationModel.page,
+            paginationModel.pageSize,
+            query
+        ).then((res) => {
+            setData(res);
+        });
     }, [query]);
+    console.log(data);
     return (
         <Box>
             <CategoryPageAppBar />
@@ -140,7 +142,7 @@ export default function CategoryPage({}: Props) {
                         <DataGrid
                             rows={data}
                             columns={columns}
-                            rowCount={totalNumberOfCategories}
+                            rowCount={numberOfCategories}
                             onRowClick={handleRowClick}
                             {...data}
                             paginationMode="server"

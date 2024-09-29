@@ -6,13 +6,18 @@ import VariantPageAppBar from "./VariantPageAppBar";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchField from "../SearchField";
+import {
+    getListOfVariants,
+    getNumberOfProducts,
+} from "../../../services/productAPI";
+import { VariantResponse } from "../../../services/ProductInterface";
 
 type Props = {};
 
 export default function VariantPage({}: Props) {
-    const [data, setData] = useState([]);
-    const [totalNumberOfVariants, setTotalNumberOfVariants] = useState(0);
-    const [query, setQuery] = useState("");
+    const [data, setData] = useState<VariantResponse[]>([]);
+    const [numberOfVariants, setNumberOfVariants] = useState<number>(0);
+    const [query, setQuery] = useState<string>("");
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 10,
@@ -97,31 +102,27 @@ export default function VariantPage({}: Props) {
         },
     ];
 
-    function getListOfVariants() {
-        fetch(
-            `http://localhost:8080/v1/products/variants?page=${paginationModel.page}&limit=${paginationModel.pageSize}&query=${query}`
-        )
-            .then((res) => res.json())
-            .then((result) => {
-                setData(result.data);
-            });
-    }
-
-    function getTotalNumberOfVariants() {
-        fetch(`http://localhost:8080/v1/products/total-variants?query=${query}`)
-            .then((res) => res.json())
-            .then((result) => {
-                setTotalNumberOfVariants(result.data);
-            });
-    }
-
     useEffect(() => {
-        getListOfVariants();
+        getListOfVariants(
+            paginationModel.page,
+            paginationModel.pageSize,
+            query
+        ).then((res) => {
+            setData(res);
+        });
     }, [paginationModel.pageSize, paginationModel.page]);
 
     useEffect(() => {
-        getTotalNumberOfVariants();
-        getListOfVariants();
+        getNumberOfProducts(query).then((res) => {
+            setNumberOfVariants(res);
+        });
+        getListOfVariants(
+            paginationModel.page,
+            paginationModel.pageSize,
+            query
+        ).then((res) => {
+            setData(res);
+        });
     }, [query]);
 
     return (
@@ -137,7 +138,7 @@ export default function VariantPage({}: Props) {
                         <DataGrid
                             rows={data}
                             columns={columns}
-                            rowCount={totalNumberOfVariants}
+                            rowCount={numberOfVariants}
                             {...data}
                             paginationMode="server"
                             paginationModel={paginationModel}

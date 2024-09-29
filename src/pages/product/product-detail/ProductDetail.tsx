@@ -4,9 +4,13 @@ import MainBox from "../../../components/layout/MainBox";
 import LabelInfo from "./LabelInfo";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ProductResponse, VariantResponse } from "../ProductInterface";
+import {
+    ProductResponse,
+    VariantResponse,
+} from "../../../services/ProductInterface";
 import { Image } from "@mui/icons-material";
 import { formatCurrency } from "../../../utils/formatCurrency";
+import { getProductById } from "../../../services/productAPI";
 
 type Props = {};
 
@@ -15,12 +19,10 @@ export default function ProductDetail({}: Props) {
     const [data, setData] = useState<ProductResponse>({});
     const [currentVariant, setCurrentVariant] = useState<VariantResponse>({});
     useEffect(() => {
-        fetch(`http://localhost:8080/v1/products/${id}`)
-            .then((res) => res.json())
-            .then((result) => {
-                setData(result.data);
-                setCurrentVariant(result.data.variants[0]);
-            });
+        getProductById(id).then((res) => {
+            setData(res);
+            setCurrentVariant(res.variants[0]);
+        });
     }, []);
 
     return (

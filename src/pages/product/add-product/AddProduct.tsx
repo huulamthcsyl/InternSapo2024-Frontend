@@ -25,11 +25,14 @@ import {
     CategoryResponse,
     ProductRequest,
     VariantRequest,
-} from "../ProductInterface";
+} from "../../../services/ProductInterface";
 import Property from "../Property";
 import { storage } from "../../../../firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import NumericFormatCustom from "../../../utils/NumericFormatCustom";
+import { createProduct } from "../../../services/productAPI";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 type Props = {};
 
@@ -54,7 +57,6 @@ export default function AddProduct({}: Props) {
     const [variants, setVariants] = useState<VariantRequest[]>([]);
     const [nameError, setNameError] = useState<boolean>(false);
     const [images, setImages] = useState<string[]>([]);
-    // const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
     function setAllInitialPrices(newInitialPrice: number) {
         setInitialPrice(newInitialPrice);
@@ -103,26 +105,19 @@ export default function AddProduct({}: Props) {
             //     const emptyVarinant:VariantRequest={}
             //     setVariants([{...emptyVarinant,name:newProduct.name}]);
             // }
-            fetch(`http://localhost:8080/v1/products/create`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    // Authorization: `Bearer ${user?.token}`,
-                },
-                body: JSON.stringify({
-                    ...newProduct,
-                    variants: variants,
-                    imagePath: images,
-                }),
+            createProduct({
+                ...newProduct,
+                variants: variants,
+                imagePath: images,
             })
                 .then((res) => {
-                    return res.json();
+                    toast.success("Tạo đơn hàng thành công");
                 })
-                .then((result) => {
-                    window.alert(result.message);
+                .catch((error) => {
+                    toast.error(error.response.data.message);
                 });
         } else {
-            window.alert("Tên sản phẩm không được trống.");
+            toast.error("Tên sản phẩm không được trống.");
         }
     }
 
@@ -874,6 +869,7 @@ export default function AddProduct({}: Props) {
                     )}
                 </Box>
             </MainBox>
+            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }

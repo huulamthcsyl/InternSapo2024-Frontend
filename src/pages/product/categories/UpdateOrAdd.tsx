@@ -1,12 +1,21 @@
 import { Typography, Box, TextField, Button } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { useState } from "react";
-import { CategoryRequest, CategoryResponse } from "../ProductInterface";
+import {
+    CategoryRequest,
+    CategoryResponse,
+} from "../../../services/ProductInterface";
+import {
+    createCategory,
+    deleteCategory,
+    updateCategory,
+} from "../../../services/categoryAPI";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 type Props = {
     isUpdate: number;
     setIsUpdate: React.Dispatch<React.SetStateAction<number>>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selectedCategory: any;
     setSelectedCategory: React.Dispatch<
         React.SetStateAction<CategoryResponse | null>
@@ -29,67 +38,43 @@ export default function UpdateOrAdd({
         setForm({ ...form, [e.target.name]: e.target.value });
     }
     function handleUpdateCategory() {
-        fetch(`http://localhost:8080/v1/products/categories/${form.id}/edit`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                // Authorization: `Bearer ${user?.token}`,
-            },
-            body: JSON.stringify({ ...form }),
-        })
+        updateCategory(form.id, form)
             .then((res) => {
-                if (res.status === 200) {
-                    onUpdate();
-                    setSelectedCategory(null);
-                    setIsUpdate(0);
-                }
-                return res.json();
+                toast.success("Cập nhật loại sản phẩm thành công", {
+                    position: "top-center",
+                });
+                onUpdate();
+                setSelectedCategory(null);
+                setIsUpdate(0);
             })
-            .then((result) => {
-                window.alert(result.message);
+            .catch((error) => {
+                toast.error(error.response.data.message);
             });
     }
 
     function handleCreateCategory() {
-        fetch(`http://localhost:8080/v1/products/categories/create`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                // Authorization: `Bearer ${user?.token}`,
-            },
-            body: JSON.stringify({ ...form }),
-        })
+        createCategory(form)
             .then((res) => {
-                if (res.status === 200) {
-                    onUpdate();
-                    setSelectedCategory(null);
-                    setIsUpdate(0);
-                }
-                return res.json();
+                toast.success("Tạo loại sản phẩm thành công");
+                onUpdate();
+                setSelectedCategory(null);
+                setIsUpdate(0);
             })
-            .then((result) => {
-                window.alert(result.message);
+            .catch((error) => {
+                toast.error(error.response.data.message);
             });
     }
 
     function handleDeleteCategory() {
-        fetch(`http://localhost:8080/v1/products/categories/${form.id}`, {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                // Authorization: `Bearer ${user?.token}`,
-            },
-        })
+        deleteCategory(form.id)
             .then((res) => {
-                if (res.status === 200) {
-                    onUpdate();
-                    setSelectedCategory(null);
-                    setIsUpdate(0);
-                }
-                return res.json();
+                toast.success("Xoá loại sản phẩm thành công");
+                onUpdate();
+                setSelectedCategory(null);
+                setIsUpdate(0);
             })
-            .then((result) => {
-                window.alert(result.message);
+            .catch((error) => {
+                toast.error(error.response.data.message);
             });
     }
 
@@ -109,6 +94,7 @@ export default function UpdateOrAdd({
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+                zIndex: 10000,
             }}
         >
             {!openConfirmDialog ? (
@@ -275,6 +261,7 @@ export default function UpdateOrAdd({
                     </Box>
                 </Box>
             )}
+            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }

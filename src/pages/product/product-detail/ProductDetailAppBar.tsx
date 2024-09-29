@@ -2,6 +2,9 @@ import { Box, Button } from "@mui/material";
 import MainAppBar from "../../../components/layout/MainAppBar";
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
 import { useNavigate } from "react-router-dom";
+import { deleteProduct } from "../../../services/productAPI";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 type Props = {
     id: string | undefined;
@@ -10,18 +13,12 @@ type Props = {
 export default function ProductDetailAppBar({ id }: Props) {
     const navigate = useNavigate();
     function handleDeleteProduct() {
-        fetch(`http://localhost:8080/v1/products/${id}`, {
-            method: "DELETE",
-            headers: {
-                // "Content-Type": "application/json",
-                // Authorization: `Bearer ${user?.token}`,
-            },
-        })
+        deleteProduct(id)
             .then((res) => {
-                return res.json();
+                toast.success("Xoá sản phẩm thành công");
             })
-            .then((result) => {
-                window.alert(result.message);
+            .catch((error) => {
+                toast.error(error.response.data.message);
             });
     }
     return (
@@ -67,6 +64,7 @@ export default function ProductDetailAppBar({ id }: Props) {
                     </Button>
                 </Box>
             </Box>
+            <ToastContainer hideProgressBar autoClose={3000} />
         </MainAppBar>
     );
 }

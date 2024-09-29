@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { Chip, InputBase, Paper } from "@mui/material";
 import { Clear } from "@mui/icons-material";
 import DeletePropertyDialog from "./product-detail/product-edit/DeletePropertyDialog";
+import { deleteVariantByProperty } from "../../services/productAPI";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 type Props = {
     badges: string[];
@@ -36,7 +39,7 @@ export default function Property({
                 setBadges((prevBadges) => [...prevBadges, trimmedValue]);
             }
 
-            setInputValue(""); // Clear input field
+            setInputValue("");
             e.preventDefault();
         }
     };
@@ -63,22 +66,13 @@ export default function Property({
         setPropToDelete(name + ": " + badgeToDelete);
     }
     function handleDeleteVariantByProperty() {
-        fetch(
-            `http://localhost:8080/v1/products/${id}/variants?prop=${prop}&value=${selectedValue}`,
-            {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    // Authorization: `Bearer ${user?.token}`,
-                },
-            }
-        )
+        deleteVariantByProperty(id, prop, selectedValue)
             .then((res) => {
-                return res.json();
-            })
-            .then((result) => {
-                window.alert(result.message);
+                toast.success("Xóa phiên bản thành công");
                 setSelectedValue("");
+            })
+            .catch((error) => {
+                toast.error(error.response.data.message);
             });
     }
     return (
@@ -144,6 +138,7 @@ export default function Property({
             ) : (
                 <></>
             )}
+            <ToastContainer hideProgressBar autoClose={3000} />
         </Paper>
     );
 }

@@ -1,7 +1,18 @@
 import { Typography, Box, TextField, Button } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { useState } from "react";
-import { BrandRequest, BrandResponse } from "../ProductInterface";
+import {
+    BrandRequest,
+    BrandResponse,
+} from "../../../services/ProductInterface";
+import "react-toastify/dist/ReactToastify.css";
+import {
+    createBrand,
+    deleteBrand,
+    updateBrand,
+} from "../../../services/brandAPI";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 type Props = {
     isUpdate: number;
@@ -29,67 +40,43 @@ export default function UpdateOrAddBrand({
         setForm({ ...form, [e.target.name]: e.target.value });
     }
     function handleUpdateBrand() {
-        fetch(`http://localhost:8080/v1/products/brands/${form.id}/edit`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                // Authorization: `Bearer ${user?.token}`,
-            },
-            body: JSON.stringify({ ...form }),
-        })
+        updateBrand(form.id, form)
             .then((res) => {
-                if (res.status === 200) {
-                    onUpdate();
-                    setSelectedBrand(null);
-                    setIsUpdate(0);
-                }
-                return res.json();
+                toast.success("Cập nhật nhãn hiệu thành công", {
+                    position: "top-center",
+                });
+                onUpdate();
+                setSelectedBrand(null);
+                setIsUpdate(0);
             })
-            .then((result) => {
-                window.alert(result.message);
+            .catch((error) => {
+                toast.error(error.response.data.message);
             });
     }
 
     function handleCreateBrand() {
-        fetch(`http://localhost:8080/v1/products/brands/create`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                // Authorization: `Bearer ${user?.token}`,
-            },
-            body: JSON.stringify({ ...form }),
-        })
+        createBrand(form)
             .then((res) => {
-                if (res.status === 200) {
-                    onUpdate();
-                    setSelectedBrand(null);
-                    setIsUpdate(0);
-                }
-                return res.json();
+                toast.success("Tạo nhãn hiệu thành công");
+                onUpdate();
+                setSelectedBrand(null);
+                setIsUpdate(0);
             })
-            .then((result) => {
-                window.alert(result.message);
+            .catch((error) => {
+                toast.error(error.response.data.message);
             });
     }
 
     function handleDeleteBrand() {
-        fetch(`http://localhost:8080/v1/products/brands/${form.id}`, {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                // Authorization: `Bearer ${user?.token}`,
-            },
-        })
+        deleteBrand(form.id)
             .then((res) => {
-                if (res.status === 200) {
-                    onUpdate();
-                    setSelectedBrand(null);
-                    setIsUpdate(0);
-                }
-                return res.json();
+                toast.success("Xóa nhãn hiệu thành công");
+                onUpdate();
+                setSelectedBrand(null);
+                setIsUpdate(0);
             })
-            .then((result) => {
-                window.alert(result.message);
+            .catch((error) => {
+                toast.error(error.response.data.message);
             });
     }
 
@@ -248,8 +235,8 @@ export default function UpdateOrAddBrand({
                         <Close color="disabled" />
                     </Box>
                     <Typography>
-                        Thao tác này sẽ xóa nhãn hiệu bạn đã chọn. Thao tác
-                        này không thể khôi phục.
+                        Thao tác này sẽ xóa nhãn hiệu bạn đã chọn. Thao tác này
+                        không thể khôi phục.
                     </Typography>
                     <Box
                         sx={{
@@ -275,6 +262,7 @@ export default function UpdateOrAddBrand({
                     </Box>
                 </Box>
             )}
+            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }

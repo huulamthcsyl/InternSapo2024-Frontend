@@ -6,7 +6,6 @@ import {
     InputLabel,
     MenuItem,
     Select,
-    SelectChangeEvent,
     TextField,
     Typography,
 } from "@mui/material";
@@ -20,11 +19,16 @@ import {
     CategoryResponse,
     ProductRequest,
     VariantRequest,
-} from "../../ProductInterface";
+} from "../../../../services/ProductInterface";
 import Property from "../../Property";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { storage } from "../../../../../firebaseConfig";
 import NumericFormatCustom from "../../../../utils/NumericFormatCustom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { getAllCategories } from "../../../../services/categoryAPI";
+import { getProductById, updateProduct } from "../../../../services/productAPI";
+import { getAllBrands } from "../../../../services/brandAPI";
 
 type Props = {};
 
@@ -106,52 +110,37 @@ export default function ProductDetail({}: Props) {
         });
     }
     function handleUpdateProduct() {
-        fetch(`http://localhost:8080/v1/products/${id}/edit`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                // Authorization: `Bearer ${user?.token}`,
-            },
-            body: JSON.stringify({
-                ...product,
-                variants: variants,
-                imagePath: images,
-            }),
+        updateProduct(id, {
+            ...product,
+            variants: variants,
+            imagePath: images,
         })
             .then((res) => {
-                return res.json();
+                toast.success("Cập nhật sản phẩm thành công");
             })
-            .then((result) => {
-                window.alert(result.message);
+            .catch((error) => {
+                toast.error(error.response.data.message);
             });
     }
     useEffect(() => {
-        fetch(`http://localhost:8080/v1/products/${id}`)
-            .then((res) => res.json())
-            .then((result) => {
-                setProduct(result.data);
-                setSizes(result.data.size);
-                setColors(result.data.color);
-                setMaterials(result.data.material);
-                setVariants([...result.data.variants]);
-                setImages([...result.data.imagePath]);
-            });
-        fetch(
-            `http://localhost:8080/v1/products/categories?page=0&limit=10&query=`
-        )
-            .then((res) => res.json())
-            .then((result) => {
-                setCategories(result.data);
-            });
-        fetch(`http://localhost:8080/v1/products/brands?page=0&limit=10&query=`)
-            .then((res) => res.json())
-            .then((result) => {
-                setBrands(result.data);
-            });
+        getProductById(id).then((res) => {
+            setProduct(res);
+            setSizes(res.size);
+            setColors(res.color);
+            setMaterials(res.material);
+            setVariants([...res.variants]);
+            setImages([...res.imagePath]);
+        });
+        getAllCategories("").then((res) => {
+            setCategories(res);
+        });
+        getAllBrands("").then((res) => {
+            setBrands(res);
+        });
     }, []);
 
     useEffect(() => {
-        if (colors.length===0 && additionalColors.length === 1) {
+        if (colors.length === 0 && additionalColors.length === 1) {
             setVariants((prevVariants) =>
                 prevVariants.map((variant) => ({
                     ...variant,
@@ -159,7 +148,7 @@ export default function ProductDetail({}: Props) {
                 }))
             );
         }
-        if (colors.length===0 && additionalColors.length === 0) {
+        if (colors.length === 0 && additionalColors.length === 0) {
             setVariants((prevVariants) =>
                 prevVariants.map((variant) => ({
                     ...variant,
@@ -167,7 +156,7 @@ export default function ProductDetail({}: Props) {
                 }))
             );
         }
-        if (sizes.length===0 && additionalSizes.length === 1) {
+        if (sizes.length === 0 && additionalSizes.length === 1) {
             setVariants((prevVariants) =>
                 prevVariants.map((variant) => ({
                     ...variant,
@@ -175,7 +164,7 @@ export default function ProductDetail({}: Props) {
                 }))
             );
         }
-        if (sizes.length===0 && additionalSizes.length === 0) {
+        if (sizes.length === 0 && additionalSizes.length === 0) {
             setVariants((prevVariants) =>
                 prevVariants.map((variant) => ({
                     ...variant,
@@ -183,7 +172,7 @@ export default function ProductDetail({}: Props) {
                 }))
             );
         }
-        if (materials.length===0 && additionalMaterials.length === 1) {
+        if (materials.length === 0 && additionalMaterials.length === 1) {
             setVariants((prevVariants) =>
                 prevVariants.map((variant) => ({
                     ...variant,
@@ -191,7 +180,7 @@ export default function ProductDetail({}: Props) {
                 }))
             );
         }
-        if (materials.length===0 && additionalMaterials.length === 0) {
+        if (materials.length === 0 && additionalMaterials.length === 0) {
             setVariants((prevVariants) =>
                 prevVariants.map((variant) => ({
                     ...variant,
@@ -871,7 +860,7 @@ export default function ProductDetail({}: Props) {
                                                 justifyContent: "space-between",
                                             }}
                                         >
-                                            {sizes.length>0 ||
+                                            {sizes.length > 0 ||
                                             additionalSizes.length > 0 ? (
                                                 <FormControl
                                                     sx={{ width: "48.5%" }}
@@ -918,7 +907,7 @@ export default function ProductDetail({}: Props) {
                                             ) : (
                                                 <></>
                                             )}
-                                            {colors.length>0 ||
+                                            {colors.length > 0 ||
                                             additionalColors.length > 0 ? (
                                                 <FormControl
                                                     sx={{ width: "48.5%" }}
@@ -969,7 +958,7 @@ export default function ProductDetail({}: Props) {
                                             ) : (
                                                 <></>
                                             )}
-                                            {materials.length>0 ||
+                                            {materials.length > 0 ||
                                             additionalMaterials.length > 0 ? (
                                                 <FormControl
                                                     sx={{ width: "48.5%" }}
@@ -1075,10 +1064,14 @@ export default function ProductDetail({}: Props) {
                                                 }
                                                 slotProps={{
                                                     input: {
-                                                      inputComponent: NumericFormatCustom as any,
+                                                        inputComponent:
+                                                            NumericFormatCustom as any,
                                                     },
-                                                  }}
-                                                sx={{ width: "50%",textAlign:'right' }}
+                                                }}
+                                                sx={{
+                                                    width: "50%",
+                                                    textAlign: "right",
+                                                }}
                                             />
                                             <TextField
                                                 label="Giá nhập"
@@ -1093,11 +1086,11 @@ export default function ProductDetail({}: Props) {
                                                 }
                                                 slotProps={{
                                                     input: {
-                                                      inputComponent: NumericFormatCustom as any,
+                                                        inputComponent:
+                                                            NumericFormatCustom as any,
                                                     },
-                                                  }}
+                                                }}
                                                 sx={{ width: "50%" }}
-                                                
                                             />
                                         </Box>
                                     </Box>
@@ -1109,6 +1102,7 @@ export default function ProductDetail({}: Props) {
                     </Box>
                 </Box>
             </MainBox>
+            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }
