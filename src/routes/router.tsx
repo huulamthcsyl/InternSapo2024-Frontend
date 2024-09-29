@@ -13,7 +13,6 @@ import UpdateUser from "../pages/admin/UpdateUser";
 import ChangePassword from "../pages/admin/ChangePassword";
 import UserProfile from "../pages/admin/UserProfile";
 import CustomerPage from "../pages/customer/CustomerPage";
-import NewCustomerPage from "../pages/customer/NewCustomerPage";
 import CustomerDetailPage from "../pages/customer/CustomerDetailPage";
 import OverviewPage from "../pages/overview/OverviewPage";
 import ProductPage from "../pages/product/ProductPage";
