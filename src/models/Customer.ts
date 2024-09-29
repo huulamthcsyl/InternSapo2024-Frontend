@@ -33,6 +33,6 @@ export default class Customer {
     }
 
     static fromJson(json: any): Customer {
-        return new Customer(json.id, json.code, json.name, json.email, json.phoneNumber, json.address, json.gender, new Date(json.birthday), json.totalExpense, json.numberOfOrder, json.orders, json.createdOn, json.updatedOn, json.note);
+        return new Customer(json.id, json.code, json.name, json.email, json.phoneNumber, json.address, json.gender, new Date(json.birthday), json.totalExpense, json.numberOfOrder, json.orders, new Date(json.createdOn), new Date(json.updatedOn), json.note);
     }
 }
