@@ -11,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 type Props = {}
 
 export default function HomeDrawer({ }: Props) {
-
   const [openOrder, setOpenOrder] = useState(false);
   const [openProduct, setOpenProduct] = useState(false);
 
@@ -37,7 +36,7 @@ export default function HomeDrawer({ }: Props) {
       <Toolbar />
       <Divider />
       <List sx={{ p: 0 }}>
-        <DrawerItem name="Tổng quan" icon={<HomeIcon />} link="/" />
+        <DrawerItem name="Tổng quan" icon={<HomeIcon />} link="/overview" />
         <ListItemButton onClick={() => setOpenOrder(!openOrder)}>
           <ListItemIcon sx={{ color: "#fff" }}>
             <ReceiptLongIcon />
@@ -47,13 +46,13 @@ export default function HomeDrawer({ }: Props) {
         </ListItemButton>
         <Collapse in={openOrder} timeout="auto" unmountOnExit>
           <List disablePadding>
-            <ListItemButton sx={{ pl: 4, color: '#fff' }} onClick={() => navigate('/order')}>
+            <ListItemButton sx={{ pl: 4, color: '#fff' }} onClick={() => navigate('/order/create')}>
               <ListItemText primary="Tạo đơn hàng" />
             </ListItemButton>
           </List>
           <List disablePadding>
             <ListItemButton sx={{ pl: 4, color: '#fff' }}>
-              <ListItemText primary="Danh sách đơn hàng" />
+              <ListItemText primary="Danh sách đơn hàng" onClick={() => navigate('/order')}/>
             </ListItemButton>
           </List>
         </Collapse>
@@ -76,7 +75,7 @@ export default function HomeDrawer({ }: Props) {
             </ListItemButton>
           </List>
         </Collapse>
-        <DrawerItem name="Khách hàng" icon={<PersonIcon style={{ color: '#fff' }} />} link="/"/>
+        <DrawerItem name="Khách hàng" icon={<PersonIcon style={{ color: '#fff' }} />} link="/customers"/>
       </List>
     </Drawer>
   )

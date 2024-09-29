@@ -1,7 +1,6 @@
 import { ListItem, ListItemButton, ListItemText, ListItemIcon } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 
-
 type Props = {
   name: string,
   link: string,

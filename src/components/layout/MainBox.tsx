@@ -8,7 +8,7 @@ type Props = {
 
 export default function MainBox({ children }: Props) {
   return (
-    <Box component="main" height='100vh' display='flex' flexDirection='column'>
+    <Box component="main" sx={{ backgroundColor: '#F0F1F1', height: '100vh' }}>
       <Toolbar />
       {children}
     </Box>
