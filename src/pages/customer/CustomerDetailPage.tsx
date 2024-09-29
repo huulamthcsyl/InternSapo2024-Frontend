@@ -34,30 +34,18 @@ import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import {Alert} from "@mui/lab";
 import MainAppBar from "../../components/layout/MainAppBar.tsx";
+import {deleteCustomer, fetchCustomers, getCustomerById, updateCustomer} from "../../services/customerAPI.ts";
+import Customer from "../../models/Customer.ts";
+import {formatDate} from "../../utils/formatDate.ts";
 
-// type Customer = {
-//     id: number;
-//     code: string;
-//     name: string;
-//     phoneNumber: string;
-//     email: string;
-//     address: string;
-//     birthday: string;
-//     gender: boolean;
-//     createdOn: string;
-//     updatedOn: string;
-//     totalExpense: number;
-//     numberOfOrder: number;
-//     note: string;
-// };
 
 
 export default function CustomerDetailPage({}: Props) {
     const navigate = useNavigate();
     const { customerId } = useParams<{ customerId: string }>();
-    const [customer, setCustomer] = useState();
+    const [customer, setCustomer] = useState<Customer | null>(null);
     const [customer1, setCustomer1] = useState();
-    const [loading, setLoading] = useState<boolean>(true);
+
     const [errorMessage, setErrorMessage] = useState(""); // State để lưu thông báo lỗi
 
     const [pageNum, setPageNum] = useState(0);
@@ -66,61 +54,27 @@ export default function CustomerDetailPage({}: Props) {
     const [successMessage, setSuccessMessage] = useState("");  // Thông báo thành công
     const [openDeleteModal, setOpenDeleteModal] = useState(false); // Modal xác nhận xóa
     // Khai báo ref cho giá trị tạm thời
-    const tempCustomerRef = useRef({ ...customer });
+    const tempCustomerRef = useRef<Customer | null >(null);
 
 
 
-    function formatDate(dateString) {
-        // Tạo một đối tượng Date từ chuỗi ngày tháng
-        const date = new Date(dateString);
 
-        // Lấy ngày, tháng và năm
-        const day = String(date.getDate()).padStart(2, '0'); // Ngày
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng (tháng bắt đầu từ 0)
-        const year = date.getFullYear(); // Năm
 
-        // Trả về định dạng "dd-mm-yyyy"
-        return `${day}-${month}-${year}`;
+    const fetchCustomerById = async () => {
+        try{
+            const customerById = await getCustomerById(customerId);
+            setCustomer(customerById);
+            tempCustomerRef.current = customerById;
+            setErrorMessage("");
+        }catch (error) {
+            setCustomer(null);
+            setErrorMessage(error.message);
+        }
     }
-
-    const fetchCustomerById = (customerId) => {
-        fetch(`http://localhost:8000/customers/${customerId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'  // Đặt loại nội dung nếu cần thiết
-            }
-        })
-            .then(response => {
-                if (response.status === 404) {
-                    throw new Error(`Không tìm thấy khách hàng với ID: ${customerId}`);
-                } else if (!response.ok) {
-                    throw new Error('Error: ' + response.statusText);
-                }
-
-                return response.json();  // Chuyển đổi phản hồi thành JSON
-            })
-            .then(data => {
-                setCustomer(data);  // Cập nhật thông tin khách hàng
-                tempCustomerRef.current = { ...data };
-                setErrorMessage("");  // Xóa thông báo lỗi nếu có dữ liệu thành công
-            })
-            .catch(error => {
-                // if (error.message.includes('Không tìm thấy khách hàng')) {
-                //     setCustomer(null);  // Đặt giá trị khách hàng thành null nếu không tìm thấy
-                //     setErrorMessage(error.message);  // Đặt thông báo lỗi
-                // } else {
-                //     console.error('Lỗi khi lấy thông tin khách hàng:', error);
-                // }
-
-                setCustomer(null);  // Đặt giá trị khách hàng thành null nếu không tìm thấy
-                setErrorMessage(error.message);  // Đặt thông báo lỗi
-            });
-    };
-
 
     useEffect(() => {
         if (customerId) {
-            fetchCustomerById(customerId);
+            fetchCustomerById();
 
         }
     }, [customerId,customer1]);
@@ -135,39 +89,20 @@ export default function CustomerDetailPage({}: Props) {
         setValue(newValue);
     };
 
-    const updateCustomer = (customerId) => {
-        fetch(`http://localhost:8000/customers/update/${customerId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(customer), // Gửi ghi chú trong body
-        })
-            .then(response => {
-                if (!response.ok) {
-                    if (response.status === 409) {
-                        // Trả về thông báo riêng cho lỗi 409 Conflict
-                        throw new Error('Số điện thoại đã tồn tại');
-                    } else {
-                        // Trả về các lỗi khác dựa trên response.statusText
-                        throw new Error(response.statusText || 'Có lỗi xảy ra khi cập nhật khách hàng');
-                    }
-                }
-                return response.json(); // Chuyển đổi phản hồi thành JSON nếu thành công
-            })
-            .then(data => {
-                setCustomer1(data);
 
-                setSuccessMessage('Khách hàng đã được cập nhật thành công!');  // Set thông báo thành công
-                setErrorMessage("");  // Xóa thông báo lỗi
-                setOpenModal(false);  // Đóng modal
-            })
-            .catch(error => {
-                setErrorMessage( error.message);  // Set thông báo lỗi
-                setSuccessMessage("");  // Xóa thông báo thành công
-            });
+    const handleUpdateCustomer = async () => {
+        try {
+            const updatedCustomer = await updateCustomer(customerId, customer); // Gọi API để cập nhật
+            setCustomer1(updatedCustomer);
+
+            setSuccessMessage('Khách hàng đã được cập nhật thành công!'); // Set thông báo thành công
+            setErrorMessage(""); // Xóa thông báo lỗi
+            setOpenModal(false); // Đóng modal
+        } catch (error) {
+            setErrorMessage(error.message); // Set thông báo lỗi
+            setSuccessMessage(""); // Xóa thông báo thành công
+        }
     };
-
 
     const handleChangePage = (event, newPage) => {
         setPageNum(newPage);
@@ -196,30 +131,20 @@ export default function CustomerDetailPage({}: Props) {
         setOpenModal(true);  // Mở modal
     };
 
-    const handleDeleteCustomer = (customerId) => {
-        fetch(`http://localhost:8000/customers/delete/${customerId}`, {
-            method: 'DELETE',
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error: ' + response.statusText);
-                }
-                return response.json();
-            })
-            .then(data => {
-                setOpenDeleteModal(false); // Đóng modal sau khi xóa
 
-                console.log('Khách hàng đã được xóa:', data);
-                // Thực hiện cập nhật giao diện hoặc thông báo thành công
-            })
-            .catch(error => {
-                setOpenDeleteModal(false);
-                console.error('Lỗi khi xóa khách hàng:', error);
-                // Xử lý lỗi nếu xảy ra
-            });
 
+    const handleDeleteCustomer = async (customerId) => {
+        try {
+            const data = await deleteCustomer(customerId);
+            setOpenDeleteModal(false); // Đóng modal sau khi xóa
+            console.log('Khách hàng đã được xóa:', data);
+            // Thực hiện cập nhật giao diện hoặc thông báo thành công
+        } catch (error) {
+            setOpenDeleteModal(false);
+            console.error('Lỗi khi xóa khách hàng:', error);
+            // Xử lý lỗi nếu xảy ra
+        }
     };
-
     useEffect(() => {
         const timeout = setTimeout(() => {
 
@@ -281,19 +206,7 @@ export default function CustomerDetailPage({}: Props) {
                             {successMessage}
                         </Alert>
                     )}
-                    {/*<Snackbar*/}
-                    {/*    open={!!successMessage}  // Hiển thị nếu có thông báo thành công*/}
-                    {/*    autoHideDuration={6000}  // 6 giây sau tự ẩn*/}
-                    {/*    onClose={() => setSuccessMessage("")}  // Đóng Snackbar*/}
-                    {/*    message={successMessage}*/}
-                    {/*/>*/}
 
-                    {/*<Snackbar*/}
-                    {/*    open={!!errorMessage}  // Hiển thị nếu có lỗi*/}
-                    {/*    autoHideDuration={6000}*/}
-                    {/*    onClose={() => setErrorMessage("")}*/}
-                    {/*    message={errorMessage}*/}
-                    {/*/>*/}
                     <Box sx={{ padding: '16px 24px 16px 24px' }}>
                         <Typography variant="h6" sx={{
                             color: '#000',
@@ -337,7 +250,7 @@ export default function CustomerDetailPage({}: Props) {
                                         {/* Cột đầu tiên */}
                                         <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }} >
                                             <Typography variant="subtitle1" sx={{ flex: 1 }}>Mã khách hàng</Typography>
-                                            <Typography variant="body1" sx={{ flex: 1 }}>:{tempCustomerRef.current?.id}</Typography> {/* Giá trị trường */}
+                                            <Typography variant="body1" sx={{ flex: 1 }}>:{tempCustomerRef.current?.code}</Typography> {/* Giá trị trường */}
                                         </Grid>
 
                                         <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
@@ -352,7 +265,7 @@ export default function CustomerDetailPage({}: Props) {
 
                                         <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
                                             <Typography variant="subtitle1" sx={{ flex: 1 }}>Ngày sinh</Typography>
-                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current.birthday) : 'N/A'}</Typography> {/* Giá trị trường */}
+                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current?.birthday) : 'N/A'}</Typography> {/* Giá trị trường */}
                                         </Grid>
 
                                         {/* Cột thứ hai */}
@@ -363,7 +276,7 @@ export default function CustomerDetailPage({}: Props) {
 
                                         <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
                                             <Typography variant="subtitle1" sx={{ flex: 1 }}>Ngày tạo</Typography>
-                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current.createdOn) : 'N/A'}</Typography> {/* Giá trị trường */}
+                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current?.createdOn) : 'N/A'}</Typography> {/* Giá trị trường */}
                                         </Grid>
 
                                         <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
@@ -373,7 +286,7 @@ export default function CustomerDetailPage({}: Props) {
 
                                         <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
                                             <Typography variant="subtitle1" sx={{ flex: 1 }}>Ngày cập nhật cuối cùng</Typography>
-                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current.updatedOn) : 'N/A'}</Typography> {/* Giá trị trường */}
+                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current?.updatedOn) : 'N/A'}</Typography> {/* Giá trị trường */}
                                         </Grid>
 
                                     </Grid>
@@ -481,17 +394,17 @@ export default function CustomerDetailPage({}: Props) {
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                                {Array.isArray(customer?.orders) && customer.orders.length > 0 ? (
-                                                    customer.orders.map((order, index) => (
+                                                {Array.isArray(customer?.orders) && customer?.orders.length > 0 ? (
+                                                    customer?.orders.map((order, index) => (
                                                         <TableRow
-                                                            key={order.id}
+                                                            key={order.code}
                                                             sx={{
                                                                 '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
                                                                 '&:hover': { backgroundColor: '#e0f7fa' }, // Hover effect
                                                             }}
                                                         >
-                                                            <TableCell>{order.id}</TableCell>
-                                                            <TableCell>{order.createdOn}</TableCell>
+                                                            <TableCell>{order.code}</TableCell>
+                                                            <TableCell>{formatDate(order.createdOn)}</TableCell>
                                                             <TableCell>{order.totalQuantity}</TableCell>
                                                             <TableCell>{order.totalPayment}</TableCell>
                                                             <TableCell>
@@ -522,7 +435,7 @@ export default function CustomerDetailPage({}: Props) {
 
                                         <TablePagination
                                             component="div"
-                                            count={customer?.orders.length} // Tổng số lượng đơn hàng
+                                            count={customer?.orders.length || 0} // Tổng số lượng đơn hàng
                                             page={pageNum}
                                             onPageChange={handleChangePage}
                                             rowsPerPage={pageSize}
@@ -549,7 +462,7 @@ export default function CustomerDetailPage({}: Props) {
                                         <Button
                                             variant="contained"
                                             color="primary"
-                                            onClick={() => updateCustomer(customer?.id)}
+                                            onClick={() => handleUpdateCustomer()}
                                         >
                                             Lưu
                                         </Button>
@@ -560,6 +473,8 @@ export default function CustomerDetailPage({}: Props) {
                         </Box>
 
                     </Box>
+
+                    {/*Cập nhật customer*/}
                     <Dialog sx={{padding: '10px'}} open={openModal} onClose={handleCloseModal}>
                         <DialogTitle sx={{fontWeight: '700'}}>Cập nhật thông tin khách hàng </DialogTitle>
                         <Divider/>
@@ -676,7 +591,7 @@ export default function CustomerDetailPage({}: Props) {
                             <Button
                                 onClick={() => {
 
-                                    updateCustomer(customer.id); // Gọi hàm cập nhật
+                                    handleUpdateCustomer(); // Gọi hàm cập nhật
                                     handleCloseModal();
                                     // setOpenModal(false);
                                 }}
@@ -697,6 +612,8 @@ export default function CustomerDetailPage({}: Props) {
 
 
                     </Dialog>
+
+                    {/*xoá customer*/}
                     <Dialog
                         open={openDeleteModal}
                         onClose={() => setOpenDeleteModal(false)}
@@ -765,7 +682,7 @@ export default function CustomerDetailPage({}: Props) {
                             </Button>
                             <Button
                                 onClick={() => {
-                                    handleDeleteCustomer(customer.id);  // Hàm xử lý xóa khách hàng
+                                    handleDeleteCustomer(customer?.id);  // Hàm xử lý xóa khách hàng
                                     navigate('/customers');
                                 }}
                                 color="error"
