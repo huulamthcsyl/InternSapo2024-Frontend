@@ -11,7 +11,7 @@ import {
     getListOfProducts,
     getNumberOfProducts,
 } from "../../services/productAPI";
-import { ProductResponse } from "../../services/ProductInterface";
+import { ProductResponse } from "../../models/ProductInterface";
 
 type Props = {};
 

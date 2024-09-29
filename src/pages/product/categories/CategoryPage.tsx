@@ -5,7 +5,7 @@ import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
 import CategoryPageAppBar from "./CategoryPageAppBar";
 import { useEffect, useState } from "react";
 import UpdateOrAdd from "./UpdateOrAdd";
-import { CategoryResponse } from "../../../services/ProductInterface";
+import { CategoryResponse } from "../../../models/ProductInterface";
 import SearchField from "../SearchField";
 import {
     getListOfCategories,

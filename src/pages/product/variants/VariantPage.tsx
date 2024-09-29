@@ -10,7 +10,7 @@ import {
     getListOfVariants,
     getNumberOfProducts,
 } from "../../../services/productAPI";
-import { VariantResponse } from "../../../services/ProductInterface";
+import { VariantResponse } from "../../../models/ProductInterface";
 
 type Props = {};
 

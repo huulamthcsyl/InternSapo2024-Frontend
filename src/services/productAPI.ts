@@ -5,7 +5,7 @@ import {
     ProductResponse,
     VariantRequest,
     VariantResponse,
-} from "./ProductInterface";
+} from "../models/ProductInterface";
 
 const BASE_URL = "http://localhost:8080/v1/products";
 

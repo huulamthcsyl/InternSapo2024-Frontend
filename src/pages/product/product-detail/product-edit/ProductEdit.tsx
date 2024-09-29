@@ -19,7 +19,7 @@ import {
     CategoryResponse,
     ProductRequest,
     VariantRequest,
-} from "../../../../services/ProductInterface";
+} from "../../../../models/ProductInterface";
 import Property from "../../Property";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { storage } from "../../../../../firebaseConfig";
