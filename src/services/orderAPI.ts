@@ -46,5 +46,22 @@ const getOrderDetail = async (orderCode: string | undefined): Promise<any> => {
 const createOrder = async (order: any): Promise<any> => {
     return await axios.post(`${BASE_URL}/create`, order);
 }
+const getTodayOrders = async (pageNum, pageSize) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/today`, {
+            params: {
+                pageNum: pageNum,
+                pageSize: pageSize
+            },
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        return response.data; // Trả về dữ liệu từ API
+    } catch (error) {
+        console.error('Lỗi khi gọi API:', error);
+        throw error;
+    }
+};
 
-export { createOrder, getAllOrders, getNumberOfOrders, getOrderDetail };
+export { createOrder, getAllOrders, getNumberOfOrders, getOrderDetail, getTodayOrders };
