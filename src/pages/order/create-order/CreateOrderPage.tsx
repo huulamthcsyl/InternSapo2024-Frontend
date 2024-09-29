@@ -1,7 +1,7 @@
 import { Autocomplete, Box, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, TableContainer, Button, Dialog, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio } from "@mui/material"
 import MainBox from "../../../components/layout/MainBox"
 import CreateOrderAppBar from "./CreateOrderAppBar"
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createCustomer, getCustomersByKeyword } from "../../../services/customerAPI"
 import Customer from "../../../models/Customer"
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -49,7 +49,11 @@ function VariantTableRow({ index, orderDetailList, setOrderDetailList }: Variant
         type="number"
         value={orderDetail.quantity}
         onChange={(event) => {
-          const newQuantity = Math.min(Math.max(Number(event.target.value), 0), orderDetail.variantQuantity);
+          if(Number(event.target.value) > orderDetail.variantQuantity) {
+            toast.error("Số lượng sản phẩm đã vượt quá số lượng tồn kho");
+            return;
+          }
+          const newQuantity = Math.min(Math.max(Number(event.target.value), 1), orderDetail.variantQuantity);
           setOrderDetailList(orderDetailList.map(item => item.sku === orderDetail.sku ? { ...item, quantity: newQuantity } : item));
           return;
         }}
@@ -184,7 +188,7 @@ export default function CreateOrderPage({ }: Props) {
   const [cashReceived, setCashReceived] = useState<number>(0);
   const [note, setNote] = useState<string>('');
 
-  const newOrderReceipt = useRef<any>({
+  const [newOrderReceipt, setNewOrderReceipt] = useState<any>({
     createdOn: "",
     creatorId: 0,
     code: "",
@@ -254,11 +258,13 @@ export default function CreateOrderPage({ }: Props) {
         }
       }),
     }
+
     createOrder(newOrder).then((res) => {
       toast.success("Tạo đơn hàng thành công");
-      console.log(res.data);
-      newOrderReceipt.current = res.data;
-      handlePrint();
+      setNewOrderReceipt(res.data.data);
+      setTimeout(() => {
+        handlePrint();
+      }, 1000);
       // navigate('/order')
     }).catch((error) => {
       toast.error(error.response.data);
@@ -268,7 +274,7 @@ export default function CreateOrderPage({ }: Props) {
   return (
     <MainBox>
       <Box display="none">
-        <ReceiptToPrint ref={receiptRef} order={newOrderReceipt.current}/>
+        <ReceiptToPrint ref={receiptRef} order={newOrderReceipt}/>
       </Box>
       <CreateOrderAppBar handleCreateOrder={handleCreateOrder}/>
       <Box sx={{ backgroundColor: '#F0F1F1', padding: '25px 30px' }} flex={1} display='flex' flexDirection='column'>
@@ -340,7 +346,10 @@ export default function CreateOrderPage({ }: Props) {
             renderInput={(params) => <TextField {...params} placeholder="Tìm kiếm sản phẩm theo SKU, tên" />}
             sx={{ width: '100%', mb: 2 }}
             onChange={(_event: any, value: Variant | null) => {
-              console.log("SELECTED")
+              if(value?.quantity === 0) {
+                toast.error("Sản phẩm đã hết hàng");
+                return;
+              }
               if (value && !orderDetailList.find((item: OrderDetail) => item.sku === value.sku)) {
                 setOrderDetailList([...orderDetailList, OrderDetail.fromVariant(value)]);
               }
@@ -422,7 +431,7 @@ export default function CreateOrderPage({ }: Props) {
           </Box>
           <Box mt={2} display="flex" alignItems="center">
             <Typography variant="body1" sx={{ color: '#000' }} marginRight={2}>Phương thức thanh toán</Typography>
-            <Button variant="outlined">Tiền mặt</Button>
+            <Button variant="outlined">COD</Button>
           </Box>
           <Box width='40%' display="flex" alignItems="center">
             <Typography variant="body1" sx={{ color: '#000' }} mt={2} marginRight={2}>Tiền nhận của khách</Typography>
