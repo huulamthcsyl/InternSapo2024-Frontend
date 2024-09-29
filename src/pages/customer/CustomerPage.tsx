@@ -17,12 +17,14 @@ import React, {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import Toolbar from "@mui/material/Toolbar";
 import {Alert} from "@mui/lab";
+import Customer from "../../models/Customer.ts";
+import {fetchCustomers, submitNewCustomer} from "../../services/customerAPI.ts";
 
 type Props = {}
 
 export default function CustomerPage({}: Props) {
     const [searchTerm, setSearchTerm] = useState('');
-    const [customers, setCustomers] = useState([]);
+    const [customers, setCustomers] = useState<Customer[]>([]);
     const [keyword, setKeyword] = useState("");
     const [pageNum, setPageNum] = useState(0);
     const [pageSize, setPageSize] = useState(5); // Số khách hàng mỗi trang
@@ -38,7 +40,7 @@ export default function CustomerPage({}: Props) {
 
 
     const [openModal, setOpenModal] = useState(false);  // State để quản lý việc mở/đóng modal
-    const [newCustomer, setNewCustomer] = useState({
+    const [newCustomer, setNewCustomer] = useState<>({
         name: '',
         phoneNumber: '',
         totalExpense: 0,
@@ -62,64 +64,45 @@ export default function CustomerPage({}: Props) {
     }, [ errorMessage, successMessage]);
 
 
-    const fetchCustomers = () => {
-        fetch(`http://localhost:8000/customers?pageNum=${pageNum}&pageSize=${pageSize}&keyword=${keyword || ''}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'  // Đặt loại nội dung nếu cần thiết
+   
+    const loadCustomers = async () => {
+        try {
+            const fetchedCustomers = await fetchCustomers(pageNum, pageSize, keyword);
+            setCustomers(fetchedCustomers.content);
+            setTotalPages(fetchedCustomers.totalPages);// Cập nhật số trang
+            setTotalCustomers(fetchedCustomers.totalElements);
+            setErrorMessage("");
+        } catch (error) {
+            if (error.message.includes('Không tồn tại khách hàng')) {
+                setCustomers([]);
+                setTotalCustomers(0);
+                setErrorMessage(error.message);
+            } else {
+                console.error('Lỗi khi lấy danh sách khách hàng:', error);
             }
-        })
-            .then(response => {
-                if (response.status === 404) {
-                    throw new Error('Không tồn tại khách hàng.');
-                } else if (!response.ok) {
-                    throw new Error('Error: ' + response.statusText);
-                }
-
-                return response.json();  // Chuyển đổi phản hồi thành JSON
-            })
-            .then(data => {
-                setCustomers(data.content);  // Cập nhật danh sách khách hàng
-                setTotalPages(data.totalPages);// Cập nhật số trang
-                setTotalCustomers(data.totalElements);
-                setErrorMessage("");
-            })
-            .catch(error => {
-                if (error.message.includes('Không tồn tại khách hàng')) {
-                    setCustomers([]); // Đặt danh sách khách hàng thành rỗng
-                    setTotalCustomers(0); // Đặt tổng số khách hàng thành 0
-                    setErrorMessage(error.message); // Đặt thông báo lỗi
-                } else {
-                    console.error('Lỗi khi lấy danh sách khách hàng:', error);
-                }
-            });
+        }
     };
-
-
     useEffect(() => {
-        fetchCustomers();
-    }, [pageNum,pageSize, keyword]);
 
+
+        loadCustomers();
+    }, [pageNum, pageSize, keyword]);
     const handleChangePage = (event, newPage) => {
         setPageNum(newPage);
     };
-    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChangeRowsPerPage = (event) => {
         setPageSize(parseInt(event.target.value, 10)); // Cập nhật số hàng trên mỗi trang
         setPageNum(0); // Reset về trang đầu khi thay đổi số hàng
     };
 
     // Hàm xử lý khi người dùng nhấn phím
-    const handleKeyPress = (event: React.KeyboardEvent) => {
+    const handleKeyPress = (event) => {
         if (event.key === 'Enter') {
             setKeyword(searchTerm); // Cập nhật từ khóa và gọi API tìm kiếm
             setPageNum(0); // Reset lại trang đầu tiên
         }
     };
 
-    // Xử lý khi bấm nút Thêm khách hàng
-    // const handleAddCustomerClick = () => {
-    //     navigate('/customers/create');  // Điều hướng đến trang tạo khách hàng mới
-    // };
 
 
     // Xử lý mở modal
@@ -144,72 +127,53 @@ export default function CustomerPage({}: Props) {
         });
     };
 
+    const handleSubmitNewCustomer = async () => {
+        try {
+            console.log("Thông tin khách hàng mới:", newCustomer);
 
-    // Xử lý khi submit form
-    const handleSubmitNewCustomer = () => {
-        console.log("Thông tin khách hàng mới:", newCustomer);
-        // Gọi API để tạo khách hàng mới
-        fetch("http://localhost:8000/customers/create", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(newCustomer)  // Chuyển đối tượng newCustomer thành chuỗi JSON
-        })
-            .then(response => {
-                if (!(response.status === 201)) {
-                    if (response.status === 409) {
-                        throw new Error("Số điện thoại đã tồn tại.");
-                    }
-                    throw new Error("Có lỗi xảy ra khi tạo khách hàng mới.");
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log("Tạo khách hàng thành công:", data);
-                setSuccessMessage("Tạo khách hàng thành công!"); // Thiết lập thông báo thành công
-                setNewCustomer({
-                    name: '',
-                    phoneNumber: '',
-                    totalExpense: 0,
-                    numberOfOrder: 0,
-                    gender: false,
-                    birthday: null,
-                    email: '',
-                    address: ''
-                });
-                setOpenModal(false);  // Đóng modal sau khi tạo thành công
-                fetchCustomers(); // Gọi lại API để cập nhật danh sách khách hàng
-                // Bạn có thể gọi lại API lấy danh sách khách hàng để cập nhật danh sách
-            })
-            .catch(error => {
+            // Gọi API để tạo khách hàng mới
+            const createdCustomer = await submitNewCustomer(newCustomer);
+            console.log("Tạo khách hàng thành công:", createdCustomer);
 
-                console.error("Lỗi khi tạo khách hàng:", error.message);
-                setErrorMessage(error.message); // Cập nhật thông báo lỗi
-                // Xử lý hiển thị thông báo lỗi cho người dùng nếu cần thiết
-                setNewCustomer({
-                    name: '',
-                    phoneNumber: '',
-                    totalExpense: 0,
-                    numberOfOrder: 0,
-                    gender: false,
-                    birthday: null,
-                    email: '',
-                    address: ''
-                });
+            setSuccessMessage("Tạo khách hàng thành công!"); // Thiết lập thông báo thành công
+            setNewCustomer({
+                name: '',
+                phoneNumber: '',
+                totalExpense: 0,
+                numberOfOrder: 0,
+                gender: false,
+                birthday: null,
+                email: '',
+                address: ''
             });
+            setOpenModal(false);  // Đóng modal sau khi tạo thành công
+            loadCustomers(); // Gọi lại API để cập nhật danh sách khách hàng
+        } catch (error: any) {
+            console.error("Lỗi khi tạo khách hàng:", error.message);
+            setErrorMessage(error.message); // Cập nhật thông báo lỗi
+
+            setNewCustomer({
+                name: '',
+                phoneNumber: '',
+                totalExpense: 0,
+                numberOfOrder: 0,
+                gender: false,
+                birthday: null,
+                email: '',
+                address: ''
+            });
+        }
         setOpenModal(false);  // Đóng modal sau khi submit
     };
-
     // Cập nhật state khi nhập dữ liệu vào form
-    const handleChangeNewCustomer = (e: any) => {
+    const handleChangeNewCustomer = (e) => {
         setNewCustomer({
             ...newCustomer,
             [e.target.name]: e.target.value
         });
     };
 
-    const handleDetailsClick = (customerId : string) => {
+    const handleDetailsClick = (customerId) => {
         navigate(`/customers/${customerId}`); // Chuyển hướng tới trang chi tiết của khách hàng
     };
 
@@ -236,6 +200,8 @@ export default function CustomerPage({}: Props) {
                         fontStyle: 'normal', // Kiểu chữ
                         fontWeight: 400, }} onClick={handleAddCustomerClick}>+ Thêm khách hàng</Button>
                 </Box>
+
+                {/*Hiển thị thông báo alert*/}
                 <Box sx={{ padding: '16px 14px 16px 14px' }}>
                     {/* Hiển thị thông báo lỗi nếu có */}
                     {errorMessage && (
@@ -249,22 +215,10 @@ export default function CustomerPage({}: Props) {
                             {successMessage}
                         </Alert>
                     )}
-                    {/*<Snackbar*/}
-                    {/*    open={!!successMessage}  // Hiển thị nếu có thông báo thành công*/}
-                    {/*    autoHideDuration={6000}  // 6 giây sau tự ẩn*/}
-                    {/*    onClose={() => setSuccessMessage("")}  // Đóng Snackbar*/}
-                    {/*    message={successMessage}*/}
-                    {/*/>*/}
-
-                    {/*<Snackbar*/}
-                    {/*    open={!!errorMessage}  // Hiển thị nếu có lỗi*/}
-                    {/*    autoHideDuration={6000}*/}
-                    {/*    onClose={() => setErrorMessage("")}*/}
-                    {/*    message={errorMessage}*/}
-                    {/*/>*/}
 
                 </Box>
 
+                {/*thanh tìm kiếm và bảng listCustomers*/}
                 <Box sx={{background: '#FFFFFF', margin: '10px 20px'}}>
                     <Box sx={{   }}>
                         <TextField
@@ -295,7 +249,7 @@ export default function CustomerPage({}: Props) {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {customers.map((customer: any) => (
+                                {customers.map((customer) => (
                                     <TableRow
                                         key={customer.id}
                                         sx={{
