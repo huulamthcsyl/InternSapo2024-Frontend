@@ -1,5 +1,4 @@
 import {Box, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, Typography} from "@mui/material"
-import HomePageAppBar from "./HomePageAppBar"
 import MainBox from "../../components/layout/MainBox"
 import MainAppBar from "../../components/layout/MainAppBar.tsx";
 import React, {useEffect, useState} from "react";
@@ -8,19 +7,19 @@ import {getTodayOrders} from "../../services/orderAPI.ts";
 type Props = {}
 
 export default function OverviewPage({}: Props) {
-    const [pageNum, setPageNum] = useState(0);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageNum, setPageNum] = useState<number>(0);
+    const [pageSize, setPageSize] = useState<number>(5);
     const [orders, setOrders] = useState([]);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalOrders, setTotalOrders] = useState(0);
-    const [totalRevenue, setTotalRevenue] = useState(0);
+
+    const [totalOrders, setTotalOrders] = useState<number>(0);
+    const [totalRevenue, setTotalRevenue] = useState<number>(0);
     
 
     const fetchTodayOrders = async () => {
         try {
             const data = await getTodayOrders(pageNum, pageSize); // Gọi API
             setOrders(data.orders.content);
-            setTotalPages(data.orders.totalPages);
+            // setTotalPages(data.orders.totalPages);
             setTotalOrders(data.orders.totalElements);
             setTotalRevenue(data.totalRevenue);
         } catch (error) {
@@ -134,7 +133,7 @@ export default function OverviewPage({}: Props) {
                                 </TableHead>
                                 <TableBody>
                                     {totalOrders > 0 ? (
-                                        orders.map((order, index) => (
+                                        orders.map((order) => (
                                             <TableRow
                                                 key={order.id}
                                                 sx={{
@@ -181,6 +180,8 @@ export default function OverviewPage({}: Props) {
                                 rowsPerPage={pageSize}
                                 onRowsPerPageChange={handleChangeRowsPerPage}
                                 rowsPerPageOptions={[5, 10]} // Các tùy chọn số hàng
+                                labelRowsPerPage="Số hàng trên mỗi trang"
+                                labelDisplayedRows={({ from, to, count }) => `${from}-${to} trong tổng số ${count}`}
                                 sx={{ mt: 2 }} // Margin top
                             />
                         </Box>
