@@ -265,7 +265,7 @@ export default function CustomerDetailPage({}: Props) {
 
                                         <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
                                             <Typography variant="subtitle1" sx={{ flex: 1 }}>Ngày sinh</Typography>
-                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current?.birthday) : 'N/A'}</Typography> {/* Giá trị trường */}
+                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current?.birthday.toISOString()) : 'N/A'}</Typography> {/* Giá trị trường */}
                                         </Grid>
 
                                         {/* Cột thứ hai */}
@@ -276,7 +276,7 @@ export default function CustomerDetailPage({}: Props) {
 
                                         <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
                                             <Typography variant="subtitle1" sx={{ flex: 1 }}>Ngày tạo</Typography>
-                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current?.createdOn) : 'N/A'}</Typography> {/* Giá trị trường */}
+                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current?.createdOn.toISOString()) : 'N/A'}</Typography> {/* Giá trị trường */}
                                         </Grid>
 
                                         <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
@@ -286,7 +286,7 @@ export default function CustomerDetailPage({}: Props) {
 
                                         <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px' }}>
                                             <Typography variant="subtitle1" sx={{ flex: 1 }}>Ngày cập nhật cuối cùng</Typography>
-                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current?.updatedOn) : 'N/A'}</Typography> {/* Giá trị trường */}
+                                            <Typography variant="body1" sx={{ flex: 1 }}>: {customer ? formatDate(tempCustomerRef.current?.updatedOn.toISOString()) : 'N/A'}</Typography> {/* Giá trị trường */}
                                         </Grid>
 
                                     </Grid>
@@ -404,7 +404,7 @@ export default function CustomerDetailPage({}: Props) {
                                                             }}
                                                         >
                                                             <TableCell>{order.code}</TableCell>
-                                                            <TableCell>{formatDate(order.createdOn)}</TableCell>
+                                                            <TableCell>{formatDate(order.createdOn.toISOString())}</TableCell>
                                                             <TableCell>{order.totalQuantity}</TableCell>
                                                             <TableCell>{order.totalPayment}</TableCell>
                                                             <TableCell>
