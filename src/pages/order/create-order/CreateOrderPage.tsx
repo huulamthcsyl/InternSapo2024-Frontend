@@ -1,7 +1,7 @@
 import { Autocomplete, Box, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, TableContainer, Button, Dialog, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio } from "@mui/material"
 import MainBox from "../../../components/layout/MainBox"
 import CreateOrderAppBar from "./CreateOrderAppBar"
-import { useEffect, useLayoutEffect, useState } from "react"
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createCustomer, getCustomersByKeyword } from "../../../services/customerAPI"
 import Customer from "../../../models/Customer"
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -18,6 +18,9 @@ import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Dayjs } from "dayjs"
+import { useNavigate } from "react-router-dom"
+import { useReactToPrint } from "react-to-print"
+import { ReceiptToPrint } from "./Receipt"
 
 type VariantTableRowProps = {
   index: number,
@@ -46,7 +49,11 @@ function VariantTableRow({ index, orderDetailList, setOrderDetailList }: Variant
         type="number"
         value={orderDetail.quantity}
         onChange={(event) => {
-          const newQuantity = Math.min(Math.max(Number(event.target.value), 0), orderDetail.variantQuantity);
+          if(Number(event.target.value) > orderDetail.variantQuantity) {
+            toast.error("Số lượng sản phẩm đã vượt quá số lượng tồn kho");
+            return;
+          }
+          const newQuantity = Math.min(Math.max(Number(event.target.value), 1), orderDetail.variantQuantity);
           setOrderDetailList(orderDetailList.map(item => item.sku === orderDetail.sku ? { ...item, quantity: newQuantity } : item));
           return;
         }}
@@ -181,6 +188,23 @@ export default function CreateOrderPage({ }: Props) {
   const [cashReceived, setCashReceived] = useState<number>(0);
   const [note, setNote] = useState<string>('');
 
+  const [newOrderReceipt, setNewOrderReceipt] = useState<any>({
+    createdOn: "",
+    creatorId: 0,
+    code: "",
+    orderDetails: [],
+    total: 0,
+    cashReceive: 0,
+    cashRepay: 0
+  });
+
+  const receiptRef = useRef(null);
+  const handlePrint = useReactToPrint({
+    content: () => receiptRef.current
+  });
+
+  const navigate = useNavigate();
+
   useEffect(() => {
     getCustomersByKeyword(customerKeyword).then((res) => {
       setCustomersList(res);
@@ -217,7 +241,7 @@ export default function CreateOrderPage({ }: Props) {
       toast.error("Số tiền nhận của khách không đủ");
       return;
     }
-    const order = {
+    const newOrder = {
       customerId: selectedCustomer.id,
       creatorId: 1,
       totalQuantity: totalQuantity,
@@ -234,8 +258,14 @@ export default function CreateOrderPage({ }: Props) {
         }
       }),
     }
-    createOrder(order).then((_res) => {
+
+    createOrder(newOrder).then((res) => {
       toast.success("Tạo đơn hàng thành công");
+      setNewOrderReceipt(res.data.data);
+      setTimeout(() => {
+        handlePrint();
+      }, 1000);
+      // navigate('/order')
     }).catch((error) => {
       toast.error(error.response.data);
     });
@@ -243,7 +273,10 @@ export default function CreateOrderPage({ }: Props) {
 
   return (
     <MainBox>
-      <CreateOrderAppBar handleCreateOrder={handleCreateOrder} />
+      <Box display="none">
+        <ReceiptToPrint ref={receiptRef} order={newOrderReceipt}/>
+      </Box>
+      <CreateOrderAppBar handleCreateOrder={handleCreateOrder}/>
       <Box sx={{ backgroundColor: '#F0F1F1', padding: '25px 30px' }} flex={1} display='flex' flexDirection='column'>
         <NewCustomerDialog open={openAddCustomerDialog} handleClose={() => setOpenAddCustomerDialog(false)} />
         <Box bgcolor="#fff" borderRadius={1} padding="20px 15px" mb={2}>
@@ -313,7 +346,10 @@ export default function CreateOrderPage({ }: Props) {
             renderInput={(params) => <TextField {...params} placeholder="Tìm kiếm sản phẩm theo SKU, tên" />}
             sx={{ width: '100%', mb: 2 }}
             onChange={(_event: any, value: Variant | null) => {
-              console.log("SELECTED")
+              if(value?.quantity === 0) {
+                toast.error("Sản phẩm đã hết hàng");
+                return;
+              }
               if (value && !orderDetailList.find((item: OrderDetail) => item.sku === value.sku)) {
                 setOrderDetailList([...orderDetailList, OrderDetail.fromVariant(value)]);
               }
@@ -395,7 +431,7 @@ export default function CreateOrderPage({ }: Props) {
           </Box>
           <Box mt={2} display="flex" alignItems="center">
             <Typography variant="body1" sx={{ color: '#000' }} marginRight={2}>Phương thức thanh toán</Typography>
-            <Button variant="outlined">Tiền mặt</Button>
+            <Button variant="outlined">COD</Button>
           </Box>
           <Box width='40%' display="flex" alignItems="center">
             <Typography variant="body1" sx={{ color: '#000' }} mt={2} marginRight={2}>Tiền nhận của khách</Typography>
