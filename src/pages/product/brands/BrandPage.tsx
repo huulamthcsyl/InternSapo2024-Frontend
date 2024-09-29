@@ -4,7 +4,7 @@ import { Add } from "@mui/icons-material";
 import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
 import BrandPageAppBar from "./BrandPageAppBar";
 import { useEffect, useState } from "react";
-import { BrandResponse } from "../../../services/ProductInterface";
+import { BrandResponse } from "../../../models/ProductInterface";
 import SearchField from "../SearchField";
 import UpdateOrAddBrand from "./UpdateOrAddBrand";
 import { getListOfBrands, getNumberOfBrands } from "../../../services/brandAPI";

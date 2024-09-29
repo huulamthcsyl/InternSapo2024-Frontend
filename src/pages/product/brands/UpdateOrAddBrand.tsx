@@ -1,10 +1,7 @@
 import { Typography, Box, TextField, Button } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { useState } from "react";
-import {
-    BrandRequest,
-    BrandResponse,
-} from "../../../services/ProductInterface";
+import { BrandRequest, BrandResponse } from "../../../models/ProductInterface";
 import "react-toastify/dist/ReactToastify.css";
 import {
     createBrand,

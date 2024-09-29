@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import {
     ProductResponse,
     VariantResponse,
-} from "../../../services/ProductInterface";
+} from "../../../models/ProductInterface";
 import { Image } from "@mui/icons-material";
 import { formatCurrency } from "../../../utils/formatCurrency";
 import { getProductById } from "../../../services/productAPI";

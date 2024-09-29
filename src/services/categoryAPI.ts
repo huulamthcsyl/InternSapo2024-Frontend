@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CategoryRequest, CategoryResponse } from "./ProductInterface";
+import { CategoryRequest, CategoryResponse } from "../models/ProductInterface";
 
 const BASE_URL = "http://localhost:8080/v1/products/categories";
 

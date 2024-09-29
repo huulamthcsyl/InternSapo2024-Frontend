@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
     CategoryRequest,
     CategoryResponse,
-} from "../../../services/ProductInterface";
+} from "../../../models/ProductInterface";
 import {
     createCategory,
     deleteCategory,

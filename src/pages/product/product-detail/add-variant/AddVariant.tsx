@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import {
     ProductResponse,
     VariantRequest,
-} from "../../../../services/ProductInterface";
+} from "../../../../models/ProductInterface";
 import { useParams } from "react-router-dom";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { storage } from "../../../../../firebaseConfig";

@@ -25,7 +25,7 @@ import {
     CategoryResponse,
     ProductRequest,
     VariantRequest,
-} from "../../../services/ProductInterface";
+} from "../../../models/ProductInterface";
 import Property from "../Property";
 import { storage } from "../../../../firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
