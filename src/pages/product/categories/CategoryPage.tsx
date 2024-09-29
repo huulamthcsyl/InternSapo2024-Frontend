@@ -107,7 +107,6 @@ export default function CategoryPage({}: Props) {
             setData(res);
         });
     }, [query]);
-    console.log(data);
     return (
         <Box>
             <CategoryPageAppBar />
