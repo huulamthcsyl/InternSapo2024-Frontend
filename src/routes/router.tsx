@@ -16,6 +16,14 @@ import CustomerPage from "../pages/customer/CustomerPage";
 import NewCustomerPage from "../pages/customer/NewCustomerPage";
 import CustomerDetailPage from "../pages/customer/CustomerDetailPage";
 import OverviewPage from "../pages/overview/OverviewPage";
+import ProductPage from "../pages/product/ProductPage";
+import VariantPage from "../pages/product/variants/VariantPage";
+import BrandPage from "../pages/product/brands/BrandPage";
+import ProductDetail from "../pages/product/product-detail/ProductDetail";
+import CategoryPage from "../pages/product/categories/CategoryPage";
+import ProductEdit from "../pages/product/product-detail/product-edit/ProductEdit";
+import AddVariant from "../pages/product/product-detail/add-variant/AddVariant";
+import AddProduct from "../pages/product/add-product/AddProduct";
 
 export const router = createBrowserRouter([
   {
@@ -62,6 +70,38 @@ export const router = createBrowserRouter([
         path: "account/change-password/:id",
         element: <ChangePassword />,
       },
+      {
+        path: "/products",
+        element: <ProductPage />,
+      },
+      {
+        path: "/products/categories",
+        element: <CategoryPage />,
+      },
+      {
+        path: "/products/brands",
+        element: <BrandPage />,
+      },
+      {
+        path: "/products/variants",
+        element: <VariantPage />,
+      },
+      {
+        path: "/products/:id",
+        element: <ProductDetail />,
+      },
+      {
+        path: "/products/:id/edit",
+        element: <ProductEdit />,
+      },
+      {
+        path: "/products/create",
+        element: <AddProduct />,
+      },
+      {
+        path: "/products/:id/variants/create",
+        element: <AddVariant />,
+      },
     ],
   },
   {
@@ -88,4 +128,6 @@ export const router = createBrowserRouter([
       },
     ]
   }
+    
 ]);
+
