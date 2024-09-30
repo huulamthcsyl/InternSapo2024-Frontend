@@ -454,7 +454,6 @@ export default function CreateOrderPage({ }: Props) {
           </Button>
         </Box>
       </Box>
-      <ToastContainer hideProgressBar autoClose={3000} />
     </MainBox>
   )
 }

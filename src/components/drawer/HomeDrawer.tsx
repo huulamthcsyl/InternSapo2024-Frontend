@@ -36,7 +36,7 @@ export default function HomeDrawer({ }: Props) {
       <Toolbar />
       <Divider />
       <List sx={{ p: 0 }}>
-        <DrawerItem name="Tổng quan" icon={<HomeIcon />} link="/overview" />
+        <DrawerItem name="Tổng quan" icon={<HomeIcon />} link="/" />
         <ListItemButton onClick={() => setOpenOrder(!openOrder)}>
           <ListItemIcon sx={{ color: "#fff" }}>
             <ReceiptLongIcon />
@@ -46,13 +46,13 @@ export default function HomeDrawer({ }: Props) {
         </ListItemButton>
         <Collapse in={openOrder} timeout="auto" unmountOnExit>
           <List disablePadding>
-            <ListItemButton sx={{ pl: 4, color: '#fff' }} onClick={() => navigate('/order/create')}>
+            <ListItemButton sx={{ pl: 4, color: '#fff' }} onClick={() => navigate('/orders/create')}>
               <ListItemText primary="Tạo đơn hàng" />
             </ListItemButton>
           </List>
           <List disablePadding>
             <ListItemButton sx={{ pl: 4, color: '#fff' }}>
-              <ListItemText primary="Danh sách đơn hàng" onClick={() => navigate('/order')}/>
+              <ListItemText primary="Danh sách đơn hàng" onClick={() => navigate('/orders')}/>
             </ListItemButton>
           </List>
         </Collapse>
