@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Customer from '../models/Customer';
 
-const BASE_URL = 'http://localhost:8000/customers';
+const BASE_URL = 'http://localhost:8080/customers';
 
 const INFINITY = 1000000000;
 

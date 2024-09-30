@@ -59,22 +59,22 @@ export default function AddProduct({}: Props) {
     const [images, setImages] = useState<string[]>([]);
 
     function setAllInitialPrices(newInitialPrice: number) {
-        setInitialPrice(newInitialPrice);
         const updatedVariants = variants.map((variant) => ({
             ...variant,
             initialPrice: newInitialPrice,
         }));
         setVariants(updatedVariants);
+        setInitialPrice(newInitialPrice);
     }
 
     function setAllPriceForSale(newPriceForSale: number) {
-        setPriceForSale(newPriceForSale);
-        const updatedVariants = variants.map((variant) => ({
+        const updatedVariants: VariantRequest[] = variants.map((variant) => ({
             ...variant,
             priceForSale: newPriceForSale,
         }));
-
+        console.log(updatedVariants);
         setVariants(updatedVariants);
+        setPriceForSale(newPriceForSale);
     }
 
     function handleDataChange(e) {
@@ -105,13 +105,28 @@ export default function AddProduct({}: Props) {
             //     const emptyVarinant:VariantRequest={}
             //     setVariants([{...emptyVarinant,name:newProduct.name}]);
             // }
+            const updatedVariants: VariantRequest[] = variants.map(
+                (variant) => {
+                    return {
+                        ...variant,
+                        priceForSale:
+                            variant.priceForSale == 0
+                                ? priceForSale
+                                : variant.priceForSale,
+                        initialPrice:
+                            variant.initialPrice == 0
+                                ? priceForSale
+                                : variant.initialPrice,
+                    };
+                }
+            );
             createProduct({
                 ...newProduct,
-                variants: variants,
+                variants: updatedVariants,
                 imagePath: images,
             })
                 .then((res) => {
-                    toast.success("Tạo đơn hàng thành công");
+                    toast.success("Tạo sản phẩm thành công");
                 })
                 .catch((error) => {
                     toast.error(error.response.data.message);
@@ -194,9 +209,10 @@ export default function AddProduct({}: Props) {
                         const variant: VariantRequest = {
                             name:
                                 newProduct.name +
+                                    " - " +
                                     [sizes[i], colors[j], materials[k]]
                                         .filter(Boolean)
-                                        .join(" - ") || "",
+                                        .join(" - ") || " ",
                             sku: "",
                             size: sizes[i] || "",
                             color: colors[j] || "",
@@ -205,17 +221,17 @@ export default function AddProduct({}: Props) {
                             initialPrice: 0,
                             priceForSale: 0,
                         };
-                        console.log(variant);
                         updatedVariants.push(variant);
                     }
                 }
             }
+
             setVariants(updatedVariants);
         } else {
             setVariants([]);
         }
     }, [sizes, materials, colors, newProduct.name]);
-
+    console.log(variants);
     return (
         <Box>
             <AddProductAppBar submit={handleAddNewProduct} />

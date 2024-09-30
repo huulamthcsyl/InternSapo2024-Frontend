@@ -115,7 +115,7 @@ export default function ProductDetail({}: Props) {
             variants: variants,
             imagePath: images,
         })
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Cập nhật sản phẩm thành công");
             })
             .catch((error) => {

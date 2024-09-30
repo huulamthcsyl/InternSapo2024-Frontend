@@ -146,7 +146,7 @@ export default function VariantPage({}: Props) {
                             pageSizeOptions={[10, 20, 30]}
                             localeText={customLocaleText}
                             onRowClick={(params) =>
-                                navigate(`/products/${params.row.id}`)
+                                navigate(`/products/${params.row.productId}`)
                             }
                             // checkboxSelection
                             sx={{
