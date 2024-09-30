@@ -7,14 +7,14 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 type Props = {
-    id: string | undefined;
+    id?: string | undefined;
 };
 
 export default function ProductDetailAppBar({ id }: Props) {
     const navigate = useNavigate();
     function handleDeleteProduct() {
         deleteProduct(id)
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Xoá sản phẩm thành công");
             })
             .catch((error) => {
@@ -23,6 +23,7 @@ export default function ProductDetailAppBar({ id }: Props) {
     }
     return (
         <MainAppBar>
+            <ToastContainer hideProgressBar autoClose={3000} />
             <Box
                 sx={{
                     display: "flex",
@@ -64,7 +65,6 @@ export default function ProductDetailAppBar({ id }: Props) {
                     </Button>
                 </Box>
             </Box>
-            <ToastContainer hideProgressBar autoClose={3000} />
         </MainAppBar>
     );
 }

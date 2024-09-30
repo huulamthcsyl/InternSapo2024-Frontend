@@ -1,4 +1,10 @@
-import { Box, CardMedia, TextField, Typography } from "@mui/material";
+import {
+    Box,
+    CardMedia,
+    CircularProgress,
+    TextField,
+    Typography,
+} from "@mui/material";
 import ProductDetailAppBar from "./ProductDetailAppBar";
 import MainBox from "../../../components/layout/MainBox";
 import LabelInfo from "./LabelInfo";
@@ -18,12 +24,34 @@ export default function ProductDetail({}: Props) {
     const { id } = useParams();
     const [data, setData] = useState<ProductResponse>({});
     const [currentVariant, setCurrentVariant] = useState<VariantResponse>({});
+    const [loading, setLoading] = useState<boolean>(true);
     useEffect(() => {
-        getProductById(id).then((res) => {
-            setData(res);
-            setCurrentVariant(res.variants[0]);
-        });
+        getProductById(id)
+            .then((res) => {
+                setData(res);
+                setCurrentVariant(res.variants[0]);
+            })
+            .finally(() => setLoading(false));
     }, []);
+
+    if (loading) {
+        return (
+            <Box>
+                <ProductDetailAppBar />
+                <MainBox>
+                    <Box
+                        sx={{
+                            padding: "20px 24px",
+                            display: "flex",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <CircularProgress />
+                    </Box>
+                </MainBox>
+            </Box>
+        );
+    }
 
     return (
         <Box>
@@ -90,15 +118,23 @@ export default function ProductDetail({}: Props) {
                                             data?.updatedOn
                                         ).toLocaleString()}
                                     />
-                                    <TextField
-                                        fullWidth
-                                        multiline
-                                        rows={4}
-                                        id="outlined-uncontrolled"
-                                        label="Mô tả sản phẩm"
-                                        value={data?.description}
-                                        margin="normal"
-                                    />
+                                    <Box sx={{ width: "100%" }}>
+                                        <Typography
+                                            sx={{
+                                                color: "#000",
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Mô tả sản phẩm
+                                        </Typography>
+                                        <TextField
+                                            disabled
+                                            fullWidth
+                                            multiline
+                                            rows={4}
+                                            value={data?.description}
+                                        />
+                                    </Box>
                                 </Box>
                                 <Box
                                     sx={{
@@ -162,7 +198,7 @@ export default function ProductDetail({}: Props) {
                                 </Typography>
                             </Box>
                             {data?.variants?.length > 0 ? (
-                                data.variants.map((variant) => (
+                                data.variants.map((variant, _index) => (
                                     <Box
                                         sx={{ padding: "3px" }}
                                         key={variant.id}

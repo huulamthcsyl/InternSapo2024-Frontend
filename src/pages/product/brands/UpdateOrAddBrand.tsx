@@ -38,13 +38,13 @@ export default function UpdateOrAddBrand({
     }
     function handleUpdateBrand() {
         updateBrand(form.id, form)
-            .then((res) => {
-                toast.success("Cập nhật nhãn hiệu thành công", {
-                    position: "top-center",
-                });
+            .then((_res) => {
+                toast.success("Cập nhật nhãn hiệu thành công");
                 onUpdate();
-                setSelectedBrand(null);
-                setIsUpdate(0);
+                setTimeout(() => {
+                    setSelectedBrand(null);
+                    setIsUpdate(0);
+                }, 1000);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -53,11 +53,13 @@ export default function UpdateOrAddBrand({
 
     function handleCreateBrand() {
         createBrand(form)
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Tạo nhãn hiệu thành công");
                 onUpdate();
-                setSelectedBrand(null);
-                setIsUpdate(0);
+                setTimeout(() => {
+                    setSelectedBrand(null);
+                    setIsUpdate(0);
+                }, 1000);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -66,11 +68,13 @@ export default function UpdateOrAddBrand({
 
     function handleDeleteBrand() {
         deleteBrand(form.id)
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Xóa nhãn hiệu thành công");
                 onUpdate();
-                setSelectedBrand(null);
-                setIsUpdate(0);
+                setTimeout(() => {
+                    setSelectedBrand(null);
+                    setIsUpdate(0);
+                }, 1000);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -85,6 +89,7 @@ export default function UpdateOrAddBrand({
         <Box
             sx={{
                 position: "fixed",
+                flexGrow: "2",
                 top: "0",
                 left: "0",
                 width: "100%",
@@ -93,8 +98,14 @@ export default function UpdateOrAddBrand({
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+                zIndex: 10000,
             }}
         >
+            <ToastContainer
+                hideProgressBar
+                autoClose={3000}
+                style={{ zIndex: 9999 }}
+            />
             {!openConfirmDialog ? (
                 <Box
                     sx={{
@@ -104,7 +115,7 @@ export default function UpdateOrAddBrand({
                         padding: "10px 30px 30px 30px",
                         display: "flex",
                         flexDirection: "column",
-                        gap: "10px",
+                        gap: "15px",
                         border: "1px solid black",
                         borderRadius: "5px",
                     }}
@@ -134,36 +145,51 @@ export default function UpdateOrAddBrand({
                             gap: "20px",
                         }}
                     >
+                        <Box sx={{ width: "50%" }}>
+                            <Typography
+                                sx={{ color: "#000", fontSize: "0.9rem" }}
+                            >
+                                Tên nhãn hiệu
+                                <span style={{ color: "#FF4D4D" }}>*</span>
+                            </Typography>
+                            <TextField
+                                fullWidth
+                                value={form.name}
+                                required={true}
+                                name="name"
+                                size="small"
+                                onChange={handleFormChange}
+                            />
+                        </Box>
+                        <Box sx={{ width: "50%" }}>
+                            <Typography
+                                sx={{ color: "#000", fontSize: "0.9rem" }}
+                            >
+                                Mã nhãn hiệu
+                            </Typography>
+                            <TextField
+                                fullWidth
+                                name="code"
+                                value={form.code}
+                                size="small"
+                                onChange={handleFormChange}
+                            />
+                        </Box>
+                    </Box>
+                    <Box>
+                        <Typography sx={{ color: "#000", fontSize: "0.9rem" }}>
+                            Ghi chú
+                        </Typography>
                         <TextField
-                            sx={{ width: "50%" }}
-                            value={form.name}
-                            required={true}
-                            name="name"
-                            size="small"
-                            label="Tên nhãn hiệu"
+                            fullWidth
+                            multiline
+                            name="description"
+                            value={form.description}
+                            rows={4}
                             onChange={handleFormChange}
-                            margin="normal"
-                        />
-                        <TextField
-                            sx={{ width: "50%" }}
-                            label="Mã nhãn hiệu"
-                            name="code"
-                            value={form.code}
-                            size="small"
-                            onChange={handleFormChange}
-                            margin="normal"
                         />
                     </Box>
-                    <TextField
-                        fullWidth
-                        multiline
-                        name="description"
-                        value={form.description}
-                        rows={4}
-                        label="Ghi chú"
-                        onChange={handleFormChange}
-                        margin="normal"
-                    />
+
                     <Box
                         sx={{
                             display: "flex",
@@ -259,7 +285,6 @@ export default function UpdateOrAddBrand({
                     </Box>
                 </Box>
             )}
-            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }

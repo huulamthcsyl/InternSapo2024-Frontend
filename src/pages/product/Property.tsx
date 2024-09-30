@@ -67,9 +67,11 @@ export default function Property({
     }
     function handleDeleteVariantByProperty() {
         deleteVariantByProperty(id, prop, selectedValue)
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Xóa phiên bản thành công");
-                setSelectedValue("");
+                setTimeout(() => {
+                    setSelectedValue("");
+                }, 1000);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -88,6 +90,11 @@ export default function Property({
             }}
             onSubmit={(e) => e.preventDefault()}
         >
+            <ToastContainer
+                hideProgressBar
+                autoClose={3000}
+                style={{ position: "fixed", top: 0, right: 0 }}
+            />
             {fixedBadges !== undefined && fixedBadges[0] !== "" ? (
                 fixedBadges.map((badge, index) => (
                     <Chip
@@ -138,7 +145,6 @@ export default function Property({
             ) : (
                 <></>
             )}
-            <ToastContainer hideProgressBar autoClose={3000} />
         </Paper>
     );
 }
