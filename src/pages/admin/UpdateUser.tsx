@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Box,
+  CircularProgress,
   Grid,
   TextField,
   Button,
@@ -15,7 +16,10 @@ import {
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import dayjs, { Dayjs } from "dayjs";
+import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
+import { LocalizationProvider, DesktopDatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs , { Dayjs } from "dayjs";
 
 // Role options that match backend roles
 const roleOptions = [
@@ -119,68 +123,88 @@ const UpdateUser = () => {
   };
 
   if (loading) {
-    return <Typography>Loading...</Typography>; // Show loading state
+    return <Typography><CircularProgress/></Typography>; // Show loading state
   }
 
   return (
-    <Box sx={{ padding: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-      <Box sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          color="primary"
-          sx={{ textTransform: "none", fontSize: "16px" }}
-          variant="text"
-          onClick={() => navigate(`/admin/user`)}
-        >
-          Quay lại danh sách nhân viên
-        </Button>
+    <Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          marginTop: 1.5,
+          marginBottom: 2,
+          backgroundColor: "#ffffff",
+        }}
+      >
+        <Box display="flex" alignItems="center">
+          <Button
+            variant="text"
+            sx={{ color: "#637381", marginLeft: 2 }}
+            onClick={() => navigate(-1)}
+          >
+            <KeyboardArrowLeft /> Quay lại thông tin nhân viên
+          </Button>
+
+          
+
+          
+        </Box>
         <Box sx={{ flexGrow: 1 }} />
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
-          Lưu
-        </Button>
+        <Button
+            sx={{ marginRight: 5 }}
+            variant="contained"
+            color="primary"
+            onClick={handleSubmit}
+          >
+            Lưu
+          </Button>
       </Box>
 
-      <Card sx={{ maxWidth: 800, margin: "0 auto", padding: 3, boxShadow: 3 }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Thông tin nhân viên
-          </Typography>
+      <Box sx={{ padding: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
+        <Card
+          sx={{  margin: "0 auto", padding: 3, boxShadow: 3 }}
+        >
+          <CardContent>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Thông tin nhân viên
+            </Typography>
 
-          <Grid container spacing={3}>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Tên nhân viên"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
+            <Grid container spacing={3}>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Tên nhân viên"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Grid>
 
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Grid>
 
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Địa chỉ"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Địa chỉ"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Grid>
 
-            {/* <Grid item xs={6}>
+              {/* <Grid item xs={6}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DesktopDatePicker
                   label="Ngày sinh"
@@ -192,37 +216,38 @@ const UpdateUser = () => {
               </LocalizationProvider>
             </Grid> */}
 
-            <Grid item xs={6}>
-              <FormControl fullWidth>
-                <InputLabel>Vai trò</InputLabel>
-                <Select
-                  value={role}
-                  onChange={handleRoleChange}
-                  label="Vai trò"
-                  required
-                >
-                  {roleOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Vai trò</InputLabel>
+                  <Select
+                    value={role}
+                    onChange={handleRoleChange}
+                    label="Vai trò"
+                    required
+                  >
+                    {roleOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
 
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Số điện thoại"
-                name="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleInputChange}
-                required
-              />
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Số điện thoại"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Grid>
             </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </Box>
     </Box>
   );
 };

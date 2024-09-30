@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Box,
@@ -8,27 +8,35 @@ import {
   Container,
   Paper,
   Alert,
-} from '@mui/material';
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 
 const ChangePassword: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [user, setUser] = useState<string>();
 
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  useEffect(() => {
+    const response = localStorage.getItem("user");
+    if (response) {
+      const userData = JSON.parse(response);
+      setUser(userData.name);
+    }
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setErrorMessage('');
-    setSuccessMessage('');
+    setErrorMessage("");
+    setSuccessMessage("");
 
     // Check if new password and confirm password match
     if (newPassword !== confirmPassword) {
-      setErrorMessage('Mật khẩu mới và mật khẩu xác nhận không khớp.');
+      setErrorMessage("Mật khẩu mới và mật khẩu xác nhận không khớp.");
       return;
     }
     // const token = localStorage.getItem('token'); // Retrieve token from localStorage
@@ -38,83 +46,133 @@ const ChangePassword: React.FC = () => {
     // }
 
     try {
-      const response = await fetch(`http://localhost:8080/v1/user/change_password/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          // Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          password: newPassword, // send only the new password
-        }),
-      });
+      const response = await fetch(
+        `http://localhost:8080/v1/user/change_password/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            // Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            password: newPassword, // send only the new password
+          }),
+        }
+      );
 
       const data = await response.json();
 
-      if (response.ok && data.status === 'OK') {
-        setSuccessMessage('Mật khẩu đã thay đổi thành công.');
+      if (response.ok && data.status === "OK") {
+        setSuccessMessage("Mật khẩu đã thay đổi thành công.");
       } else {
-        setErrorMessage(data.message || 'Đổi mật khẩu thất bại.');
+        setErrorMessage(data.message || "Đổi mật khẩu thất bại.");
       }
     } catch (error) {
-      setErrorMessage('Lỗi kết nối đến máy chủ.');
+      setErrorMessage("Lỗi kết nối đến máy chủ.");
     }
   };
 
   return (
-    <Container component={Paper} elevation={3} sx={{ padding: 4, marginTop: 5 }}>
-      <Typography variant="h5" gutterBottom>
-        Đổi mật khẩu
-      </Typography>
-
-      {errorMessage && (
-        <Alert severity="error" sx={{ marginBottom: 2 }}>
-          {errorMessage}
-        </Alert>
-      )}
-
-      {successMessage && (
-        <Alert severity="success" sx={{ marginBottom: 2 }}>
-          {successMessage}
-        </Alert>
-      )}
-
-      <form onSubmit={handleSubmit}>
-        <Box mb={2}>
-          <TextField
-            fullWidth
-            label="Mật khẩu mới"
-            type="password"
-            variant="outlined"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-          />
+    <Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          marginTop: 1.5,
+          marginBottom: 2,
+          backgroundColor: "#ffffff",
+        }}
+      >
+        <Box display="flex" alignItems="center">
+          <Button
+            variant="text"
+            sx={{ color: "#637381", marginLeft: 2 }}
+            onClick={() => navigate(-1)}
+          >
+            <KeyboardArrowLeft />
+            Tài khoản của tôi
+          </Button>
         </Box>
-        <Box mb={2}>
-          <TextField
-            fullWidth
-            label="Nhập lại mật khẩu mới"
-            type="password"
-            variant="outlined"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </Box>
-        <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-          * Mật khẩu nên có ít nhất 8 ký tự và bao gồm chữ cái, số và ký tự đặc biệt.
+        <Box sx={{ flexGrow: 1 }} />
+        <Typography
+          sx={{
+            marginRight: 5,
+            textTransform: "uppercase",
+            color: "#0056b3", // Màu chữ
+            fontFamily: "Arial, sans-serif", // Font chữ
+            fontWeight: "semi bold", // Độ đậm
+            fontSize: "16px", // Kích thước chữ
+            padding: "10px 20px", // Kích thước nút
+          }}
+          variant="contained"
+        >
+          {user}
         </Typography>
-        <Box>
-          <Button variant="contained" color="primary" type="submit">
-            Lưu
-          </Button>
-          <Button variant="outlined" color="secondary" sx={{ marginLeft: 2 }} onClick={() => navigate(`/account/${id}`)}>
-            Hủy
-          </Button>
+      </Box>
+      <Container
+        component={Paper}
+        elevation={3}
+        sx={{ padding: 4, marginTop: 5 }}
+      >
+        <Typography variant="h5" gutterBottom>
+          Đổi mật khẩu
+        </Typography>
+
+        {errorMessage && (
+          <Alert severity="error" sx={{ marginBottom: 2 }}>
+            {errorMessage}
+          </Alert>
+        )}
+
+        {successMessage && (
+          <Alert severity="success" sx={{ marginBottom: 2 }}>
+            {successMessage}
+          </Alert>
+        )}
+
+        <Box onSubmit={handleSubmit}>
+          <Box mb={2}>
+            <TextField
+              fullWidth
+              label="Mật khẩu mới"
+              type="password"
+              variant="outlined"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+            />
+          </Box>
+          <Box mb={2}>
+            <TextField
+              fullWidth
+              label="Nhập lại mật khẩu mới"
+              type="password"
+              variant="outlined"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </Box>
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+            * Mật khẩu nên có ít nhất 8 ký tự và bao gồm chữ cái, số và ký tự
+            đặc biệt.
+          </Typography>
+          <Box>
+            <Button variant="contained" color="primary" type="submit">
+              Lưu
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              sx={{ marginLeft: 2 }}
+              onClick={() => navigate(`/account/${id}`)}
+            >
+              Hủy
+            </Button>
+          </Box>
         </Box>
-      </form>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 
