@@ -1,6 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
 import HomeLayout from "../layouts/HomeLayout";
-import HomePage from "../pages/home/HomePage";
 import LoginPage from "../pages/login/LoginPage";
 import AdminLayout from "../layouts/AdminLayout";
 import OrderListPage from "../pages/order/order-list/OrderListPage";
@@ -23,6 +22,10 @@ import CategoryPage from "../pages/product/categories/CategoryPage";
 import ProductEdit from "../pages/product/product-detail/product-edit/ProductEdit";
 import AddVariant from "../pages/product/product-detail/add-variant/AddVariant";
 import AddProduct from "../pages/product/add-product/AddProduct";
+import PrivateRoute from "../components/router/PrivateRoute";
+import OrderRoute from "../components/router/OrderRoute";
+import CustomerRoute from "../components/router/CustomerRoute";
+import ProductRoute from "../components/router/ProductRoute";
 
 export const router = createBrowserRouter([
   {
@@ -31,77 +34,97 @@ export const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <HomeLayout />,
+    element: <PrivateRoute />,
     children: [
       {
-        path: "",
-        element: <HomePage />
-      },
-      {
-        path: "customers",
-        element: <CustomerPage />
-      },
-      {
-        path: "customers/:customerId",  // Dynamic route với customerID
-        element: <CustomerDetailPage />  // Component sẽ render chi tiết khách hàng
-      },
-      {
-        path: "/overview",
-        element: <OverviewPage/>
-      },
-      {
-        path: "order",
-        element: <OrderListPage />
-      },
-      {
-        path: "order/create",
-        element: <CreateOrderPage />
-      },
-      {
-        path: "order/:id",
-        element: <DetailOrderPage />
-      },
-      {
-        path: "account/:id",
-        element: <UserProfile />,
-      },
-      {
-        path: "account/change-password/:id",
-        element: <ChangePassword />,
-      },
-      {
-        path: "/products",
-        element: <ProductPage />,
-      },
-      {
-        path: "/products/categories",
-        element: <CategoryPage />,
-      },
-      {
-        path: "/products/brands",
-        element: <BrandPage />,
-      },
-      {
-        path: "/products/variants",
-        element: <VariantPage />,
-      },
-      {
-        path: "/products/:id",
-        element: <ProductDetail />,
-      },
-      {
-        path: "/products/:id/edit",
-        element: <ProductEdit />,
-      },
-      {
-        path: "/products/create",
-        element: <AddProduct />,
-      },
-      {
-        path: "/products/:id/variants/create",
-        element: <AddVariant />,
-      },
-    ],
+        path: "/",
+        element: <HomeLayout />,
+        children: [
+          {
+            path: "/",
+            element: <OverviewPage/>
+          },
+          {
+            path: "orders",
+            element: <OrderRoute />,
+            children: [
+              {
+                path: "",
+                element: <OrderListPage />
+              },
+              {
+                path: "create",
+                element: <CreateOrderPage />
+              },
+              {
+                path: ":id",
+                element: <DetailOrderPage />
+              },
+            ]
+          },
+          {
+            path: "customers",
+            element: <CustomerRoute />,
+            children: [
+              {
+                path: "",
+                element: <CustomerPage />
+              },
+              {
+                path: ":customerId",  // Dynamic route với customerID
+                element: <CustomerDetailPage />  // Component sẽ render chi tiết khách hàng
+              },
+            ]
+          },
+          {
+            path: "products",
+            element: <ProductRoute />,
+            children: [
+              {
+                path: "",
+                element: <ProductPage />,
+              },
+              {
+                path: "categories",
+                element: <CategoryPage />,
+              },
+              {
+                path: "brands",
+                element: <BrandPage />,
+              },
+              {
+                path: "variants",
+                element: <VariantPage />,
+              },
+              {
+                path: ":id",
+                element: <ProductDetail />,
+              },
+              {
+                path: ":id/edit",
+                element: <ProductEdit />,
+              },
+              {
+                path: "create",
+                element: <AddProduct />,
+              },
+              {
+                path: ":id/variants/create",
+                element: <AddVariant />,
+              }
+            ]
+          },
+          {
+            path: "account/:id",
+            element: <UserProfile />,
+          },
+          {
+            path: "account/change-password/:id",
+            element: <ChangePassword />,
+          },
+        ],
+      }
+    ]
   },
   {
     path: "/admin",
