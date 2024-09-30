@@ -1,4 +1,10 @@
-import { Box, Button, ButtonGroup, Divider } from "@mui/material";
+import {
+    Box,
+    Button,
+    ButtonGroup,
+    CircularProgress,
+    Divider,
+} from "@mui/material";
 import MainBox from "../../components/layout/MainBox";
 import ProductPageAppBar from "./ProductPageAppBar";
 import { Add, Image } from "@mui/icons-material";
@@ -19,6 +25,7 @@ export default function ProductPage({}: Props) {
     const [data, setData] = useState<ProductResponse[]>([]);
     const [numberOfProducts, setNumberOfProducts] = useState<number>(0);
     const [query, setQuery] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(true);
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 10,
@@ -27,7 +34,15 @@ export default function ProductPage({}: Props) {
     const customLocaleText = {
         MuiTablePagination: {
             labelRowsPerPage: "Số hàng mỗi trang:",
-            labelDisplayedRows: ({ from, to, count }) =>
+            labelDisplayedRows: ({
+                from,
+                to,
+                count,
+            }: {
+                from: number;
+                to: number;
+                count: number;
+            }) =>
                 `${from}-${to} trên tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
         },
     };
@@ -98,6 +113,17 @@ export default function ProductPage({}: Props) {
     ];
 
     useEffect(() => {
+        getNumberOfProducts(query).then((res) => {
+            setNumberOfProducts(res);
+        });
+        getListOfProducts(paginationModel.page, paginationModel.pageSize, query)
+            .then((res) => {
+                setData(res);
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
+    useEffect(() => {
         getListOfProducts(
             paginationModel.page,
             paginationModel.pageSize,
@@ -120,6 +146,24 @@ export default function ProductPage({}: Props) {
         });
     }, [query]);
 
+    if (loading) {
+        return (
+            <Box>
+                <ProductPageAppBar />
+                <MainBox>
+                    <Box
+                        sx={{
+                            padding: "20px 24px",
+                            display: "flex",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <CircularProgress />
+                    </Box>
+                </MainBox>
+            </Box>
+        );
+    }
     return (
         <Box>
             <ProductPageAppBar />

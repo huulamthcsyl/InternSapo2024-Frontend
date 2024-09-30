@@ -24,11 +24,19 @@ export default function CategoryPage({}: Props) {
     });
     const [isUpdate, setIsUpdate] = useState(0);
     const [selectedCategory, setSelectedCategory] =
-        useState<CategoryResponse | null>({});
+        useState<CategoryResponse | null>(null);
     const customLocaleText = {
         MuiTablePagination: {
             labelRowsPerPage: "Số hàng mỗi trang:",
-            labelDisplayedRows: ({ from, to, count }) =>
+            labelDisplayedRows: ({
+                from,
+                to,
+                count,
+            }: {
+                from: number;
+                to: number;
+                count: number;
+            }) =>
                 `${from}-${to} trên tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
         },
     };

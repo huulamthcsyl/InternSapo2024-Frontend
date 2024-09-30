@@ -21,13 +21,21 @@ export default function BrandPage({}: Props) {
     });
     const [isUpdate, setIsUpdate] = useState(0);
     const [selectedBrand, setSelectedBrand] = useState<BrandResponse | null>(
-        {}
+        null
     );
     const customLocaleText = {
         MuiTablePagination: {
             labelRowsPerPage: "Số hàng mỗi trang:",
-            labelDisplayedRows: ({ from, to, count }) =>
-                `${from}-${to} trên tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
+            labelDisplayedRows: ({
+                from,
+                to,
+                count,
+            }: {
+                from: number;
+                to: number;
+                count: number;
+            }) =>
+                `${from}-${to} trong tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
         },
     };
     const columns: GridColDef[] = [
@@ -125,7 +133,7 @@ export default function BrandPage({}: Props) {
                         }}
                     >
                         <Typography sx={{ fontSize: "20px" }}>
-                            Loại sản phẩm
+                            Nhãn hiệu
                         </Typography>
                         <Button
                             variant="contained"
@@ -133,7 +141,7 @@ export default function BrandPage({}: Props) {
                             sx={{ textTransform: "none" }}
                             onClick={() => setIsUpdate(2)}
                         >
-                            Thêm loại sản phẩm
+                            Thêm nhãn hiệu
                         </Button>
                     </Box>
                     <Box sx={{ backgroundColor: "white" }}>
