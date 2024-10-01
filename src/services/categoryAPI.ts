@@ -1,20 +1,17 @@
-import axios from "axios";
+import apiClient from "./api-clients";
 import { CategoryRequest, CategoryResponse } from "../models/ProductInterface";
 
-const BASE_URL = "http://localhost:8080/v1/products/categories";
+const BASE_URL = "http://13.211.146.23:8080/v1/products/categories";
 
 const INFINITY = 1000000000;
 
 const getAllCategories = async (query: string): Promise<CategoryResponse[]> => {
     try {
-        const response = await axios.get(BASE_URL, {
+        const response = await apiClient.get(BASE_URL, {
             params: {
                 page: 0,
                 limit: INFINITY,
                 query: query,
-            },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         });
 
@@ -30,14 +27,11 @@ const getListOfCategories = async (
     query: string
 ): Promise<CategoryResponse[]> => {
     try {
-        const response = await axios.get(`${BASE_URL}`, {
+        const response = await apiClient.get(`${BASE_URL}`, {
             params: {
                 page: page,
                 limit: limit,
                 query: query,
-            },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return response.data.data;
@@ -48,12 +42,9 @@ const getListOfCategories = async (
 
 const getNumberOfCategories = async (query: string): Promise<number> => {
     try {
-        const response = await axios.get(`${BASE_URL}/total-categories`, {
+        const response = await apiClient.get(`${BASE_URL}/total-categories`, {
             params: {
                 query: query,
-            },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return parseInt(response.data.data);
@@ -65,11 +56,7 @@ const getNumberOfCategories = async (query: string): Promise<number> => {
 const createCategory = async (
     category: CategoryRequest
 ): Promise<CategoryResponse> => {
-    const response = await axios.post(`${BASE_URL}/create`, category, {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-    });
+    const response = await apiClient.post(`${BASE_URL}/create`, category);
     return response.data.data;
 };
 
@@ -77,20 +64,12 @@ const updateCategory = async (
     id: number | undefined,
     category: CategoryRequest
 ): Promise<CategoryResponse> => {
-    const response = await axios.put(`${BASE_URL}/${id}/edit`, category, {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-    });
+    const response = await apiClient.put(`${BASE_URL}/${id}/edit`, category);
     return response.data.data;
 };
 
 const deleteCategory = async (id: number | undefined): Promise<any> => {
-    const response = await axios.delete(`${BASE_URL}/${id}`, {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-    });
+    const response = await apiClient.delete(`${BASE_URL}/${id}`);
     return response.data.data;
 };
 

@@ -130,6 +130,15 @@ export interface CategoryResponse {
     updatedOn: Date;
 }
 
+export const initialCategoryOrBrandResponse = {
+    id: 0,
+    name: "",
+    code: "",
+    description: "",
+    createdOn: new Date(),
+    updatedOn: new Date(),
+};
+
 export interface CategoryRequest {
     id?: number;
     name: string;

@@ -20,7 +20,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { storage } from "../../../../../firebaseConfig";
 import NumericFormatCustom from "../../../../utils/NumericFormatCustom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { createVariant, getProductById } from "../../../../services/productAPI";
 
@@ -64,9 +64,8 @@ export default function AddVariant({}: Props) {
         createVariant(id, newVariant)
             .then((_res) => {
                 toast.success("Tạo phiên bản mới thành công");
-                setTimeout(() => {
-                    navigate(`/products/${_res.productId}/edit`);
-                }, 1000);
+                navigate(`/products/${_res.productId}/edit`);
+                
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -122,7 +121,6 @@ export default function AddVariant({}: Props) {
         <Box>
             <AddVariantAppBar id={id} submit={handleAddNewVariant} />
             <MainBox>
-                <ToastContainer hideProgressBar autoClose={3000} />
                 <Box sx={{ padding: "20px 24px", backgroundColor: "#F0F1F1" }}>
                     <Box
                         sx={{

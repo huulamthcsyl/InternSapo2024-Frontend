@@ -250,7 +250,7 @@ export default function ProductDetail({}: Props) {
                                         </Typography>
                                     </Box>
                                     {data?.variants?.length > 0 ? (
-                                        data.variants.map((variant, _index) => (
+                                        data.variants.map((variant) => (
                                             <Box
                                                 sx={{ padding: "3px" }}
                                                 key={variant.id}
