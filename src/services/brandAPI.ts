@@ -1,20 +1,17 @@
-import axios from "axios";
+import apiClient from "./api-clients";
 import { BrandRequest, BrandResponse } from "../models/ProductInterface";
 
-const BASE_URL = "http://localhost:8080/v1/products/brands";
+const BASE_URL = "http://13.211.146.23:8080/v1/products/brands";
 
 const INFINITY = 1000000000;
 
 const getAllBrands = async (query: string): Promise<BrandResponse[]> => {
     try {
-        const response = await axios.get(BASE_URL, {
+        const response = await apiClient.get(BASE_URL, {
             params: {
                 page: 0,
                 limit: INFINITY,
                 query: query,
-            },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         });
 
@@ -30,14 +27,11 @@ const getListOfBrands = async (
     query: string
 ): Promise<BrandResponse[]> => {
     try {
-        const response = await axios.get(`${BASE_URL}`, {
+        const response = await apiClient.get(`${BASE_URL}`, {
             params: {
                 page: page,
                 limit: limit,
                 query: query,
-            },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return response.data.data;
@@ -48,12 +42,9 @@ const getListOfBrands = async (
 
 const getNumberOfBrands = async (query: string): Promise<number> => {
     try {
-        const response = await axios.get(`${BASE_URL}/total-brands`, {
+        const response = await apiClient.get(`${BASE_URL}/total-brands`, {
             params: {
                 query: query,
-            },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return parseInt(response.data.data);
@@ -63,11 +54,7 @@ const getNumberOfBrands = async (query: string): Promise<number> => {
 };
 
 const createBrand = async (brand: BrandRequest): Promise<BrandResponse> => {
-    const response = await axios.post(`${BASE_URL}/create`, brand, {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-    });
+    const response = await apiClient.post(`${BASE_URL}/create`, brand);
     return response.data.data;
 };
 
@@ -75,20 +62,12 @@ const updateBrand = async (
     id: number | undefined,
     brand: BrandRequest
 ): Promise<BrandResponse> => {
-    const response = await axios.put(`${BASE_URL}/${id}/edit`, brand, {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-    });
+    const response = await apiClient.put(`${BASE_URL}/${id}/edit`, brand);
     return response.data.data;
 };
 
 const deleteBrand = async (id: number | undefined): Promise<any> => {
-    const response = await axios.delete(`${BASE_URL}/${id}`, {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-    });
+    const response = await apiClient.delete(`${BASE_URL}/${id}`);
     return response.data.data;
 };
 

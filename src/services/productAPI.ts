@@ -1,4 +1,3 @@
-import axios from "axios";
 import Variant from "../models/Variant";
 import {
     ProductRequest,
@@ -8,7 +7,7 @@ import {
 } from "../models/ProductInterface";
 import apiClient from "./api-clients";
 
-const BASE_URL = "http://localhost:8080/v1/products";
+const BASE_URL = "http://13.211.146.23:8080/v1/products";
 
 const LIMIT = 10;
 
@@ -19,9 +18,6 @@ const getAllVariantsForSearch = async (query: string): Promise<Variant[]> => {
                 page: 0,
                 limit: LIMIT,
                 query: query,
-            },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return response.data.data;
@@ -42,9 +38,6 @@ const getListOfProducts = async (
                 limit: limit,
                 query: query,
             },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
         });
         return response.data.data;
     } catch (error) {
@@ -54,12 +47,9 @@ const getListOfProducts = async (
 
 const getNumberOfProducts = async (query: string): Promise<number> => {
     try {
-        const response = await axios.get(`${BASE_URL}/total-products`, {
+        const response = await apiClient.get(`${BASE_URL}/total-products`, {
             params: {
                 query: query,
-            },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return parseInt(response.data.data);
@@ -71,18 +61,14 @@ const getNumberOfProducts = async (query: string): Promise<number> => {
 const getProductById = async (
     id: string | undefined
 ): Promise<ProductResponse> => {
-    const response = await axios.get(`${BASE_URL}/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
+    const response = await apiClient.get(`${BASE_URL}/${id}`);
     return response.data.data;
 };
 
 const createProduct = async (
     product: ProductRequest
 ): Promise<ProductResponse> => {
-    const response = await axios.post(`${BASE_URL}/create`, product, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
+    const response = await apiClient.post(`${BASE_URL}/create`, product);
     return response.data.data;
 };
 
@@ -90,16 +76,12 @@ const updateProduct = async (
     id: string | undefined,
     product: ProductRequest
 ): Promise<ProductResponse> => {
-    const response = await axios.put(`${BASE_URL}/${id}/edit`, product, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
+    const response = await apiClient.put(`${BASE_URL}/${id}/edit`, product);
     return response.data.data;
 };
 
 const deleteProduct = async (id: string | undefined): Promise<any> => {
-    const response = await axios.delete(`${BASE_URL}/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
+    const response = await apiClient.delete(`${BASE_URL}/${id}`);
     return response.data.data;
 };
 
@@ -109,14 +91,11 @@ const getListOfVariants = async (
     query: string
 ): Promise<VariantResponse[]> => {
     try {
-        const response = await axios.get(`${BASE_URL}/variants`, {
+        const response = await apiClient.get(`${BASE_URL}/variants`, {
             params: {
                 page: page,
                 limit: limit,
                 query: query,
-            },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return response.data.data;
@@ -127,12 +106,9 @@ const getListOfVariants = async (
 
 const getNumberOfVariants = async (query: string): Promise<number> => {
     try {
-        const response = await axios.get(`${BASE_URL}/total-variants`, {
+        const response = await apiClient.get(`${BASE_URL}/total-variants`, {
             params: {
                 query: query,
-            },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return parseInt(response.data.data);
@@ -145,14 +121,9 @@ const createVariant = async (
     id: string | undefined,
     variant: VariantRequest
 ): Promise<VariantResponse> => {
-    const response = await axios.post(
+    const response = await apiClient.post(
         `${BASE_URL}/${id}/variants/create`,
-        variant,
-        {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-        }
+        variant
     );
     return response.data.data;
 };
@@ -162,12 +133,11 @@ const deleteVariantByProperty = async (
     prop: string | undefined,
     value: string
 ): Promise<any> => {
-    const response = await axios.delete(BASE_URL, {
+    const response = await apiClient.delete(`${BASE_URL}/${id}/variants`, {
         params: {
             prop: prop,
             value: value,
         },
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data.data;
 };
