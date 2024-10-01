@@ -1,97 +1,57 @@
 import { Typography, Box, TextField, Button } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { useState } from "react";
-import {
-    CategoryRequest,
-    CategoryResponse,
-} from "../../../models/ProductInterface";
-import {
-    createCategory,
-    deleteCategory,
-    updateCategory,
-} from "../../../services/categoryAPI";
-import { toast, ToastContainer } from "react-toastify";
+import { BrandRequest, BrandResponse } from "../../../models/ProductInterface";
+import "react-toastify/dist/ReactToastify.css";
+import { deleteBrand, updateBrand } from "../../../services/brandAPI";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 type Props = {
-    isUpdate: number;
-    setIsUpdate: React.Dispatch<React.SetStateAction<number>>;
-    selectedCategory: any;
-    setSelectedCategory: React.Dispatch<
-        React.SetStateAction<CategoryResponse | null>
-    >;
+    setIsUpdate: React.Dispatch<React.SetStateAction<boolean>>;
+    selectedBrand: BrandResponse;
     onUpdate: () => void;
 };
 
-export default function UpdateOrAdd({
-    isUpdate,
+export default function UpdateBrand({
     setIsUpdate,
-    selectedCategory,
-    setSelectedCategory,
+    selectedBrand,
     onUpdate,
 }: Props) {
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-    const [form, setForm] = useState<CategoryRequest>(
-        { ...selectedCategory } || { name: "", code: "", description: "" }
-    );
+    const [form, setForm] = useState<BrandRequest>({ ...selectedBrand });
     function handleFormChange(e: React.ChangeEvent<HTMLInputElement>) {
         setForm({ ...form, [e.target.name]: e.target.value });
     }
-    function handleUpdateCategory() {
-        updateCategory(form.id, form)
+    function handleUpdateBrand() {
+        updateBrand(form.id, form)
             .then((_res) => {
-                toast.success("Cập nhật loại sản phẩm thành công", {
-                    position: "top-center",
-                });
+                toast.success("Cập nhật nhãn hiệu thành công");
                 onUpdate();
-                setTimeout(() => {
-                    setSelectedCategory(null);
-                    setIsUpdate(0);
-                }, 1000);
+                setIsUpdate(false);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
             });
     }
 
-    function handleCreateCategory() {
-        createCategory(form)
+    function handleDeleteBrand() {
+        deleteBrand(form.id)
             .then((_res) => {
-                toast.success("Tạo loại sản phẩm thành công");
+                toast.success("Xóa nhãn hiệu thành công");
                 onUpdate();
-                setTimeout(() => {
-                    setSelectedCategory(null);
-                    setIsUpdate(0);
-                }, 1000);
+                setIsUpdate(false);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
             });
     }
 
-    function handleDeleteCategory() {
-        deleteCategory(form.id)
-            .then((_res) => {
-                toast.success("Xoá loại sản phẩm thành công");
-                onUpdate();
-                setTimeout(() => {
-                    setSelectedCategory(null);
-                    setIsUpdate(0);
-                }, 1000);
-            })
-            .catch((error) => {
-                toast.error(error.response.data.message);
-            });
-    }
-
-    function backToListCategories() {
-        setIsUpdate(0);
-        setSelectedCategory(null);
-    }
     return (
         <Box
             sx={{
                 position: "fixed",
+                flexGrow: "2",
                 top: "0",
                 left: "0",
                 width: "100%",
@@ -103,7 +63,6 @@ export default function UpdateOrAdd({
                 zIndex: 10000,
             }}
         >
-            <ToastContainer hideProgressBar autoClose={3000} />
             {!openConfirmDialog ? (
                 <Box
                     sx={{
@@ -126,15 +85,8 @@ export default function UpdateOrAdd({
                             borderBottom: "1px solid #d9d9d9",
                         }}
                     >
-                        {isUpdate === 2 ? (
-                            <Typography variant="h5">
-                                Thêm mới loại sản phẩm
-                            </Typography>
-                        ) : (
-                            <Typography variant="h5">
-                                Cập nhật loại sản phẩm
-                            </Typography>
-                        )}
+                        <Typography variant="h5">Cập nhật nhãn hiệu</Typography>
+
                         <Close color="disabled" />
                     </Box>
                     <Box
@@ -147,7 +99,7 @@ export default function UpdateOrAdd({
                             <Typography
                                 sx={{ color: "#000", fontSize: "0.9rem" }}
                             >
-                                Tên loại sản phẩm
+                                Tên nhãn hiệu
                                 <span style={{ color: "#FF4D4D" }}>*</span>
                             </Typography>
                             <TextField
@@ -159,13 +111,11 @@ export default function UpdateOrAdd({
                                 onChange={handleFormChange}
                             />
                         </Box>
-
                         <Box sx={{ width: "50%" }}>
                             <Typography
-                                variant="body1"
                                 sx={{ color: "#000", fontSize: "0.9rem" }}
                             >
-                                Mã loại
+                                Mã nhãn hiệu
                             </Typography>
                             <TextField
                                 fullWidth
@@ -177,10 +127,7 @@ export default function UpdateOrAdd({
                         </Box>
                     </Box>
                     <Box>
-                        <Typography
-                            variant="body1"
-                            sx={{ color: "#000", fontSize: "0.9rem" }}
-                        >
+                        <Typography sx={{ color: "#000", fontSize: "0.9rem" }}>
                             Ghi chú
                         </Typography>
                         <TextField
@@ -192,6 +139,7 @@ export default function UpdateOrAdd({
                             onChange={handleFormChange}
                         />
                     </Box>
+
                     <Box
                         sx={{
                             display: "flex",
@@ -199,39 +147,24 @@ export default function UpdateOrAdd({
                             gap: "25px",
                         }}
                     >
-                        {isUpdate === 1 ? (
-                            <Button
-                                variant="outlined"
-                                color="error"
-                                onClick={() => setOpenConfirmDialog(true)}
-                            >
-                                Xóa
-                            </Button>
-                        ) : (
-                            <></>
-                        )}
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => setOpenConfirmDialog(true)}
+                        >
+                            Xóa
+                        </Button>
+
                         <Button
                             variant="outlined"
                             color="primary"
-                            onClick={backToListCategories}
+                            onClick={() => setIsUpdate(false)}
                         >
                             Thoát
                         </Button>
-                        {isUpdate === 1 ? (
-                            <Button
-                                variant="contained"
-                                onClick={handleUpdateCategory}
-                            >
-                                Lưu
-                            </Button>
-                        ) : (
-                            <Button
-                                variant="contained"
-                                onClick={handleCreateCategory}
-                            >
-                                Thêm
-                            </Button>
-                        )}
+                        <Button variant="contained" onClick={handleUpdateBrand}>
+                            Lưu
+                        </Button>
                     </Box>
                 </Box>
             ) : (
@@ -256,12 +189,12 @@ export default function UpdateOrAdd({
                             borderBottom: "1px solid #d9d9d9",
                         }}
                     >
-                        <Typography variant="h5">Xóa loại sản phẩm</Typography>
+                        <Typography variant="h5">Xóa nhãn hiệu</Typography>
                         <Close color="disabled" />
                     </Box>
                     <Typography>
-                        Thao tác này sẽ xóa loại sản phẩm bạn đã chọn. Thao tác
-                        này không thể khôi phục.
+                        Thao tác này sẽ xóa nhãn hiệu bạn đã chọn. Thao tác này
+                        không thể khôi phục.
                     </Typography>
                     <Box
                         sx={{
@@ -273,14 +206,14 @@ export default function UpdateOrAdd({
                         <Button
                             variant="outlined"
                             color="error"
-                            onClick={backToListCategories}
+                            onClick={() => setIsUpdate(false)}
                         >
                             Thoát
                         </Button>
                         <Button
                             variant="contained"
                             color="error"
-                            onClick={handleDeleteCategory}
+                            onClick={handleDeleteBrand}
                         >
                             Xóa
                         </Button>

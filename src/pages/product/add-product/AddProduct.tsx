@@ -15,12 +15,13 @@ import {
     Typography,
 } from "@mui/material";
 import MainBox from "../../../components/layout/MainBox";
-import { Add, Image, Cancel } from "@mui/icons-material";
+import { Add, Image, Cancel, AddCircle } from "@mui/icons-material";
 import AddProductAppBar from "./AddProductAppBar";
 import { useEffect, useState } from "react";
 import {
     BrandResponse,
     CategoryResponse,
+    initialProductRequest,
     ProductRequest,
     VariantRequest,
 } from "../../../models/ProductInterface";
@@ -29,25 +30,20 @@ import { storage } from "../../../../firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import NumericFormatCustom from "../../../utils/NumericFormatCustom";
 import { createProduct } from "../../../services/productAPI";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getAllBrands } from "../../../services/brandAPI";
 import { getAllCategories } from "../../../services/categoryAPI";
 import { useNavigate } from "react-router-dom";
+import AddCategory from "../categories/AddCategory";
+import AddBrand from "../brands/AddBrand";
 
 type Props = {};
 
 export default function AddProduct({}: Props) {
-    const [newProduct, setNewProduct] = useState<ProductRequest>({
-        name: "",
-        categoryId: 0,
-        brandId: 0,
-        description: "",
-        imagePath: [],
-        createdOn: new Date(),
-        updatedOn: new Date(),
-        variants: [],
-    });
+    const [newProduct, setNewProduct] = useState<ProductRequest>(
+        initialProductRequest
+    );
     const [priceForSale, setPriceForSale] = useState(0);
     const [initialPrice, setInitialPrice] = useState(0);
     const [sizes, setSizes] = useState<string[]>([]);
@@ -58,6 +54,8 @@ export default function AddProduct({}: Props) {
     const [variants, setVariants] = useState<VariantRequest[]>([]);
     const [nameError, setNameError] = useState<boolean>(false);
     const [images, setImages] = useState<string[]>([]);
+    const [createCategory, setCreateCategory] = useState<boolean>(false);
+    const [createBrand, setCreateBrand] = useState<boolean>(false);
     const navigate = useNavigate();
 
     function setAllInitialPrices(newInitialPrice: number) {
@@ -79,15 +77,17 @@ export default function AddProduct({}: Props) {
     }
 
     function handleDataChange(e: any) {
-        const { name, value } = e.target;
-        setNewProduct((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-        if (name === "name" && value.trim() === "") {
-            setNameError(true);
-        } else {
-            setNameError(false);
+        if (e.target.value != -1) {
+            const { name, value } = e.target;
+            setNewProduct((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+            if (name === "name" && value.trim() === "") {
+                setNameError(true);
+            } else {
+                setNameError(false);
+            }
         }
     }
 
@@ -99,7 +99,6 @@ export default function AddProduct({}: Props) {
         };
         setVariants(updatedVariants);
     }
-
     function handleAddNewProduct() {
         if (newProduct.name.trim() !== "") {
             let updatedVariants: VariantRequest[] = [];
@@ -129,7 +128,6 @@ export default function AddProduct({}: Props) {
                     };
                 });
             }
-            console.log(updatedVariants);
             createProduct({
                 ...newProduct,
                 variants: updatedVariants,
@@ -137,9 +135,7 @@ export default function AddProduct({}: Props) {
             })
                 .then((_res) => {
                     toast.success("Tạo sản phẩm thành công");
-                    setTimeout(() => {
-                        navigate(`/products/${_res.id}`);
-                    }, 1000);
+                    navigate(`/products/${_res.id}`);
                 })
                 .catch((error) => {
                     toast.error(error.response.data.message);
@@ -195,12 +191,32 @@ export default function AddProduct({}: Props) {
         });
     }
 
-    useEffect(() => {
-        getAllBrands("").then((res) => {
-            setBrands(res);
-        });
+    function loadAllCategories() {
         getAllCategories("").then((res) => {
             setCategories(res);
+            setNewProduct((prev) => ({
+                ...prev,
+                categoryId: res[0].id,
+            }));
+        });
+    }
+
+    function loadAllBrands() {
+        getAllBrands("").then((res) => {
+            setBrands(res);
+            setNewProduct((prev) => ({
+                ...prev,
+                brandId: res[0].id,
+            }));
+        });
+    }
+
+    useEffect(() => {
+        getAllCategories("").then((res) => {
+            setCategories(res);
+        });
+        getAllBrands("").then((res) => {
+            setBrands(res);
         });
     }, []);
 
@@ -638,12 +654,32 @@ export default function AddProduct({}: Props) {
                                         size="small"
                                         fullWidth
                                         value={
-                                            newProduct.categoryId !== undefined
+                                            newProduct.categoryId !== 0
                                                 ? newProduct.categoryId
                                                 : ""
                                         }
                                         onChange={handleDataChange}
                                     >
+                                        <MenuItem value={-1}>
+                                            <Button
+                                                startIcon={
+                                                    <AddCircle
+                                                        sx={{
+                                                            width: 20,
+                                                            height: 20,
+                                                        }}
+                                                        color="primary"
+                                                    />
+                                                }
+                                                sx={{ textTransform: "none" }}
+                                                variant="text"
+                                                onClick={() =>
+                                                    setCreateCategory(true)
+                                                }
+                                            >
+                                                Thêm loại sản phẩm
+                                            </Button>
+                                        </MenuItem>
                                         {categories?.map((category) => (
                                             <MenuItem
                                                 key={category.id}
@@ -669,12 +705,32 @@ export default function AddProduct({}: Props) {
                                         id="brand"
                                         name="brandId"
                                         value={
-                                            newProduct.brandId !== undefined
+                                            newProduct.brandId !== 0
                                                 ? newProduct.brandId
                                                 : ""
                                         }
                                         onChange={handleDataChange}
                                     >
+                                        <MenuItem value={-1}>
+                                            <Button
+                                                startIcon={
+                                                    <AddCircle
+                                                        sx={{
+                                                            width: 20,
+                                                            height: 20,
+                                                        }}
+                                                        color="primary"
+                                                    />
+                                                }
+                                                sx={{ textTransform: "none" }}
+                                                variant="text"
+                                                onClick={() =>
+                                                    setCreateBrand(true)
+                                                }
+                                            >
+                                                Thêm nhãn hiệu
+                                            </Button>
+                                        </MenuItem>
                                         {brands?.map((brand) => (
                                             <MenuItem
                                                 key={brand.id}
@@ -932,8 +988,23 @@ export default function AddProduct({}: Props) {
                         <></>
                     )}
                 </Box>
+                {createCategory ? (
+                    <AddCategory
+                        setIsAdd={setCreateCategory}
+                        onUpdate={loadAllCategories}
+                    />
+                ) : (
+                    <></>
+                )}
+                {createBrand ? (
+                    <AddBrand
+                        setIsAdd={setCreateBrand}
+                        onUpdate={loadAllBrands}
+                    />
+                ) : (
+                    <></>
+                )}
             </MainBox>
-            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }
