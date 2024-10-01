@@ -1,4 +1,5 @@
 export default class Order {
+    id: number;
     code: string;
     customerId: number;
     orderDetails: [];
@@ -9,7 +10,8 @@ export default class Order {
     cashRepay: number;
     totalPayment: number;
     createdOn: Date;
-    constructor(code: string, customerId: number, orderDetails: [], note: string, paymentType: string, totalQuantity: number, totalPayment: number, cashReceived: number, cashRepay: number, createdOn: Date) {
+    constructor(id: number, code: string, customerId: number, orderDetails: [], note: string, paymentType: string, totalQuantity: number, totalPayment: number, cashReceived: number, cashRepay: number, createdOn: Date) {
+        this.id = id;
         this.code = code;
         this.customerId = customerId;
         this.orderDetails = orderDetails;
@@ -23,6 +25,6 @@ export default class Order {
     }
 
     static fromJson(json: any): Order {
-        return new Order(json.code, json.customerId, json.orderDetails, json.note, json.paymentType, json.totalQuantity, json.totalPayment, json.cashReceived, json.cashRepay, new Date(json.createdOn));
+        return new Order(json.id, json.code, json.customerId, json.orderDetails, json.note, json.paymentType, json.totalQuantity, json.totalPayment, json.cashReceived, json.cashRepay, new Date(json.createdOn));
     }
 }

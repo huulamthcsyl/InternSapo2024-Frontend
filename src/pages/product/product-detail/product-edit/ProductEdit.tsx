@@ -2,8 +2,7 @@ import {
     Box,
     Button,
     CardMedia,
-    FormControl,
-    InputLabel,
+    CircularProgress,
     MenuItem,
     Select,
     TextField,
@@ -17,6 +16,7 @@ import { useEffect, useState } from "react";
 import {
     BrandResponse,
     CategoryResponse,
+    initialProductRequest,
     ProductRequest,
     VariantRequest,
 } from "../../../../models/ProductInterface";
@@ -35,7 +35,9 @@ type Props = {};
 export default function ProductDetail({}: Props) {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [product, setProduct] = useState<ProductRequest>({});
+    const [product, setProduct] = useState<ProductRequest>(
+        initialProductRequest
+    );
     const [sizes, setSizes] = useState<string[]>([]);
     const [additionalSizes, setAdditionalSizes] = useState<string[]>([]);
     const [additionalColors, setAdditionalColors] = useState<string[]>([]);
@@ -49,6 +51,7 @@ export default function ProductDetail({}: Props) {
     const [brands, setBrands] = useState<BrandResponse[]>([]);
     const [variants, setVariants] = useState<VariantRequest[]>([]);
     const [images, setImages] = useState<string[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     function handleProductChange(e: any) {
         setProduct({ ...product, [e.target.name]: e.target.value });
@@ -60,6 +63,22 @@ export default function ProductDetail({}: Props) {
             ...updatedVariants[index],
             [field]: value,
         };
+        setVariants(updatedVariants);
+    }
+
+    function setAllInitialPrices(newInitialPrice: number) {
+        const updatedVariants = variants.map((variant) => ({
+            ...variant,
+            initialPrice: newInitialPrice,
+        }));
+        setVariants(updatedVariants);
+    }
+
+    function setAllPriceForSale(newPriceForSale: number) {
+        const updatedVariants: VariantRequest[] = variants.map((variant) => ({
+            ...variant,
+            priceForSale: newPriceForSale,
+        }));
         setVariants(updatedVariants);
     }
 
@@ -79,7 +98,7 @@ export default function ProductDetail({}: Props) {
                 "state_changed",
                 (snapshot) => {
                     //Clearing snapshot cannot upload images
-                    const progressPercent =
+                    const _progressPercent =
                         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 },
                 (error) => {
@@ -110,6 +129,7 @@ export default function ProductDetail({}: Props) {
         });
     }
     function handleUpdateProduct() {
+        console.log(variants);
         updateProduct(id, {
             ...product,
             variants: variants,
@@ -117,20 +137,33 @@ export default function ProductDetail({}: Props) {
         })
             .then((_res) => {
                 toast.success("Cập nhật sản phẩm thành công");
+                setTimeout(() => {
+                    navigate(`/products/${_res.id}`);
+                }, 1000);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
             });
     }
     useEffect(() => {
-        getProductById(id).then((res) => {
-            setProduct(res);
-            setSizes(res.size);
-            setColors(res.color);
-            setMaterials(res.material);
-            setVariants([...res.variants]);
-            setImages([...res.imagePath]);
-        });
+        getProductById(id)
+            .then((res) => {
+                setProduct(res);
+                setSizes(res.size);
+                setColors(res.color);
+                setMaterials(res.material);
+                setVariants([...res.variants]);
+                setImages([...res.imagePath]);
+                // if (
+                //     res.size.length == 0 &&
+                //     res.color.length == 0 &&
+                //     res.material.length == 0
+                // ) {
+                //     setPriceForSale(res.variants[0].priceForSale);
+                //     setInitialPrice(res.variants[0].initialPrice);
+                // }
+            })
+            .finally(() => setLoading(false));
         getAllCategories("").then((res) => {
             setCategories(res);
         });
@@ -196,10 +229,29 @@ export default function ProductDetail({}: Props) {
         materials,
         sizes,
     ]);
+    if (loading) {
+        return (
+            <Box>
+                <ProductEditAppBar />
+                <MainBox>
+                    <Box
+                        sx={{
+                            padding: "20px 24px",
+                            display: "flex",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <CircularProgress />
+                    </Box>
+                </MainBox>
+            </Box>
+        );
+    }
     return (
         <Box>
             <ProductEditAppBar id={id} submit={handleUpdateProduct} />
             <MainBox>
+                <ToastContainer hideProgressBar autoClose={3000} />
                 <Box sx={{ padding: "20px 24px", backgroundColor: "#F0F1F1" }}>
                     <Box
                         sx={{
@@ -228,32 +280,55 @@ export default function ProductDetail({}: Props) {
                                         borderBottom: "1px solid #d9d9d9",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography
+                                        sx={{
+                                            fontSize: "18px",
+                                        }}
+                                    >
                                         Thông tin sản phẩm
                                     </Typography>
                                 </Box>
                                 <Box sx={{ padding: "16px" }}>
-                                    <TextField
-                                        required
-                                        fullWidth
-                                        name="name"
-                                        label="Tên sản phẩm"
-                                        value={product?.name}
-                                        onChange={handleProductChange}
-                                        margin="normal"
-                                        size="small"
-                                    />
-                                    <TextField
-                                        fullWidth
-                                        multiline
-                                        name="description"
-                                        value={product?.description}
-                                        onChange={handleProductChange}
-                                        rows={4}
-                                        label="Mô tả sản phẩm"
-                                        defaultValue="foo"
-                                        margin="normal"
-                                    />
+                                    <Box sx={{ width: "100%" }}>
+                                        <Typography
+                                            sx={{
+                                                color: "#000",
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Tên sản phẩm
+                                            <span style={{ color: "#FF4D4D" }}>
+                                                *
+                                            </span>
+                                        </Typography>
+                                        <TextField
+                                            required
+                                            fullWidth
+                                            name="name"
+                                            value={product?.name}
+                                            onChange={handleProductChange}
+                                            size="small"
+                                        />
+                                    </Box>
+
+                                    <Box sx={{ width: "100%", mt: "15px" }}>
+                                        <Typography
+                                            sx={{
+                                                color: "#000",
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Mô tả sản phẩm
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            multiline
+                                            name="description"
+                                            value={product?.description}
+                                            onChange={handleProductChange}
+                                            rows={4}
+                                        />
+                                    </Box>
                                 </Box>
                             </Box>
                             <Box
@@ -272,7 +347,11 @@ export default function ProductDetail({}: Props) {
                                         mt: "24px",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography
+                                        sx={{
+                                            fontSize: "18px",
+                                        }}
+                                    >
                                         Ảnh sản phẩm
                                     </Typography>
                                     <Button
@@ -364,111 +443,185 @@ export default function ProductDetail({}: Props) {
                                     ))}
                                 </Box>
                             </Box>
-                            <Box
-                                sx={{
-                                    borderRadius: "5px",
-                                    backgroundColor: "white",
-                                }}
-                            >
+                            {sizes.length == 0 &&
+                            colors.length == 0 &&
+                            materials.length == 0 ? (
                                 <Box
                                     sx={{
-                                        padding: "16px",
-                                        height: "27px",
-                                        borderBottom: "1px solid #d9d9d9",
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        mt: "24px",
+                                        borderRadius: "5px",
+                                        backgroundColor: "white",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
-                                        Thuộc tính
-                                    </Typography>
-                                </Box>
-                                <Box
-                                    sx={{
-                                        padding: "20px 25px",
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        gap: "20px",
-                                        width: "70%",
-                                    }}
-                                >
-                                    <Box sx={{ display: "flex" }}>
-                                        <Typography
-                                            fontWeight={"bold"}
-                                            width={150}
-                                        >
-                                            Tên thuộc tính
-                                        </Typography>
-                                        <Typography
-                                            fontWeight={"bold"}
-                                            sx={{ flexGrow: 1 }}
-                                        >
-                                            Giá trị
+                                    <Box
+                                        sx={{
+                                            mt: "24px",
+                                            padding: "16px",
+                                            height: "27px",
+                                            borderBottom: "1px solid #d9d9d9",
+                                        }}
+                                    >
+                                        <Typography sx={{ fontSize: "20px" }}>
+                                            Giá sản phẩm
                                         </Typography>
                                     </Box>
                                     <Box
                                         sx={{
                                             display: "flex",
-                                            alignItems: "center",
+                                            padding: "16px",
+                                            gap: "20px",
                                         }}
                                     >
-                                        <Typography
-                                            fontSize={"0.9rem"}
-                                            width={150}
-                                        >
-                                            Kích cỡ
-                                        </Typography>
-                                        <Property
-                                            fixedBadges={sizes}
-                                            badges={additionalSizes}
-                                            setBadges={setAdditionalSizes}
-                                            prop="size"
-                                            id={id}
+                                        <TextField
+                                            label="Giá bán"
+                                            size="small"
+                                            value={variants[0]?.priceForSale}
+                                            name="priceForSale"
+                                            onChange={(e) => {
+                                                setAllPriceForSale(
+                                                    parseInt(e.target.value)
+                                                );
+                                            }}
+                                            sx={{ width: "50%" }}
+                                            slotProps={{
+                                                input: {
+                                                    inputComponent:
+                                                        NumericFormatCustom as any,
+                                                },
+                                            }}
                                         />
-                                    </Box>
-                                    <Box
-                                        sx={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        <Typography
-                                            fontSize={"0.9rem"}
-                                            width={150}
-                                        >
-                                            Màu sắc
-                                        </Typography>
-                                        <Property
-                                            fixedBadges={colors}
-                                            badges={additionalColors}
-                                            setBadges={setAdditionalColors}
-                                            prop="color"
-                                            id={id}
-                                        />
-                                    </Box>
-                                    <Box
-                                        sx={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        <Typography
-                                            fontSize={"0.9rem"}
-                                            width={150}
-                                        >
-                                            Chất liệu
-                                        </Typography>
-                                        <Property
-                                            fixedBadges={materials}
-                                            badges={additionalMaterials}
-                                            setBadges={setAdditionalMaterials}
-                                            prop="material"
-                                            id={id}
+                                        <TextField
+                                            label="Giá nhập"
+                                            size="small"
+                                            value={variants[0]?.initialPrice}
+                                            name="initialPrice"
+                                            onChange={(e) => {
+                                                setAllInitialPrices(
+                                                    parseInt(e.target.value)
+                                                );
+                                            }}
+                                            sx={{ width: "50%" }}
+                                            slotProps={{
+                                                input: {
+                                                    inputComponent:
+                                                        NumericFormatCustom as any,
+                                                },
+                                            }}
                                         />
                                     </Box>
                                 </Box>
-                            </Box>
+                            ) : (
+                                <Box
+                                    sx={{
+                                        borderRadius: "5px",
+                                        backgroundColor: "white",
+                                    }}
+                                >
+                                    <Box
+                                        sx={{
+                                            padding: "16px",
+                                            height: "27px",
+                                            borderBottom: "1px solid #d9d9d9",
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            mt: "24px",
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: "18px",
+                                            }}
+                                        >
+                                            Thuộc tính
+                                        </Typography>
+                                    </Box>
+                                    <Box
+                                        sx={{
+                                            padding: "20px 25px",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            gap: "20px",
+                                            width: "70%",
+                                        }}
+                                    >
+                                        <Box sx={{ display: "flex" }}>
+                                            <Typography
+                                                fontWeight={"bold"}
+                                                width={150}
+                                            >
+                                                Tên thuộc tính
+                                            </Typography>
+                                            <Typography
+                                                fontWeight={"bold"}
+                                                sx={{ flexGrow: 1 }}
+                                            >
+                                                Giá trị
+                                            </Typography>
+                                        </Box>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                            }}
+                                        >
+                                            <Typography
+                                                fontSize={"0.9rem"}
+                                                width={150}
+                                            >
+                                                Kích cỡ
+                                            </Typography>
+                                            <Property
+                                                fixedBadges={sizes}
+                                                badges={additionalSizes}
+                                                setBadges={setAdditionalSizes}
+                                                prop="size"
+                                                id={id}
+                                            />
+                                        </Box>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                            }}
+                                        >
+                                            <Typography
+                                                fontSize={"0.9rem"}
+                                                width={150}
+                                            >
+                                                Màu sắc
+                                            </Typography>
+                                            <Property
+                                                fixedBadges={colors}
+                                                badges={additionalColors}
+                                                setBadges={setAdditionalColors}
+                                                prop="color"
+                                                id={id}
+                                            />
+                                        </Box>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                            }}
+                                        >
+                                            <Typography
+                                                fontSize={"0.9rem"}
+                                                width={150}
+                                            >
+                                                Chất liệu
+                                            </Typography>
+                                            <Property
+                                                fixedBadges={materials}
+                                                badges={additionalMaterials}
+                                                setBadges={
+                                                    setAdditionalMaterials
+                                                }
+                                                prop="material"
+                                                id={id}
+                                            />
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            )}
                         </Box>
                         <Box
                             sx={{
@@ -485,20 +638,29 @@ export default function ProductDetail({}: Props) {
                                     borderBottom: "1px solid #d9d9d9",
                                 }}
                             >
-                                <Typography sx={{ fontSize: "20px" }}>
+                                <Typography
+                                    sx={{
+                                        fontSize: "18px",
+                                    }}
+                                >
                                     Phân loại
                                 </Typography>
                             </Box>
                             <Box sx={{ padding: "16px" }}>
-                                <FormControl fullWidth margin="normal">
-                                    <InputLabel id="category">
+                                <Box>
+                                    <Typography
+                                        sx={{
+                                            color: "#000",
+                                            fontSize: "0.9rem",
+                                        }}
+                                    >
                                         Loại sản phẩm
-                                    </InputLabel>
+                                    </Typography>
                                     <Select
-                                        labelId="category"
+                                        fullWidth
+                                        size="small"
                                         id="category"
                                         name="categoryId"
-                                        label="Loại sản phẩm"
                                         value={
                                             product?.categoryId !== undefined
                                                 ? product?.categoryId
@@ -515,12 +677,19 @@ export default function ProductDetail({}: Props) {
                                             </MenuItem>
                                         ))}
                                     </Select>
-                                </FormControl>
-                                <FormControl fullWidth margin="normal">
-                                    <InputLabel id="brand">
+                                </Box>
+                                <Box sx={{ mt: "15px" }}>
+                                    <Typography
+                                        sx={{
+                                            color: "#000",
+                                            fontSize: "0.9rem",
+                                        }}
+                                    >
                                         Nhãn hiệu
-                                    </InputLabel>
+                                    </Typography>
                                     <Select
+                                        fullWidth
+                                        size="small"
                                         labelId="brand"
                                         id="brand"
                                         name="brandId"
@@ -540,28 +709,18 @@ export default function ProductDetail({}: Props) {
                                             </MenuItem>
                                         ))}
                                     </Select>
-                                </FormControl>
+                                </Box>
                             </Box>
                         </Box>
                     </Box>
-                    <Box
-                        sx={{
-                            display: "flex",
-                            height: "60px",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }}
-                    >
-                        <Typography sx={{ fontSize: "20px" }}>
-                            Chi tiết phiên bản
-                        </Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", gap: "24px" }}>
+                    {sizes.length == 0 &&
+                    colors.length == 0 &&
+                    materials.length == 0 ? (
                         <Box
                             sx={{
+                                mt: "24px",
                                 borderRadius: "5px",
                                 backgroundColor: "white",
-                                width: "35%",
                                 height: "fit-content",
                             }}
                         >
@@ -574,106 +733,20 @@ export default function ProductDetail({}: Props) {
                                     justifyContent: "space-between",
                                 }}
                             >
-                                <Typography sx={{ fontSize: "20px" }}>
+                                <Typography
+                                    sx={{
+                                        fontSize: "18px",
+                                    }}
+                                >
                                     Phiên bản
                                 </Typography>
-                                <Button></Button>
-                            </Box>
-                            {variants?.length > 0 ? (
-                                variants.map((variant, index) => (
-                                    <Box
-                                        sx={{ padding: "3px" }}
-                                        key={variant.id}
-                                        onClick={() => setCurrentVariant(index)}
-                                    >
-                                        <Box
-                                            sx={{
-                                                backgroundColor:
-                                                    currentVariant == index
-                                                        ? "#1976d2"
-                                                        : "#fff",
-                                                padding: "16px",
-                                                height: "40px",
-                                                display: "flex",
-                                                gap: "10px",
-                                                borderRadius: "3px",
-                                            }}
-                                        >
-                                            {variant.imagePath.length > 0 ? (
-                                                <CardMedia
-                                                    component="img"
-                                                    sx={{
-                                                        padding: "0 10px",
-                                                        width: 40,
-                                                        height: 40,
-                                                    }}
-                                                    image={variant.imagePath}
-                                                    alt="Paella dish"
-                                                />
-                                            ) : (
-                                                <Image
-                                                    sx={{
-                                                        padding: "0 10px",
-                                                        width: 40,
-                                                        height: 40,
-                                                        color:
-                                                            currentVariant ==
-                                                            index
-                                                                ? "#fff"
-                                                                : "#d9d9d9",
-                                                    }}
-                                                />
-                                            )}
-                                            <Box>
-                                                <Typography
-                                                    fontSize={"0.9rem"}
-                                                    sx={{
-                                                        color:
-                                                            currentVariant ==
-                                                            index
-                                                                ? "#fff"
-                                                                : "#000",
-                                                    }}
-                                                >
-                                                    {[
-                                                        variant.size,
-                                                        variant.color,
-                                                        variant.material,
-                                                    ]
-                                                        .filter(Boolean)
-                                                        .join(" - ") || ""}
-                                                </Typography>
-                                                <Typography
-                                                    fontSize={"0.9rem"}
-                                                    sx={{
-                                                        color:
-                                                            currentVariant ==
-                                                            index
-                                                                ? "#fff"
-                                                                : "#000",
-                                                    }}
-                                                >
-                                                    Tồn kho: {variant.quantity}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                    </Box>
-                                ))
-                            ) : (
-                                <></>
-                            )}
-                            <Box
-                                sx={{
-                                    borderTop: "1px solid #d9d9d9",
-                                    height: "60px",
-                                    display: "flex",
-                                    justifyContent: "center",
-                                }}
-                            >
                                 <Button
                                     startIcon={
                                         <AddCircle
-                                            sx={{ width: 20, height: 20 }}
+                                            sx={{
+                                                width: 20,
+                                                height: 20,
+                                            }}
                                             color="primary"
                                         />
                                     }
@@ -688,85 +761,77 @@ export default function ProductDetail({}: Props) {
                                     Thêm phiên bản
                                 </Button>
                             </Box>
+                            <Box
+                                sx={{
+                                    padding: "20px",
+                                    height: 100,
+                                    display: "flex",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <Typography color="textDisabled">
+                                    Sản phẩm hiện chưa có phiên bản nào.
+                                </Typography>
+                            </Box>
                         </Box>
-                        {variants.map((variant, index) =>
-                            currentVariant == index ? (
-                                <Box sx={{ flexGrow: 1 }}>
+                    ) : (
+                        <Box>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    height: "60px",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <Typography sx={{ fontSize: "20px" }}>
+                                    Chi tiết phiên bản
+                                </Typography>
+                            </Box>
+                            <Box sx={{ display: "flex", gap: "24px" }}>
+                                <Box
+                                    sx={{
+                                        borderRadius: "5px",
+                                        backgroundColor: "white",
+                                        width: "35%",
+                                        height: "fit-content",
+                                    }}
+                                >
                                     <Box
                                         sx={{
-                                            borderRadius: "5px",
-                                            backgroundColor: "white",
+                                            padding: "16px",
+                                            height: "27px",
+                                            borderBottom: "1px solid #d9d9d9",
+                                            display: "flex",
+                                            justifyContent: "space-between",
                                         }}
                                     >
-                                        <Box
-                                            sx={{
-                                                padding: "16px",
-                                                height: "27px",
-                                                borderBottom:
-                                                    "1px solid #d9d9d9",
-                                            }}
-                                        >
-                                            <Typography
-                                                sx={{ fontSize: "20px" }}
-                                            >
-                                                Thông tin chi tiết phiên bản
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{ display: "flex" }}>
+                                        <Typography sx={{ fontSize: "18px" }}>
+                                            Phiên bản
+                                        </Typography>
+                                        <Button></Button>
+                                    </Box>
+                                    {variants?.length > 0 ? (
+                                        variants.map((variant, index) => (
                                             <Box
-                                                sx={{
-                                                    width: "60%",
-                                                    padding: "16px",
-                                                    display: "flex",
-                                                    flexDirection: "column",
-                                                    gap: "10px",
-                                                }}
-                                            >
-                                                <TextField
-                                                    required
-                                                    label="Tên phiên bản"
-                                                    value={variant?.name}
-                                                    onChange={(e) =>
-                                                        handleVariantChange(
-                                                            index,
-                                                            "name",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    fullWidth
-                                                    size="small"
-                                                    margin="normal"
-                                                />
-                                                <TextField
-                                                    label="Mã SKU"
-                                                    value={variant?.sku}
-                                                    onChange={(e) =>
-                                                        handleVariantChange(
-                                                            index,
-                                                            "sku",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    sx={{ width: "50%" }}
-                                                    size="small"
-                                                    margin="normal"
-                                                />
-                                            </Box>
-                                            <Box
-                                                sx={{
-                                                    flexGrow: 1,
-                                                    display: "flex",
-                                                    justifyContent: "center",
-                                                    alignItems: "center",
-                                                }}
+                                                sx={{ padding: "3px" }}
+                                                key={variant.id}
+                                                onClick={() =>
+                                                    setCurrentVariant(index)
+                                                }
                                             >
                                                 <Box
                                                     sx={{
-                                                        mt: 2,
+                                                        backgroundColor:
+                                                            currentVariant ==
+                                                            index
+                                                                ? "#1976d2"
+                                                                : "#fff",
+                                                        padding: "16px",
+                                                        height: "40px",
                                                         display: "flex",
-                                                        flexDirection: "column",
-                                                        justifyContent:
-                                                            "center",
+                                                        gap: "10px",
+                                                        borderRadius: "3px",
                                                     }}
                                                 >
                                                     {variant.imagePath.length >
@@ -774,9 +839,10 @@ export default function ProductDetail({}: Props) {
                                                         <CardMedia
                                                             component="img"
                                                             sx={{
-                                                                borderRadius: 1,
-                                                                width: 100,
-                                                                height: 100,
+                                                                padding:
+                                                                    "0 10px",
+                                                                width: 40,
+                                                                height: 40,
                                                             }}
                                                             image={
                                                                 variant.imagePath
@@ -785,324 +851,650 @@ export default function ProductDetail({}: Props) {
                                                         />
                                                     ) : (
                                                         <Image
-                                                            color="disabled"
                                                             sx={{
-                                                                width: 100,
-                                                                height: 100,
+                                                                padding:
+                                                                    "0 10px",
+                                                                width: 40,
+                                                                height: 40,
+                                                                color:
+                                                                    currentVariant ==
+                                                                    index
+                                                                        ? "#fff"
+                                                                        : "#d9d9d9",
                                                             }}
                                                         />
                                                     )}
-                                                    <Button
-                                                        variant="text"
-                                                        color="primary"
+                                                    <Box>
+                                                        <Typography
+                                                            fontSize={"0.9rem"}
+                                                            sx={{
+                                                                color:
+                                                                    currentVariant ==
+                                                                    index
+                                                                        ? "#fff"
+                                                                        : "#000",
+                                                            }}
+                                                        >
+                                                            {[
+                                                                variant.size,
+                                                                variant.color,
+                                                                variant.material,
+                                                            ]
+                                                                .filter(Boolean)
+                                                                .join(" - ") ||
+                                                                ""}
+                                                        </Typography>
+                                                        <Typography
+                                                            fontSize={"0.9rem"}
+                                                            sx={{
+                                                                color:
+                                                                    currentVariant ==
+                                                                    index
+                                                                        ? "#fff"
+                                                                        : "#000",
+                                                            }}
+                                                        >
+                                                            Tồn kho:{" "}
+                                                            {variant.quantity}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        ))
+                                    ) : (
+                                        <></>
+                                    )}
+                                    <Box
+                                        sx={{
+                                            borderTop: "1px solid #d9d9d9",
+                                            height: "60px",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <Button
+                                            startIcon={
+                                                <AddCircle
+                                                    sx={{
+                                                        width: 20,
+                                                        height: 20,
+                                                    }}
+                                                    color="primary"
+                                                />
+                                            }
+                                            sx={{ textTransform: "none" }}
+                                            variant="text"
+                                            onClick={() =>
+                                                navigate(
+                                                    `/products/${id}/variants/create`
+                                                )
+                                            }
+                                        >
+                                            Thêm phiên bản
+                                        </Button>
+                                    </Box>
+                                </Box>
+                                {variants.map((variant, index) =>
+                                    currentVariant == index ? (
+                                        <Box sx={{ flexGrow: 1 }}>
+                                            <Box
+                                                sx={{
+                                                    borderRadius: "5px",
+                                                    backgroundColor: "white",
+                                                }}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        padding: "16px",
+                                                        height: "27px",
+                                                        borderBottom:
+                                                            "1px solid #d9d9d9",
+                                                    }}
+                                                >
+                                                    <Typography
                                                         sx={{
-                                                            textTransform:
-                                                                "none",
-                                                            position:
-                                                                "relative",
-                                                            overflow: "hidden",
+                                                            fontSize: "20px",
                                                         }}
                                                     >
-                                                        <input
-                                                            type="file"
-                                                            multiple
-                                                            accept="image/*"
+                                                        Thông tin chi tiết phiên
+                                                        bản
+                                                    </Typography>
+                                                </Box>
+                                                <Box sx={{ display: "flex" }}>
+                                                    <Box
+                                                        sx={{
+                                                            width: "60%",
+                                                            padding: "16px",
+                                                            display: "flex",
+                                                            flexDirection:
+                                                                "column",
+                                                            gap: "15px",
+                                                        }}
+                                                    >
+                                                        <Box>
+                                                            <Typography
+                                                                sx={{
+                                                                    color: "#000",
+                                                                    fontSize:
+                                                                        "0.9rem",
+                                                                }}
+                                                            >
+                                                                Tên phiên bản
+                                                                <span
+                                                                    style={{
+                                                                        color: "#FF4D4D",
+                                                                    }}
+                                                                >
+                                                                    *
+                                                                </span>
+                                                            </Typography>
+                                                            <TextField
+                                                                required
+                                                                value={
+                                                                    variant?.name
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleVariantChange(
+                                                                        index,
+                                                                        "name",
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                                fullWidth
+                                                                size="small"
+                                                            />
+                                                        </Box>
+                                                        <Box>
+                                                            <Typography
+                                                                sx={{
+                                                                    color: "#000",
+                                                                    fontSize:
+                                                                        "0.9rem",
+                                                                }}
+                                                            >
+                                                                Mã SKU
+                                                            </Typography>
+                                                            <TextField
+                                                                value={
+                                                                    variant?.sku
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleVariantChange(
+                                                                        index,
+                                                                        "sku",
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                                sx={{
+                                                                    width: "50%",
+                                                                }}
+                                                                size="small"
+                                                            />
+                                                        </Box>
+                                                    </Box>
+                                                    <Box
+                                                        sx={{
+                                                            flexGrow: 1,
+                                                            display: "flex",
+                                                            justifyContent:
+                                                                "center",
+                                                            alignItems:
+                                                                "center",
+                                                        }}
+                                                    >
+                                                        <Box
+                                                            sx={{
+                                                                mt: 2,
+                                                                display: "flex",
+                                                                flexDirection:
+                                                                    "column",
+                                                                justifyContent:
+                                                                    "center",
+                                                            }}
+                                                        >
+                                                            {variant.imagePath
+                                                                .length > 0 ? (
+                                                                <CardMedia
+                                                                    component="img"
+                                                                    sx={{
+                                                                        borderRadius: 1,
+                                                                        width: 100,
+                                                                        height: 100,
+                                                                    }}
+                                                                    image={
+                                                                        variant.imagePath
+                                                                    }
+                                                                    alt="Paella dish"
+                                                                />
+                                                            ) : (
+                                                                <Image
+                                                                    color="disabled"
+                                                                    sx={{
+                                                                        width: 100,
+                                                                        height: 100,
+                                                                    }}
+                                                                />
+                                                            )}
+                                                            <Button
+                                                                variant="text"
+                                                                color="primary"
+                                                                sx={{
+                                                                    textTransform:
+                                                                        "none",
+                                                                    position:
+                                                                        "relative",
+                                                                    overflow:
+                                                                        "hidden",
+                                                                }}
+                                                            >
+                                                                <input
+                                                                    type="file"
+                                                                    multiple
+                                                                    accept="image/*"
+                                                                    onChange={(
+                                                                        e
+                                                                    ) =>
+                                                                        handleImageChange(
+                                                                            e,
+                                                                            "variant",
+                                                                            index
+                                                                        )
+                                                                    }
+                                                                    style={{
+                                                                        position:
+                                                                            "absolute",
+                                                                        top: 0,
+                                                                        left: 0,
+                                                                        width: "100%",
+                                                                        height: "100%",
+                                                                        opacity: 0,
+                                                                        cursor: "pointer",
+                                                                    }}
+                                                                />
+                                                                Thay đổi ảnh
+                                                            </Button>
+                                                        </Box>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                            <Box
+                                                sx={{
+                                                    borderRadius: "5px",
+                                                    backgroundColor: "white",
+                                                }}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        mt: "24px",
+                                                        padding: "16px",
+                                                        height: "27px",
+                                                        borderBottom:
+                                                            "1px solid #d9d9d9",
+                                                    }}
+                                                >
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: "18px",
+                                                        }}
+                                                    >
+                                                        Thuộc tính
+                                                    </Typography>
+                                                </Box>
+                                                <Box
+                                                    sx={{
+                                                        display: "flex",
+                                                        flexWrap: "wrap",
+                                                        padding: "16px",
+                                                        justifyContent:
+                                                            "space-between",
+                                                    }}
+                                                >
+                                                    {sizes.length > 0 ||
+                                                    additionalSizes.length >
+                                                        0 ? (
+                                                        <Box
+                                                            sx={{
+                                                                width: "48.5%",
+                                                            }}
+                                                        >
+                                                            <Typography
+                                                                sx={{
+                                                                    color: "#000",
+                                                                    fontSize:
+                                                                        "0.9rem",
+                                                                }}
+                                                            >
+                                                                Kích cỡ
+                                                                <span
+                                                                    style={{
+                                                                        color: "#FF4D4D",
+                                                                    }}
+                                                                >
+                                                                    *
+                                                                </span>
+                                                            </Typography>
+                                                            <Select
+                                                                fullWidth
+                                                                id="size"
+                                                                size="small"
+                                                                value={
+                                                                    variant?.size !==
+                                                                    undefined
+                                                                        ? variant?.size
+                                                                        : additionalSizes.length >
+                                                                            0
+                                                                          ? additionalSizes[0]
+                                                                          : ""
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleVariantChange(
+                                                                        index,
+                                                                        "size",
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                            >
+                                                                {[
+                                                                    ...sizes,
+                                                                    ...additionalSizes,
+                                                                ].map(
+                                                                    (
+                                                                        size,
+                                                                        index
+                                                                    ) => (
+                                                                        <MenuItem
+                                                                            value={
+                                                                                size
+                                                                            }
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                size
+                                                                            }
+                                                                        </MenuItem>
+                                                                    )
+                                                                )}
+                                                            </Select>
+                                                        </Box>
+                                                    ) : (
+                                                        <></>
+                                                    )}
+                                                    {colors.length > 0 ||
+                                                    additionalColors.length >
+                                                        0 ? (
+                                                        <Box
+                                                            sx={{
+                                                                width: "48.5%",
+                                                            }}
+                                                        >
+                                                            <Typography
+                                                                sx={{
+                                                                    color: "#000",
+                                                                    fontSize:
+                                                                        "0.9rem",
+                                                                }}
+                                                            >
+                                                                Màu sắc
+                                                                <span
+                                                                    style={{
+                                                                        color: "#FF4D4D",
+                                                                    }}
+                                                                >
+                                                                    *
+                                                                </span>
+                                                            </Typography>
+                                                            <Select
+                                                                fullWidth
+                                                                size="small"
+                                                                id="color"
+                                                                value={
+                                                                    variant?.color !==
+                                                                    undefined
+                                                                        ? variant?.color
+                                                                        : additionalColors.length >
+                                                                            0
+                                                                          ? additionalColors[0]
+                                                                          : ""
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleVariantChange(
+                                                                        index,
+                                                                        "color",
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                            >
+                                                                {[
+                                                                    ...colors,
+                                                                    ...additionalColors,
+                                                                ].map(
+                                                                    (
+                                                                        color,
+                                                                        index
+                                                                    ) => (
+                                                                        <MenuItem
+                                                                            value={
+                                                                                color
+                                                                            }
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                color
+                                                                            }
+                                                                        </MenuItem>
+                                                                    )
+                                                                )}
+                                                            </Select>
+                                                        </Box>
+                                                    ) : (
+                                                        <></>
+                                                    )}
+                                                    {materials.length > 0 ||
+                                                    additionalMaterials.length >
+                                                        0 ? (
+                                                        <Box
+                                                            sx={{
+                                                                width: "48.5%",
+                                                            }}
+                                                        >
+                                                            <Typography
+                                                                sx={{
+                                                                    color: "#000",
+                                                                    fontSize:
+                                                                        "0.9rem",
+                                                                }}
+                                                            >
+                                                                Chất liệu
+                                                                <span
+                                                                    style={{
+                                                                        color: "#FF4D4D",
+                                                                    }}
+                                                                >
+                                                                    *
+                                                                </span>
+                                                            </Typography>
+                                                            <Select
+                                                                fullWidth
+                                                                size="small"
+                                                                id="material"
+                                                                value={
+                                                                    variant?.material !==
+                                                                    undefined
+                                                                        ? variant?.material
+                                                                        : additionalMaterials.length >
+                                                                            0
+                                                                          ? additionalMaterials[0]
+                                                                          : ""
+                                                                }
+                                                                defaultValue={
+                                                                    variant?.material !==
+                                                                    undefined
+                                                                        ? variant?.material
+                                                                        : additionalMaterials.length >
+                                                                            0
+                                                                          ? additionalMaterials[0]
+                                                                          : ""
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleVariantChange(
+                                                                        index,
+                                                                        "material",
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                            >
+                                                                {[
+                                                                    ...materials,
+                                                                    ...additionalMaterials,
+                                                                ].map(
+                                                                    (
+                                                                        material,
+                                                                        index
+                                                                    ) => (
+                                                                        <MenuItem
+                                                                            value={
+                                                                                material
+                                                                            }
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                material
+                                                                            }
+                                                                        </MenuItem>
+                                                                    )
+                                                                )}
+                                                            </Select>
+                                                        </Box>
+                                                    ) : (
+                                                        <></>
+                                                    )}
+                                                </Box>
+                                            </Box>
+                                            <Box
+                                                sx={{
+                                                    borderRadius: "5px",
+                                                    backgroundColor: "white",
+                                                }}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        mt: "24px",
+                                                        padding: "16px",
+                                                        height: "27px",
+                                                        borderBottom:
+                                                            "1px solid #d9d9d9",
+                                                    }}
+                                                >
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: "18px",
+                                                        }}
+                                                    >
+                                                        Giá sản phẩm
+                                                    </Typography>
+                                                </Box>
+                                                <Box
+                                                    sx={{
+                                                        display: "flex",
+                                                        padding: "16px",
+                                                        gap: "20px",
+                                                    }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            width: "50%",
+                                                        }}
+                                                    >
+                                                        <Typography
+                                                            sx={{
+                                                                color: "#000",
+                                                                fontSize:
+                                                                    "0.9rem",
+                                                            }}
+                                                        >
+                                                            Giá bán
+                                                        </Typography>
+                                                        <TextField
+                                                            fullWidth
+                                                            size="small"
+                                                            value={
+                                                                variant?.priceForSale
+                                                            }
                                                             onChange={(e) =>
-                                                                handleImageChange(
-                                                                    e,
-                                                                    "variant",
-                                                                    index
+                                                                handleVariantChange(
+                                                                    index,
+                                                                    "priceForSale",
+                                                                    e.target
+                                                                        .value
                                                                 )
                                                             }
-                                                            style={{
-                                                                position:
-                                                                    "absolute",
-                                                                top: 0,
-                                                                left: 0,
-                                                                width: "100%",
-                                                                height: "100%",
-                                                                opacity: 0,
-                                                                cursor: "pointer",
+                                                            slotProps={{
+                                                                input: {
+                                                                    inputComponent:
+                                                                        NumericFormatCustom as any,
+                                                                },
                                                             }}
                                                         />
-                                                        Thay đổi ảnh
-                                                    </Button>
+                                                    </Box>
+                                                    <Box
+                                                        sx={{
+                                                            width: "50%",
+                                                        }}
+                                                    >
+                                                        <Typography
+                                                            sx={{
+                                                                color: "#000",
+                                                                fontSize:
+                                                                    "0.9rem",
+                                                            }}
+                                                        >
+                                                            Giá nhập
+                                                        </Typography>
+                                                        <TextField
+                                                            fullWidth
+                                                            size="small"
+                                                            value={
+                                                                variant?.initialPrice
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleVariantChange(
+                                                                    index,
+                                                                    "initialPrice",
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            slotProps={{
+                                                                input: {
+                                                                    inputComponent:
+                                                                        NumericFormatCustom as any,
+                                                                },
+                                                            }}
+                                                        />
+                                                    </Box>
                                                 </Box>
                                             </Box>
                                         </Box>
-                                    </Box>
-                                    <Box
-                                        sx={{
-                                            borderRadius: "5px",
-                                            backgroundColor: "white",
-                                        }}
-                                    >
-                                        <Box
-                                            sx={{
-                                                mt: "24px",
-                                                padding: "16px",
-                                                height: "27px",
-                                                borderBottom:
-                                                    "1px solid #d9d9d9",
-                                            }}
-                                        >
-                                            <Typography
-                                                sx={{ fontSize: "20px" }}
-                                            >
-                                                Thuộc tính
-                                            </Typography>
-                                        </Box>
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                flexWrap: "wrap",
-                                                padding: "16px",
-                                                justifyContent: "space-between",
-                                            }}
-                                        >
-                                            {sizes.length > 0 ||
-                                            additionalSizes.length > 0 ? (
-                                                <FormControl
-                                                    sx={{ width: "48.5%" }}
-                                                    margin="normal"
-                                                    size="small"
-                                                >
-                                                    <InputLabel id="category">
-                                                        Kích cỡ
-                                                    </InputLabel>
-                                                    <Select
-                                                        labelId="size"
-                                                        id="size"
-                                                        label="Kích cỡ"
-                                                        value={
-                                                            variant?.size !==
-                                                            undefined
-                                                                ? variant?.size
-                                                                : additionalSizes.length >
-                                                                    0
-                                                                  ? additionalSizes[0]
-                                                                  : ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleVariantChange(
-                                                                index,
-                                                                "size",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    >
-                                                        {[
-                                                            ...sizes,
-                                                            ...additionalSizes,
-                                                        ].map((size, index) => (
-                                                            <MenuItem
-                                                                value={size}
-                                                                key={index}
-                                                            >
-                                                                {size}
-                                                            </MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
-                                            ) : (
-                                                <></>
-                                            )}
-                                            {colors.length > 0 ||
-                                            additionalColors.length > 0 ? (
-                                                <FormControl
-                                                    sx={{ width: "48.5%" }}
-                                                    margin="normal"
-                                                    size="small"
-                                                >
-                                                    <InputLabel id="color">
-                                                        Màu sắc
-                                                    </InputLabel>
-                                                    <Select
-                                                        labelId="color"
-                                                        id="color"
-                                                        label="Màu sắc"
-                                                        value={
-                                                            variant?.color !==
-                                                            undefined
-                                                                ? variant?.color
-                                                                : additionalColors.length >
-                                                                    0
-                                                                  ? additionalColors[0]
-                                                                  : ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleVariantChange(
-                                                                index,
-                                                                "color",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    >
-                                                        {[
-                                                            ...colors,
-                                                            ...additionalColors,
-                                                        ].map(
-                                                            (color, index) => (
-                                                                <MenuItem
-                                                                    value={
-                                                                        color
-                                                                    }
-                                                                    key={index}
-                                                                >
-                                                                    {color}
-                                                                </MenuItem>
-                                                            )
-                                                        )}
-                                                    </Select>
-                                                </FormControl>
-                                            ) : (
-                                                <></>
-                                            )}
-                                            {materials.length > 0 ||
-                                            additionalMaterials.length > 0 ? (
-                                                <FormControl
-                                                    sx={{ width: "48.5%" }}
-                                                    margin="normal"
-                                                    size="small"
-                                                >
-                                                    <InputLabel id="material">
-                                                        Chất liệu
-                                                    </InputLabel>
-                                                    <Select
-                                                        labelId="material"
-                                                        id="material"
-                                                        label="Chất liệu"
-                                                        value={
-                                                            variant?.material !==
-                                                            undefined
-                                                                ? variant?.material
-                                                                : additionalMaterials.length >
-                                                                    0
-                                                                  ? additionalMaterials[0]
-                                                                  : ""
-                                                        }
-                                                        defaultValue={
-                                                            variant?.material !==
-                                                            undefined
-                                                                ? variant?.material
-                                                                : additionalMaterials.length >
-                                                                    0
-                                                                  ? additionalMaterials[0]
-                                                                  : ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleVariantChange(
-                                                                index,
-                                                                "material",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    >
-                                                        {[
-                                                            ...materials,
-                                                            ...additionalMaterials,
-                                                        ].map(
-                                                            (
-                                                                material,
-                                                                index
-                                                            ) => (
-                                                                <MenuItem
-                                                                    value={
-                                                                        material
-                                                                    }
-                                                                    key={index}
-                                                                >
-                                                                    {material}
-                                                                </MenuItem>
-                                                            )
-                                                        )}
-                                                    </Select>
-                                                </FormControl>
-                                            ) : (
-                                                <></>
-                                            )}
-                                        </Box>
-                                    </Box>
-                                    <Box
-                                        sx={{
-                                            borderRadius: "5px",
-                                            backgroundColor: "white",
-                                        }}
-                                    >
-                                        <Box
-                                            sx={{
-                                                mt: "24px",
-                                                padding: "16px",
-                                                height: "27px",
-                                                borderBottom:
-                                                    "1px solid #d9d9d9",
-                                            }}
-                                        >
-                                            <Typography
-                                                sx={{ fontSize: "20px" }}
-                                            >
-                                                Giá sản phẩm
-                                            </Typography>
-                                        </Box>
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                padding: "16px",
-                                                gap: "20px",
-                                            }}
-                                        >
-                                            <TextField
-                                                label="Giá bán"
-                                                size="small"
-                                                value={variant?.priceForSale}
-                                                onChange={(e) =>
-                                                    handleVariantChange(
-                                                        index,
-                                                        "priceForSale",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                slotProps={{
-                                                    input: {
-                                                        inputComponent:
-                                                            NumericFormatCustom as any,
-                                                    },
-                                                }}
-                                                sx={{
-                                                    width: "50%",
-                                                    textAlign: "right",
-                                                }}
-                                            />
-                                            <TextField
-                                                label="Giá nhập"
-                                                size="small"
-                                                value={variant?.initialPrice}
-                                                onChange={(e) =>
-                                                    handleVariantChange(
-                                                        index,
-                                                        "initialPrice",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                slotProps={{
-                                                    input: {
-                                                        inputComponent:
-                                                            NumericFormatCustom as any,
-                                                    },
-                                                }}
-                                                sx={{ width: "50%" }}
-                                            />
-                                        </Box>
-                                    </Box>
-                                </Box>
-                            ) : (
-                                <></>
-                            )
-                        )}
-                    </Box>
+                                    ) : (
+                                        <></>
+                                    )
+                                )}
+                            </Box>
+                        </Box>
+                    )}
                 </Box>
             </MainBox>
-            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }

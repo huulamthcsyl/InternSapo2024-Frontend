@@ -2,8 +2,6 @@ import {
     Box,
     Button,
     CardMedia,
-    FormControl,
-    InputLabel,
     MenuItem,
     Paper,
     Select,
@@ -33,6 +31,9 @@ import NumericFormatCustom from "../../../utils/NumericFormatCustom";
 import { createProduct } from "../../../services/productAPI";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getAllBrands } from "../../../services/brandAPI";
+import { getAllCategories } from "../../../services/categoryAPI";
+import { useNavigate } from "react-router-dom";
 
 type Props = {};
 
@@ -57,6 +58,7 @@ export default function AddProduct({}: Props) {
     const [variants, setVariants] = useState<VariantRequest[]>([]);
     const [nameError, setNameError] = useState<boolean>(false);
     const [images, setImages] = useState<string[]>([]);
+    const navigate = useNavigate();
 
     function setAllInitialPrices(newInitialPrice: number) {
         const updatedVariants = variants.map((variant) => ({
@@ -72,12 +74,11 @@ export default function AddProduct({}: Props) {
             ...variant,
             priceForSale: newPriceForSale,
         }));
-        console.log(updatedVariants);
         setVariants(updatedVariants);
         setPriceForSale(newPriceForSale);
     }
 
-    function handleDataChange(e) {
+    function handleDataChange(e: any) {
         const { name, value } = e.target;
         setNewProduct((prev) => ({
             ...prev,
@@ -101,12 +102,20 @@ export default function AddProduct({}: Props) {
 
     function handleAddNewProduct() {
         if (newProduct.name.trim() !== "") {
-            // if(variants.length==0){
-            //     const emptyVarinant:VariantRequest={}
-            //     setVariants([{...emptyVarinant,name:newProduct.name}]);
-            // }
-            const updatedVariants: VariantRequest[] = variants.map(
-                (variant) => {
+            let updatedVariants: VariantRequest[] = [];
+            if (variants.length == 0) {
+                updatedVariants.push({
+                    name: newProduct.name,
+                    sku: "",
+                    size: "",
+                    color: "",
+                    material: "",
+                    imagePath: images[0] || "",
+                    priceForSale: priceForSale,
+                    initialPrice: initialPrice,
+                });
+            } else {
+                updatedVariants = variants.map((variant) => {
                     return {
                         ...variant,
                         priceForSale:
@@ -115,18 +124,22 @@ export default function AddProduct({}: Props) {
                                 : variant.priceForSale,
                         initialPrice:
                             variant.initialPrice == 0
-                                ? priceForSale
+                                ? initialPrice
                                 : variant.initialPrice,
                     };
-                }
-            );
+                });
+            }
+            console.log(updatedVariants);
             createProduct({
                 ...newProduct,
                 variants: updatedVariants,
                 imagePath: images,
             })
-                .then((res) => {
+                .then((_res) => {
                     toast.success("Tạo sản phẩm thành công");
+                    setTimeout(() => {
+                        navigate(`/products/${_res.id}`);
+                    }, 1000);
                 })
                 .catch((error) => {
                     toast.error(error.response.data.message);
@@ -152,7 +165,7 @@ export default function AddProduct({}: Props) {
                 "state_changed",
                 (snapshot) => {
                     //Clearing snapshot cannot upload images
-                    const progressPercent =
+                    const _progressPercent =
                         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 },
                 (error) => {
@@ -183,18 +196,12 @@ export default function AddProduct({}: Props) {
     }
 
     useEffect(() => {
-        fetch(
-            `http://localhost:8080/v1/products/categories?page=0&limit=10&query=`
-        )
-            .then((res) => res.json())
-            .then((result) => {
-                setCategories(result.data);
-            });
-        fetch(`http://localhost:8080/v1/products/brands?page=0&limit=10&query=`)
-            .then((res) => res.json())
-            .then((result) => {
-                setBrands(result.data);
-            });
+        getAllBrands("").then((res) => {
+            setBrands(res);
+        });
+        getAllCategories("").then((res) => {
+            setCategories(res);
+        });
     }, []);
 
     useEffect(() => {
@@ -231,7 +238,6 @@ export default function AddProduct({}: Props) {
             setVariants([]);
         }
     }, [sizes, materials, colors, newProduct.name]);
-    console.log(variants);
     return (
         <Box>
             <AddProductAppBar submit={handleAddNewProduct} />
@@ -264,15 +270,22 @@ export default function AddProduct({}: Props) {
                                         borderBottom: "1px solid #d9d9d9",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Thông tin sản phẩm
                                     </Typography>
                                 </Box>
                                 <Box sx={{ padding: "16px" }}>
-                                    <FormControl required={true} fullWidth>
+                                    <Box>
+                                        <Typography
+                                            sx={{
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Tên sản phẩm
+                                        </Typography>
                                         <TextField
+                                            fullWidth
                                             name="name"
-                                            label="Tên sản phẩm"
                                             value={newProduct.name}
                                             onChange={handleDataChange}
                                             error={nameError}
@@ -281,20 +294,26 @@ export default function AddProduct({}: Props) {
                                                     ? "Tên sản phẩm là bắt buộc"
                                                     : ""
                                             }
-                                            margin="normal"
                                             size="small"
                                         />
+                                    </Box>
+                                    <Box sx={{ mt: "15px" }}>
+                                        <Typography
+                                            sx={{
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Mô tả sản phẩm
+                                        </Typography>
                                         <TextField
                                             fullWidth
                                             multiline
                                             rows={4}
                                             name="description"
-                                            label="Mô tả sản phẩm"
                                             value={newProduct.description}
                                             onChange={handleDataChange}
-                                            margin="normal"
                                         />
-                                    </FormControl>
+                                    </Box>
                                 </Box>
                             </Box>
                             <Box
@@ -313,7 +332,7 @@ export default function AddProduct({}: Props) {
                                         mt: "24px",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Ảnh sản phẩm
                                     </Typography>
                                     <Button
@@ -419,7 +438,7 @@ export default function AddProduct({}: Props) {
                                         borderBottom: "1px solid #d9d9d9",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Giá sản phẩm
                                     </Typography>
                                 </Box>
@@ -430,42 +449,60 @@ export default function AddProduct({}: Props) {
                                         gap: "20px",
                                     }}
                                 >
-                                    <TextField
-                                        label="Giá bán"
-                                        size="small"
-                                        value={priceForSale}
-                                        name="priceForSale"
-                                        onChange={(e) => {
-                                            setAllPriceForSale(
-                                                parseInt(e.target.value)
-                                            );
-                                        }}
-                                        sx={{ width: "50%" }}
-                                        slotProps={{
-                                            input: {
-                                                inputComponent:
-                                                    NumericFormatCustom as any,
-                                            },
-                                        }}
-                                    />
-                                    <TextField
-                                        label="Giá nhập"
-                                        size="small"
-                                        value={initialPrice}
-                                        name="initialPrice"
-                                        onChange={(e) => {
-                                            setAllInitialPrices(
-                                                parseInt(e.target.value)
-                                            );
-                                        }}
-                                        sx={{ width: "50%" }}
-                                        slotProps={{
-                                            input: {
-                                                inputComponent:
-                                                    NumericFormatCustom as any,
-                                            },
-                                        }}
-                                    />
+                                    <Box sx={{ width: "50%" }}>
+                                        <Typography
+                                            sx={{
+                                                color: "#000",
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Giá bán
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            value={priceForSale}
+                                            name="priceForSale"
+                                            onChange={(e) => {
+                                                setAllPriceForSale(
+                                                    parseInt(e.target.value)
+                                                );
+                                            }}
+                                            slotProps={{
+                                                input: {
+                                                    inputComponent:
+                                                        NumericFormatCustom as any,
+                                                },
+                                            }}
+                                        />
+                                    </Box>
+                                    <Box sx={{ width: "50%" }}>
+                                        <Typography
+                                            sx={{
+                                                color: "#000",
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Giá nhập
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            value={initialPrice}
+                                            name="initialPrice"
+                                            onChange={(e) => {
+                                                setAllInitialPrices(
+                                                    parseInt(e.target.value)
+                                                );
+                                            }}
+                                            slotProps={{
+                                                input: {
+                                                    inputComponent:
+                                                        NumericFormatCustom as any,
+                                                },
+                                            }}
+                                        />
+                                    </Box>
                                 </Box>
                             </Box>
 
@@ -485,7 +522,7 @@ export default function AddProduct({}: Props) {
                                         mt: "24px",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Thuộc tính
                                     </Typography>
                                 </Box>
@@ -581,20 +618,25 @@ export default function AddProduct({}: Props) {
                                     borderBottom: "1px solid #d9d9d9",
                                 }}
                             >
-                                <Typography sx={{ fontSize: "20px" }}>
+                                <Typography sx={{ fontSize: "18px" }}>
                                     Phân loại
                                 </Typography>
                             </Box>
                             <Box sx={{ padding: "16px" }}>
-                                <FormControl fullWidth margin="normal">
-                                    <InputLabel id="category">
+                                <Box>
+                                    <Typography
+                                        sx={{
+                                            color: "#000",
+                                            fontSize: "0.9rem",
+                                        }}
+                                    >
                                         Loại sản phẩm
-                                    </InputLabel>
+                                    </Typography>
                                     <Select
-                                        labelId="category"
                                         id="category"
                                         name="categoryId"
-                                        label="Loại sản phẩm"
+                                        size="small"
+                                        fullWidth
                                         value={
                                             newProduct.categoryId !== undefined
                                                 ? newProduct.categoryId
@@ -611,13 +653,19 @@ export default function AddProduct({}: Props) {
                                             </MenuItem>
                                         ))}
                                     </Select>
-                                </FormControl>
-                                <FormControl fullWidth margin="normal">
-                                    <InputLabel id="brand">
+                                </Box>
+                                <Box sx={{ mt: "15px" }}>
+                                    <Typography
+                                        sx={{
+                                            color: "#000",
+                                            fontSize: "0.9rem",
+                                        }}
+                                    >
                                         Nhãn hiệu
-                                    </InputLabel>
+                                    </Typography>
                                     <Select
-                                        labelId="brand"
+                                        fullWidth
+                                        size="small"
                                         id="brand"
                                         name="brandId"
                                         value={
@@ -636,7 +684,7 @@ export default function AddProduct({}: Props) {
                                             </MenuItem>
                                         ))}
                                     </Select>
-                                </FormControl>
+                                </Box>
                             </Box>
                         </Box>
                     </Box>
