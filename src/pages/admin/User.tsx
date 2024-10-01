@@ -4,8 +4,12 @@ import {
   Box,
   Typography,
   Button,
+  FormControl,
+  InputLabel,
+
   Menu,
   MenuItem,
+  Select,
   Toolbar,
   Table,
   TableBody,
@@ -19,6 +23,7 @@ import {
   Pagination,
   TableFooter,
   TablePagination,
+  TableSortLabel,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
@@ -74,15 +79,19 @@ export default function User({}: Props) {
   const [page, setPage] = useState<number>(0); // Update page to start at 0
   const [totalElements, setTotalElements] = useState<number>(0); // Total number of users
   const [pageSize, setPageSize] = useState<number>(10); // Rows per page
+  const [sortColumn, setSortColumn] = useState<string>("name"); // Default sorting column
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc"); // Default sorting order
+  const [selectedRole, setSelectedRole] = useState<string | "">("");
   const [anchorEl, setAnchorEl] = useState<any | HTMLElement>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const navigate = useNavigate();
 
-  const fetchUsers = async (page: number, limit: number) => {
+  const fetchUsers = async () => {
     setLoading(true);
     try {
+      const roleFilter = selectedRole ? `&role=${selectedRole}` : "";
       const response = await fetch(
-        `http://localhost:8080/v1/user?page=${page}&limit=${limit}`
+        `http://localhost:8080/v1/user?page=${page}&limit=${pageSize}&sort=${sortColumn}&order=${sortOrder}${roleFilter}`
       );
       const data: ApiResponse = await response.json();
       setUsers(data.data.content);
@@ -95,13 +104,14 @@ export default function User({}: Props) {
   };
 
   useEffect(() => {
-    fetchUsers(page, pageSize);
+    // fetchUsers(page, pageSize , sortColumn , sortOrder);
+    fetchUsers();
 
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
-  }, [page, pageSize]);
+  }, [page, pageSize, sortColumn, sortOrder, selectedRole]);
 
   const handlePageChange = (
     _event: React.MouseEvent<HTMLButtonElement> | null,
@@ -120,6 +130,15 @@ export default function User({}: Props) {
   ) => {
     setPageSize(parseInt(event.target.value, 10));
     setPage(0); // Reset to page 0 when changing rows per page
+  };
+  const handleSort = (column: string) => {
+    const isAsc = sortColumn === column && sortOrder === "asc";
+    setSortOrder(isAsc ? "desc" : "asc");
+    setSortColumn(column);
+  };
+  const handleRoleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setSelectedRole(event.target.value as string); // Update selected role
+    setPage(0); // Reset to page 0 when filtering
   };
 
   function TablePaginationActions({
@@ -229,17 +248,63 @@ export default function User({}: Props) {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Mã nhân viên</TableCell>
-                    <TableCell>Tên nhân viên</TableCell>
-                    <TableCell>Số điện thoại</TableCell>
-                    <TableCell>Vai trò</TableCell>
+                    <TableCell>
+                      <TableSortLabel
+                        active={sortColumn === "id"}
+                        direction={sortColumn === "id" ? sortOrder : "asc"}
+                        onClick={() => handleSort("id")}
+                      >
+                        Mã nhân viên
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell>
+                      <TableSortLabel
+                        active={sortColumn === "name"}
+                        direction={sortColumn === "name" ? sortOrder : "asc"}
+                        onClick={() => handleSort("name")}
+                      >
+                        Tên nhân viên
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell>
+                      <TableSortLabel
+                        active={sortColumn === "phoneNumber"}
+                        direction={
+                          sortColumn === "phoneNumber" ? sortOrder : "asc"
+                        }
+                        onClick={() => handleSort("phoneNumber")}
+                      >
+                        Số điện thoại
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell>
+                    
+                      <TableSortLabel>Vai trò</TableSortLabel>
+                      <Select value={selectedRole} onChange={handleRoleChange}>
+                        <MenuItem value="">Tất cả</MenuItem>
+                        <MenuItem value="ROLE_ADMIN">ADMIN</MenuItem>
+                        <MenuItem value="ROLE_REPOSITORY">
+                          NHÂN VIÊN KHO
+                        </MenuItem>
+                        <MenuItem value="ROLE_SALE">
+                          NHÂN VIÊN BÁN HÀNG
+                        </MenuItem>
+                        <MenuItem value="ROLE_SUPPORT">
+                          NHÂN VIÊN CHĂM SÓC
+                        </MenuItem>
+                      </Select>
+                      
+                    </TableCell>
                     <TableCell>Trạng thái</TableCell>
                     <TableCell></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {users.map((user) => (
-                    <TableRow key={user.id} onClick={() => navigate(`/admin/user/${user.id}`)}>
+                    <TableRow
+                      key={user.id}
+                      onClick={() => navigate(`/admin/user/${user.id}`)}
+                    >
                       <TableCell>{user.id}</TableCell>
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.phoneNumber}</TableCell>

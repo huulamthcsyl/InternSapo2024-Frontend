@@ -20,6 +20,8 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import MainBox from "../../components/layout/MainBox";
+import { toast, ToastContainer } from "react-toastify"
+import 'react-toastify/dist/ReactToastify.css';
 
 interface Role {
   id: number;
@@ -40,6 +42,7 @@ interface UserDetail {
   phoneNumber: string;
   address: string;
   status: boolean;
+  birthDay: string ;
   roles: Role[];
   createdOn: string;
   updateOn: string | null;
@@ -102,10 +105,10 @@ export default function DetailUser() {
       // }
       if (response.ok) {
         console.log("Password reset successfully");
-        alert("Password reset successfully");
+        toast.success("Password đã được khôi phục thành công");
       } else {
         const jsonResponse = await response.json();
-        console.error("Failed to reset password", jsonResponse.message);
+        console.error("Không thể khôi phục password", jsonResponse.message);
       }
     } catch (error) {
       console.error("Network error", error);
@@ -148,7 +151,11 @@ export default function DetailUser() {
           //   status: updatedUser.data.status ?? updatedStatus, // Use updated status if returned, otherwise use the toggled status
           // }));
           setUser(updatedUser.data);
-          alert(" Successfully");
+          toast.success("Thay đổi trạng thái tài khoản thành công", {   
+            position: toast.POSITION.BOTTOM_RIGHT,  
+            autoClose: 5000 ,  
+            style: { backgroundColor: "#4caf50", color: "#ffffff" }  
+          });
         }
       } else {
         console.error("Failed to update user status");
@@ -181,7 +188,7 @@ export default function DetailUser() {
           <Button
             variant="text"
             sx={{ color: "#637381", marginLeft: 2 }}
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/admin/user")}
           >
             <KeyboardArrowLeft /> Quay lại danh sách nhân viên
           </Button>
@@ -269,7 +276,7 @@ export default function DetailUser() {
                 </Typography>
                 <Typography>
                   <Typography sx={{ fontWeight: "bold" }}>Địa chỉ :</Typography>
-                  <Typography variant="body1" sx={{ marginBottom: 1 }}>
+                  <Typography variant="body1" sx={{ marginBottom: 1 }}> 
                     {user.address}
                   </Typography>
                 </Typography>
@@ -278,7 +285,7 @@ export default function DetailUser() {
                     Ngày sinh :
                   </Typography>
                   <Typography variant="body1" sx={{ marginBottom: 1 }}>
-                    {formatDate(user.createdOn)}
+                    {formatDate(user.birthDay)}
                   </Typography>
                 </Typography>
               </Grid>

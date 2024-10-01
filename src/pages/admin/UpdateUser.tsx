@@ -40,7 +40,7 @@ const UpdateUser = () => {
     phoneNumber: "",
     address: "",
   });
-  const [dateOfBirth, setDateOfBirth] = useState<Dayjs | null>(null);
+  const [birthDay, setBirthDay] = useState<Dayjs | null>(null);
   const [role, setRole] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true); // Track loading state
 
@@ -57,10 +57,12 @@ const UpdateUser = () => {
           email: data.email,
           phoneNumber: data.phoneNumber,
           address: data.address,
+          
         });
 
         // Parse createdOn date properly
-        setDateOfBirth(dayjs(data.createdOn, "DD-MM-YYYY"));
+        setBirthDay(dayjs(data.birthDay || null));
+        console.log(data.birthDay);
 
         // Assuming the first role in the array is the one to be shown
         setRole(data.roles?.[0]?.name || "");
@@ -84,6 +86,12 @@ const UpdateUser = () => {
   const handleRoleChange = (event: SelectChangeEvent) => {
     setRole(event.target.value as string);
   };
+
+  const handleDateChange = (value: Dayjs | null) => {  
+    setBirthDay(value);  
+  };  
+
+
   const handleSubmit = async () => {
     // Map the selected role to the corresponding role object
     const selectedRole = roleOptions.find((option) => option.value === role);
@@ -98,7 +106,7 @@ const UpdateUser = () => {
     const updatedData = {
       ...formData,
       roles: roleToSubmit ? [roleToSubmit] : [], // Include roles in the expected format
-      dateOfBirth: dateOfBirth ? dateOfBirth.toISOString() : null,
+      birthDay: birthDay ? birthDay.format("YYYY-MM-DD") : null,
     };
 
     try {
@@ -115,7 +123,7 @@ const UpdateUser = () => {
         // Handle error case
       } else {
         console.log("User updated successfully");
-        navigate("/admin/user"); // Navigate back to the user list after successful update
+        navigate(`/admin/user/${id}`); // Navigate back to the user list after successful update
       }
     } catch (error) {
       console.error("Network error:", error);
@@ -204,17 +212,17 @@ const UpdateUser = () => {
                 />
               </Grid>
 
-              {/* <Grid item xs={6}>
+              <Grid item xs={6}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DesktopDatePicker
                   label="Ngày sinh"
                   inputFormat="DD/MM/YYYY"
-                  value={dateOfBirth}
+                  value={birthDay}
                   onChange={handleDateChange}
                   renderInput={(params) => <TextField {...params} fullWidth />}
                 />
               </LocalizationProvider>
-            </Grid> */}
+            </Grid>
 
               <Grid item xs={6}>
                 <FormControl fullWidth>

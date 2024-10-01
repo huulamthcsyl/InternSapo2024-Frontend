@@ -15,12 +15,27 @@ const LoginPage: React.FC = () => {
     const [password, setPassword] = useState<string>('');
     const [message, setMessage] = useState<string>('');
     const [error, setError] = useState<boolean>(false);
+    const [emailError, setEmailError] = useState<boolean>(false); // State for email validation
     const navigate = useNavigate();
+
+    const validateEmail = (email: string) => {
+        // Regex pattern to validate email format
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailPattern.test(email);
+    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(false);
         setMessage('');
+
+        // Check email format before proceeding
+        if (!validateEmail(email)) {
+            setEmailError(true);
+            return;
+        }
+
+        setEmailError(false); // Reset email error if format is valid
 
         try {
             const response = await axios.post('http://localhost:8080/v1/auth/login', {
@@ -71,6 +86,9 @@ const LoginPage: React.FC = () => {
                             margin="normal"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            error={emailError} // Apply error styling
+                            helperText={emailError ? 'Email không hợp lệ' : ''} // Show error message
+
                             required
                         />
                     </Box>
@@ -93,6 +111,7 @@ const LoginPage: React.FC = () => {
                         color="primary"
                         fullWidth
                         sx={{ mt: 2 }}
+                        
                     >
                         Đăng nhập
                     </Button>

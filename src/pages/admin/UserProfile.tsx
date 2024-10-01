@@ -30,6 +30,7 @@ interface UserData {
   email: string;
   phoneNumber: string;
   address: string;
+  birthDay: string;
   roles: Role[];
   createdOn: string;
   updateOn: string;
@@ -234,14 +235,14 @@ const UserProfile: React.FC = () => {
                     variant="body2"
                     sx={{ fontWeight: "bold", marginTop: 2 }}
                   >
-                    Ngày tạo:{" "}
+                    BirthDay
                   </Typography>
                   <TextField
                     fullWidth
                     variant="outlined"
                     value={
-                      (user?.createdOn &&
-                        new Date(user.createdOn).toLocaleString()) ||
+                      (user?.birthDay &&
+                        new Date(user.birthDay).toLocaleDateString('en-GB')) ||
                       ""
                     }
                     InputProps={{
