@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
                   id: response.data.data.id,
                   name: response.data.data.name,
                   // email: response.data.data.email,
-                  // roles: response.data.data.roles,
+                  roles: response.data.data.roles,
               }));
 
                 const isAdmin = response.data.data.roles.some((role: string) => role === 'ROLE_ADMIN'); 
@@ -42,7 +42,7 @@ const LoginPage: React.FC = () => {
                   navigate(`/admin/user`)
 
                 }else{
-                  navigate(`/account/${response.data.data.id}`); 
+                  navigate(`/`); 
 
                 } 
 
