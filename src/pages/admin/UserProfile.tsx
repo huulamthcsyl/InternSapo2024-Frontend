@@ -57,9 +57,7 @@ const UserProfile: React.FC = () => {
       try {
         const response = await axios.get(`http://localhost:8080/v1/user/${id}`);
         if (response.data.status === "OK") {
-          
           setUser(response.data.data);
-          
         }
       } catch (err: any) {
         setError("Không thể lấy thông tin người dùng");
@@ -80,7 +78,7 @@ const UserProfile: React.FC = () => {
     return <Alert severity="error">{error}</Alert>;
   }
 
-  
+  const isAdmin = user?.roles?.some((role) => role.name === "ROLE_ADMIN");
 
   const handleLogout = () => {
     localStorage.removeItem("token"); // Remove token
@@ -116,7 +114,7 @@ const UserProfile: React.FC = () => {
             <Button
               aria-controls="simple-menu"
               aria-haspopup="true"
-              onClick={(event) => setAnchorEl(event.currentTarget)}
+              onClick={(event: React.MouseEvent<HTMLButtonElement>) => setAnchorEl(event.currentTarget)}
             >
               {user.name} <ArrowDropDownIcon />
             </Button>
@@ -126,9 +124,12 @@ const UserProfile: React.FC = () => {
               open={Boolean(anchorEl)}
               onClose={() => setAnchorEl(null)}
             >
-              <MenuItem onClick={() => navigate(`/admin/user`)}>
-                Danh sách nhân viên
-              </MenuItem>
+              {isAdmin && (
+                <MenuItem onClick={() => navigate(`/admin/user`)}>
+                  Danh sách nhân viên
+                </MenuItem>
+              )}
+
               <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
             </Menu>
           </>
@@ -221,7 +222,8 @@ const UserProfile: React.FC = () => {
                     variant="outlined"
                     value={
                       // user?.roles.map((role) => role.name).join(", ") || ""
-                      user?.roles.map((role) => roleMap[role.name] || role.name || "") // Map role names
+                      user?.roles
+                        .map((role) => roleMap[role.name] || role.name || "") // Map role names
                         .join(", ")
                     }
                     InputProps={{

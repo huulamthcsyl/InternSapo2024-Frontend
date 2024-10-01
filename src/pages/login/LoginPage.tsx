@@ -39,7 +39,7 @@ const LoginPage: React.FC = () => {
 
                 const isAdmin = response.data.data.roles.some((role: string) => role === 'ROLE_ADMIN');
                 if (isAdmin) {
-                    navigate(`/admin/user`)
+                    navigate(`/account/${response.data.data.id}`)
 
                 } else {
                     navigate(`/account/${response.data.data.id}`);
