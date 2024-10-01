@@ -6,30 +6,25 @@ import {
     VariantRequest,
     VariantResponse,
 } from "../models/ProductInterface";
+import apiClient from "./api-clients";
 
 const BASE_URL = "http://localhost:8080/v1/products";
 
-const INFINITY = 1000000000;
+const LIMIT = 10;
 
-const getAllVariants = async (query: string): Promise<Variant[]> => {
+const getAllVariantsForSearch = async (query: string): Promise<Variant[]> => {
     try {
-        const response = await axios.get(BASE_URL, {
+        const response = await apiClient.get(`${BASE_URL}/variants`, {
             params: {
                 page: 0,
-                limit: INFINITY,
+                limit: LIMIT,
                 query: query,
             },
             headers: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         });
-        const variants: Variant[] = [];
-        await response.data.data.map((product: any) => {
-            product.variants.forEach((variant: any) => {
-                variants.push(Variant.fromJson(variant));
-            });
-        });
-        return variants;
+        return response.data.data;
     } catch (error) {
         return [];
     }
@@ -41,7 +36,7 @@ const getListOfProducts = async (
     query: string
 ): Promise<ProductResponse[]> => {
     try {
-        const response = await axios.get(`${BASE_URL}`, {
+        const response = await apiClient.get(`${BASE_URL}`, {
             params: {
                 page: page,
                 limit: limit,
@@ -178,7 +173,7 @@ const deleteVariantByProperty = async (
 };
 
 export {
-    getAllVariants,
+    getAllVariantsForSearch,
     getListOfProducts,
     getNumberOfProducts,
     getProductById,

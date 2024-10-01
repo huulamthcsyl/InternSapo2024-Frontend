@@ -7,6 +7,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import PersonIcon from '@mui/icons-material/Person';
 import { useNavigate } from "react-router-dom";
+import logo from '../../assets/logo.webp';
 
 type Props = {}
 
@@ -33,7 +34,9 @@ export default function HomeDrawer({ }: Props) {
       variant="permanent"
       anchor="left"
     >
-      <Toolbar />
+      <Toolbar>
+        <img src={logo} alt="logo" width="80%" />
+      </Toolbar>
       <Divider />
       <List sx={{ p: 0 }}>
         <DrawerItem name="Tổng quan" icon={<HomeIcon />} link="/" />

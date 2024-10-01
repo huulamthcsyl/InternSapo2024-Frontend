@@ -15,7 +15,7 @@ export default function CreateOrderAppBar({ handleCreateOrder }: Props) {
       <Box display="flex" flexGrow={1} justifyContent="space-between" alignItems="center">
         <Typography variant="body1" sx={{ color: '#747C87', fontWeight: '600' }}>Tạo đơn hàng</Typography>
         <Box>
-          <Button sx={{ marginRight: '25px' }} variant="outlined" onClick={() => navigate('/order')}>Thoát</Button>
+          <Button sx={{ marginRight: '25px' }} variant="outlined" onClick={() => navigate('/orders')}>Thoát</Button>
           <Button onClick={handleCreateOrder} variant="contained">Tạo đơn hàng</Button>
         </Box>
       </Box>
