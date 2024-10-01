@@ -12,7 +12,6 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import SearchField from "./SearchField";
 import { useNavigate } from "react-router-dom";
-import { viVN } from "@mui/x-date-pickers/locales";
 import {
     getListOfProducts,
     getNumberOfProducts,

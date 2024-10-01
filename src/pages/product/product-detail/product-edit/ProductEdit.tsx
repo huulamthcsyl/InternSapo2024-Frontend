@@ -48,8 +48,6 @@ export default function ProductDetail({}: Props) {
     );
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [currentVariant, setCurrentVariant] = useState<number>(0);
-    const [priceForSale, setPriceForSale] = useState<number>(0);
-    const [initialPrice, setInitialPrice] = useState<number>(0);
     const [brands, setBrands] = useState<BrandResponse[]>([]);
     const [variants, setVariants] = useState<VariantRequest[]>([]);
     const [images, setImages] = useState<string[]>([]);
@@ -74,7 +72,6 @@ export default function ProductDetail({}: Props) {
             initialPrice: newInitialPrice,
         }));
         setVariants(updatedVariants);
-        setInitialPrice(newInitialPrice);
     }
 
     function setAllPriceForSale(newPriceForSale: number) {
@@ -83,7 +80,6 @@ export default function ProductDetail({}: Props) {
             priceForSale: newPriceForSale,
         }));
         setVariants(updatedVariants);
-        setPriceForSale(newPriceForSale);
     }
 
     function handleImageChange(
@@ -102,7 +98,7 @@ export default function ProductDetail({}: Props) {
                 "state_changed",
                 (snapshot) => {
                     //Clearing snapshot cannot upload images
-                    const progressPercent =
+                    const _progressPercent =
                         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 },
                 (error) => {
@@ -158,14 +154,14 @@ export default function ProductDetail({}: Props) {
                 setMaterials(res.material);
                 setVariants([...res.variants]);
                 setImages([...res.imagePath]);
-                if (
-                    res.size.length == 0 &&
-                    res.color.length == 0 &&
-                    res.material.length == 0
-                ) {
-                    setPriceForSale(res.variants[0].priceForSale);
-                    setInitialPrice(res.variants[0].initialPrice);
-                }
+                // if (
+                //     res.size.length == 0 &&
+                //     res.color.length == 0 &&
+                //     res.material.length == 0
+                // ) {
+                //     setPriceForSale(res.variants[0].priceForSale);
+                //     setInitialPrice(res.variants[0].initialPrice);
+                // }
             })
             .finally(() => setLoading(false));
         getAllCategories("").then((res) => {
