@@ -1,17 +1,17 @@
 import { Autocomplete, Box, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, TableContainer, Button, Dialog, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio } from "@mui/material"
 import MainBox from "../../../components/layout/MainBox"
 import CreateOrderAppBar from "./CreateOrderAppBar"
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createCustomer, getCustomersByKeyword } from "../../../services/customerAPI"
 import Customer from "../../../models/Customer"
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import BadgeIcon from '@mui/icons-material/Badge';
-import { getAllVariants } from "../../../services/productAPI"
+import { getAllVariantsForSearch } from "../../../services/productAPI"
 import Variant from "../../../models/Variant"
 import InventoryIcon from '@mui/icons-material/Inventory';
 import { formatCurrency } from "../../../utils/formatCurrency"
 import OrderDetail from "../../../models/OrderDetail"
-import { toast, ToastContainer } from "react-toastify"
+import { toast } from "react-toastify"
 import 'react-toastify/dist/ReactToastify.css';
 import { createOrder } from "../../../services/orderAPI"
 import { LocalizationProvider } from "@mui/x-date-pickers"
@@ -21,6 +21,7 @@ import { Dayjs } from "dayjs"
 import { useNavigate } from "react-router-dom"
 import { useReactToPrint } from "react-to-print"
 import { ReceiptToPrint } from "./Receipt"
+import { NumericFormat } from "react-number-format"
 
 type VariantTableRowProps = {
   index: number,
@@ -36,7 +37,7 @@ function VariantTableRow({ index, orderDetailList, setOrderDetailList }: Variant
     setOrderDetailList(orderDetailList.filter(item => item.sku !== orderDetail.sku));
   }
 
-  return <TableRow key={index}>
+  return <TableRow key={orderDetail.variantId}>
     <TableCell>{index + 1}</TableCell>
     <TableCell>
       {orderDetail.imagePath ? <img src={orderDetail.imagePath} alt="product" style={{ width: 50, height: 50, objectFit: 'cover' }} /> : null}
@@ -197,13 +198,16 @@ export default function CreateOrderPage({ }: Props) {
     cashReceive: 0,
     cashRepay: 0
   });
+  const navigate = useNavigate();
 
   const receiptRef = useRef(null);
   const handlePrint = useReactToPrint({
-    content: () => receiptRef.current
+    content: () => receiptRef.current,
+    onAfterPrint: () => {
+      navigate('/orders');
+    }
   });
 
-  const navigate = useNavigate();
 
   useEffect(() => {
     getCustomersByKeyword(customerKeyword).then((res) => {
@@ -212,10 +216,10 @@ export default function CreateOrderPage({ }: Props) {
   }, [customerKeyword]);
 
   useEffect(() => {
-    getAllVariants(variantQuery).then((res) => {
+    getAllVariantsForSearch(variantQuery).then((res) => {
       setVariantList(res);
     });
-  }, []);
+  }, [variantQuery]);
 
   useLayoutEffect(() => {
     let totalQuantity = 0;
@@ -243,7 +247,7 @@ export default function CreateOrderPage({ }: Props) {
     }
     const newOrder = {
       customerId: selectedCustomer.id,
-      creatorId: 1,
+      creatorId: JSON.parse(localStorage.getItem('user') || '{}').id,
       totalQuantity: totalQuantity,
       note: note,
       cashReceive: cashReceived,
@@ -267,7 +271,7 @@ export default function CreateOrderPage({ }: Props) {
       }, 1000);
       // navigate('/order')
     }).catch((error) => {
-      toast.error(error.response.data);
+      toast.error(error.response.data.message);
     });
   }
 
@@ -301,7 +305,7 @@ export default function CreateOrderPage({ }: Props) {
             }}
             renderOption={(props, option) => {
               const { key, ...rest } = props;
-              return <Box component="li" sx={{ '& > img': { mr: 2, borderRadius: '50%' } }} key={key} {...rest}>
+              return <Box component="li" sx={{ '& > img': { mr: 2, borderRadius: '50%' } }} key={option.id} {...rest}>
                 <AccountCircleIcon sx={{ fontSize: 40, color: '#0088FF', mr: 2 }} />
                 <Box>
                   <Typography variant="body1" sx={{ color: '#000', fontWeight: '600' }}>{option.name}</Typography>
@@ -360,9 +364,9 @@ export default function CreateOrderPage({ }: Props) {
             }}
             renderOption={(props, option) => {
               const { key, ...rest } = props;
-              return <Box component="li" sx={{ '& > img': { mr: 2 } }} key={key} {...rest} display="flex">
+              return <Box component="li" sx={{ '& > img': { mr: 2 } }} key={option.sku} {...rest} display="flex">
                 <Box flex={1}>
-                  <Typography variant="body1" sx={{ color: '#000', fontWeight: '600' }}>{`${option.productName} (${option.name})`}</Typography>
+                  <Typography variant="body1" sx={{ color: '#000', fontWeight: '600' }}>{`${option.name}`}</Typography>
                   <Typography variant="body2" sx={{ color: '#747C87' }}>{option.sku}</Typography>
                 </Box>
                 <Box>
@@ -373,7 +377,7 @@ export default function CreateOrderPage({ }: Props) {
             }}
             filterOptions={(options, params) => {
               const filtered = options.filter((option) => {
-                return option.sku.toLowerCase().includes(params.inputValue.toLowerCase()) || option.productName.toLowerCase().includes(params.inputValue.toLowerCase()) || option.name.toLowerCase().includes(params.inputValue.toLowerCase());
+                return option.sku.toLowerCase().includes(params.inputValue.toLowerCase()) || option.name.toLowerCase().includes(params.inputValue.toLowerCase());
               });
               return filtered;
             }}
@@ -435,12 +439,17 @@ export default function CreateOrderPage({ }: Props) {
           </Box>
           <Box width='40%' display="flex" alignItems="center">
             <Typography variant="body1" sx={{ color: '#000' }} mt={2} marginRight={2}>Tiền nhận của khách</Typography>
-            <TextField
-              sx={{ width: '40%', mt: 1 }}
+            <NumericFormat 
+              customInput={TextField}
               value={cashReceived}
-              onChange={(event) => {
-                setCashReceived(Number(event.target.value));
+              onValueChange={(values) => {
+                const {value} = values;
+                setCashReceived(Number(value));
               }}
+              thousandsGroupStyle="thousand"
+              thousandSeparator="."
+              decimalSeparator=","
+              style={{ marginTop: '8px', width: '200px' }}
             />
           </Box>
           <Box width='40%' display="flex" justifyContent="space-between" mt={2}>

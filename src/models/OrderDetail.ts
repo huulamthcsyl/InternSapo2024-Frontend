@@ -25,6 +25,6 @@ export default class OrderDetail {
     }
 
     static fromVariant(variant: Variant): OrderDetail {
-        return new OrderDetail(0, variant.sku, `${variant.productName} (${variant.name})`, variant.imagePath ? variant.imagePath[0] : null, variant.id, variant.quantity, 1, variant.priceForSale, 0);
+        return new OrderDetail(0, variant.sku, `${variant.productName} (${variant.name})`, variant.imagePath, variant.id, variant.quantity, 1, variant.priceForSale, 0);
     }
 }
