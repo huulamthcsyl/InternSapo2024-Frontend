@@ -2,8 +2,6 @@ import {
     Box,
     Button,
     CardMedia,
-    FormControl,
-    InputLabel,
     MenuItem,
     Paper,
     Select,
@@ -80,7 +78,7 @@ export default function AddProduct({}: Props) {
         setPriceForSale(newPriceForSale);
     }
 
-    function handleDataChange(e) {
+    function handleDataChange(e: any) {
         const { name, value } = e.target;
         setNewProduct((prev) => ({
             ...prev,
@@ -272,35 +270,50 @@ export default function AddProduct({}: Props) {
                                         borderBottom: "1px solid #d9d9d9",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Thông tin sản phẩm
                                     </Typography>
                                 </Box>
                                 <Box sx={{ padding: "16px" }}>
-                                    <TextField
-                                        name="name"
-                                        label="Tên sản phẩm"
-                                        value={newProduct.name}
-                                        onChange={handleDataChange}
-                                        error={nameError}
-                                        helperText={
-                                            nameError
-                                                ? "Tên sản phẩm là bắt buộc"
-                                                : ""
-                                        }
-                                        margin="normal"
-                                        size="small"
-                                    />
-                                    <TextField
-                                        fullWidth
-                                        multiline
-                                        rows={4}
-                                        name="description"
-                                        label="Mô tả sản phẩm"
-                                        value={newProduct.description}
-                                        onChange={handleDataChange}
-                                        margin="normal"
-                                    />
+                                    <Box>
+                                        <Typography
+                                            sx={{
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Tên sản phẩm
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            name="name"
+                                            value={newProduct.name}
+                                            onChange={handleDataChange}
+                                            error={nameError}
+                                            helperText={
+                                                nameError
+                                                    ? "Tên sản phẩm là bắt buộc"
+                                                    : ""
+                                            }
+                                            size="small"
+                                        />
+                                    </Box>
+                                    <Box sx={{ mt: "15px" }}>
+                                        <Typography
+                                            sx={{
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Mô tả sản phẩm
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            multiline
+                                            rows={4}
+                                            name="description"
+                                            value={newProduct.description}
+                                            onChange={handleDataChange}
+                                        />
+                                    </Box>
                                 </Box>
                             </Box>
                             <Box
@@ -425,7 +438,7 @@ export default function AddProduct({}: Props) {
                                         borderBottom: "1px solid #d9d9d9",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Giá sản phẩm
                                     </Typography>
                                 </Box>
@@ -436,42 +449,60 @@ export default function AddProduct({}: Props) {
                                         gap: "20px",
                                     }}
                                 >
-                                    <TextField
-                                        label="Giá bán"
-                                        size="small"
-                                        value={priceForSale}
-                                        name="priceForSale"
-                                        onChange={(e) => {
-                                            setAllPriceForSale(
-                                                parseInt(e.target.value)
-                                            );
-                                        }}
-                                        sx={{ width: "50%" }}
-                                        slotProps={{
-                                            input: {
-                                                inputComponent:
-                                                    NumericFormatCustom as any,
-                                            },
-                                        }}
-                                    />
-                                    <TextField
-                                        label="Giá nhập"
-                                        size="small"
-                                        value={initialPrice}
-                                        name="initialPrice"
-                                        onChange={(e) => {
-                                            setAllInitialPrices(
-                                                parseInt(e.target.value)
-                                            );
-                                        }}
-                                        sx={{ width: "50%" }}
-                                        slotProps={{
-                                            input: {
-                                                inputComponent:
-                                                    NumericFormatCustom as any,
-                                            },
-                                        }}
-                                    />
+                                    <Box sx={{ width: "50%" }}>
+                                        <Typography
+                                            sx={{
+                                                color: "#000",
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Giá bán
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            value={priceForSale}
+                                            name="priceForSale"
+                                            onChange={(e) => {
+                                                setAllPriceForSale(
+                                                    parseInt(e.target.value)
+                                                );
+                                            }}
+                                            slotProps={{
+                                                input: {
+                                                    inputComponent:
+                                                        NumericFormatCustom as any,
+                                                },
+                                            }}
+                                        />
+                                    </Box>
+                                    <Box sx={{ width: "50%" }}>
+                                        <Typography
+                                            sx={{
+                                                color: "#000",
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Giá nhập
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            value={initialPrice}
+                                            name="initialPrice"
+                                            onChange={(e) => {
+                                                setAllInitialPrices(
+                                                    parseInt(e.target.value)
+                                                );
+                                            }}
+                                            slotProps={{
+                                                input: {
+                                                    inputComponent:
+                                                        NumericFormatCustom as any,
+                                                },
+                                            }}
+                                        />
+                                    </Box>
                                 </Box>
                             </Box>
 
@@ -491,7 +522,7 @@ export default function AddProduct({}: Props) {
                                         mt: "24px",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Thuộc tính
                                     </Typography>
                                 </Box>
@@ -587,20 +618,25 @@ export default function AddProduct({}: Props) {
                                     borderBottom: "1px solid #d9d9d9",
                                 }}
                             >
-                                <Typography sx={{ fontSize: "20px" }}>
+                                <Typography sx={{ fontSize: "18px" }}>
                                     Phân loại
                                 </Typography>
                             </Box>
                             <Box sx={{ padding: "16px" }}>
-                                <FormControl fullWidth margin="normal">
-                                    <InputLabel id="category">
+                                <Box>
+                                    <Typography
+                                        sx={{
+                                            color: "#000",
+                                            fontSize: "0.9rem",
+                                        }}
+                                    >
                                         Loại sản phẩm
-                                    </InputLabel>
+                                    </Typography>
                                     <Select
-                                        labelId="category"
                                         id="category"
                                         name="categoryId"
-                                        label="Loại sản phẩm"
+                                        size="small"
+                                        fullWidth
                                         value={
                                             newProduct.categoryId !== undefined
                                                 ? newProduct.categoryId
@@ -617,13 +653,19 @@ export default function AddProduct({}: Props) {
                                             </MenuItem>
                                         ))}
                                     </Select>
-                                </FormControl>
-                                <FormControl fullWidth margin="normal">
-                                    <InputLabel id="brand">
+                                </Box>
+                                <Box sx={{ mt: "15px" }}>
+                                    <Typography
+                                        sx={{
+                                            color: "#000",
+                                            fontSize: "0.9rem",
+                                        }}
+                                    >
                                         Nhãn hiệu
-                                    </InputLabel>
+                                    </Typography>
                                     <Select
-                                        labelId="brand"
+                                        fullWidth
+                                        size="small"
                                         id="brand"
                                         name="brandId"
                                         value={
@@ -642,7 +684,7 @@ export default function AddProduct({}: Props) {
                                             </MenuItem>
                                         ))}
                                     </Select>
-                                </FormControl>
+                                </Box>
                             </Box>
                         </Box>
                     </Box>

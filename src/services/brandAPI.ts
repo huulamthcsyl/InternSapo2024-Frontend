@@ -13,6 +13,9 @@ const getAllBrands = async (query: string): Promise<BrandResponse[]> => {
                 limit: INFINITY,
                 query: query,
             },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
         });
 
         return response.data.data;
@@ -33,6 +36,9 @@ const getListOfBrands = async (
                 limit: limit,
                 query: query,
             },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
         });
         return response.data.data;
     } catch (error) {
@@ -46,6 +52,9 @@ const getNumberOfBrands = async (query: string): Promise<number> => {
             params: {
                 query: query,
             },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
         });
         return parseInt(response.data.data);
     } catch (error) {
@@ -53,21 +62,33 @@ const getNumberOfBrands = async (query: string): Promise<number> => {
     }
 };
 
-const createBrand = async (Brand: BrandRequest): Promise<BrandResponse> => {
-    const response = await axios.post(`${BASE_URL}/create`, Brand);
+const createBrand = async (brand: BrandRequest): Promise<BrandResponse> => {
+    const response = await axios.post(`${BASE_URL}/create`, brand, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+    });
     return response.data.data;
 };
 
 const updateBrand = async (
     id: number | undefined,
-    Brand: BrandRequest
+    brand: BrandRequest
 ): Promise<BrandResponse> => {
-    const response = await axios.put(`${BASE_URL}/${id}/edit`, Brand);
+    const response = await axios.put(`${BASE_URL}/${id}/edit`, brand, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+    });
     return response.data.data;
 };
 
 const deleteBrand = async (id: number | undefined): Promise<any> => {
-    const response = await axios.delete(`${BASE_URL}/${id}`);
+    const response = await axios.delete(`${BASE_URL}/${id}`, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+    });
     return response.data.data;
 };
 

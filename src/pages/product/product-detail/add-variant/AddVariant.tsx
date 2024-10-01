@@ -65,7 +65,7 @@ export default function AddVariant({}: Props) {
             .then((_res) => {
                 toast.success("Tạo phiên bản mới thành công");
                 setTimeout(() => {
-                    navigate(`/products/${_res.id}/edit`);
+                    navigate(`/products/${_res.productId}/edit`);
                 }, 1000);
             })
             .catch((error) => {

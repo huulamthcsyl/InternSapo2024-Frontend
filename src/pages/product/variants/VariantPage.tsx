@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import SearchField from "../SearchField";
 import {
     getListOfVariants,
-    getNumberOfProducts,
     getNumberOfVariants,
 } from "../../../services/productAPI";
 import { VariantResponse } from "../../../models/ProductInterface";

@@ -54,6 +54,24 @@ export interface VariantResponse {
     priceForSale: number;
 }
 
+export const initialVariantResponse = {
+    id: 0,
+    name: "",
+    productId: 0,
+    productName: "",
+    sku: "",
+    quantity: 0,
+    status: true,
+    size: "",
+    color: "",
+    material: "",
+    imagePath: "",
+    initialPrice: 0,
+    priceForSale: 0,
+    createdOn: new Date(),
+    updatedOn: new Date(),
+};
+
 export interface ProductRequest {
     name: string;
     categoryId: number;
