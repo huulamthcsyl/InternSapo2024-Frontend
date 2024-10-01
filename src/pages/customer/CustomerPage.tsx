@@ -13,12 +13,14 @@ import CustomerPageAppBar from "./CustomerPageAppBar.tsx"
 import MainBox from "../../components/layout/MainBox"
 import SearchIcon from '@mui/icons-material/Search';
 import React, {useEffect, useState} from "react";
-import {useNavigate} from "react-router-dom";
-import {Alert} from "@mui/lab";
 import Customer from "../../models/Customer.ts";
 import {fetchCustomers, submitNewCustomer} from "../../services/customerAPI.ts";
 
-type Props = {}
+import {formatCurrency} from "../../utils/formatCurrency.ts";
+import {toast} from "react-toastify";
+import {useNavigate} from "react-router-dom";
+
+
 type newCustomer = {
     name: string;
     phoneNumber: string;
@@ -29,19 +31,15 @@ type newCustomer = {
     email: string;
     address: string;
 };
-export default function CustomerPage({}: Props) {
+export default function CustomerPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [keyword, setKeyword] = useState<string>("");
     const [pageNum, setPageNum] = useState<number>(0);
     const [pageSize, setPageSize] = useState<number>(5); // Số khách hàng mỗi trang
-    // const [totalPages, setTotalPages] = useState<number>(1);
+
     const [totalCustomers, setTotalCustomers] = useState<number>(0);
-    const [errorMessage, setErrorMessage] = useState<string>(""); // State để lưu thông báo lỗi
-    const navigate = useNavigate();  // Khởi tạo useNavigate để điều hướng
-
-    const [successMessage, setSuccessMessage] = useState<string>(""); // State để lưu thông báo thành công
-
+    const navigate = useNavigate();
 
 
 
@@ -58,40 +56,26 @@ export default function CustomerPage({}: Props) {
         address: '' // Added address field
     });
 
-
-
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-
-            setErrorMessage('');
-            setSuccessMessage('');
-        }, 3000); // Thời gian hiển thị 3 giây
-
-        return () => clearTimeout(timeout); // Dọn dẹp timeout khi component unmount hoặc cập nhật
-    }, [ errorMessage, successMessage]);
-
-
-
     const loadCustomers = async () => {
         try {
             const fetchedCustomers = await fetchCustomers(pageNum, pageSize, keyword);
             setCustomers(fetchedCustomers.content);
-            // setTotalPages(fetchedCustomers.totalPages);// Cập nhật số trang
+
             setTotalCustomers(fetchedCustomers.totalElements);
-            setErrorMessage("");
-        } catch (error) {
-            if (error.message.includes('Không tồn tại khách hàng')) {
-                setCustomers([]);
+
+        } catch (error: any) {
+            if (error.response && error.response.status === 404) {
+                setCustomers([]); // Đảm bảo luôn là mảng
                 setTotalCustomers(0);
-                setErrorMessage(error.message);
+                // toast.error("Không tồn tại khách hàng!"); // Hiển thị thông báo lỗi
             } else {
                 console.error('Lỗi khi lấy danh sách khách hàng:', error);
+                toast.error('Lỗi khi lấy danh sách khách hàng:', error);
+                setCustomers([]); // Đảm bảo customers là mảng rỗng khi có lỗi
             }
         }
     };
     useEffect(() => {
-
-
         loadCustomers();
     }, [pageNum, pageSize, keyword]);
     const handleChangePage = (event, newPage) => {
@@ -135,6 +119,10 @@ export default function CustomerPage({}: Props) {
     };
 
     const handleSubmitNewCustomer = async () => {
+        if(newCustomer.name === '' || newCustomer.phoneNumber === ''){
+            toast.error("Vui lòng nhập tên và số điện thoại khách hàng");
+            return;
+        }
         try {
             console.log("Thông tin khách hàng mới:", newCustomer);
 
@@ -142,7 +130,7 @@ export default function CustomerPage({}: Props) {
             const createdCustomer = await submitNewCustomer(newCustomer);
             console.log("Tạo khách hàng thành công:", createdCustomer);
 
-            setSuccessMessage("Tạo khách hàng thành công!"); // Thiết lập thông báo thành công
+            // setSuccessMessage("Tạo khách hàng thành công!"); // Thiết lập thông báo thành công
             setNewCustomer({
                 name: '',
                 phoneNumber: '',
@@ -155,10 +143,11 @@ export default function CustomerPage({}: Props) {
             });
             setOpenModal(false);  // Đóng modal sau khi tạo thành công
             loadCustomers(); // Gọi lại API để cập nhật danh sách khách hàng
+            toast.success("Tạo khách hàng thành công!");
         } catch (error: any) {
             console.error("Lỗi khi tạo khách hàng:", error.message);
-            setErrorMessage(error.message); // Cập nhật thông báo lỗi
-
+            // setErrorMessage(error.message); // Cập nhật thông báo lỗi
+            toast.error(error.message);
             setNewCustomer({
                 name: '',
                 phoneNumber: '',
@@ -185,6 +174,8 @@ export default function CustomerPage({}: Props) {
     };
 
 
+
+
     return (
         <Box>
             <CustomerPageAppBar />
@@ -208,22 +199,7 @@ export default function CustomerPage({}: Props) {
                         fontWeight: 600, }} onClick={handleAddCustomerClick}>+ Thêm khách hàng</Button>
                 </Box>
 
-                {/*Hiển thị thông báo alert*/}
-                <Box sx={{ padding: '14px' }}>
-                    {/* Hiển thị thông báo lỗi nếu có */}
-                    {errorMessage && (
-                        <Alert severity="error" sx={{ marginTop: '16px' }}>
-                            {errorMessage}
-                        </Alert>
-                    )}
-                    {/* Hiển thị thông báo thành công nếu có */}
-                    {successMessage && (
-                        <Alert severity="success" sx={{ marginTop: '16px' }}>
-                            {successMessage}
-                        </Alert>
-                    )}
 
-                </Box>
 
                 {/*thanh tìm kiếm và bảng listCustomers*/}
                 <Box sx={{background: '#FFFFFF', margin: '10px 20px'}}>
@@ -270,7 +246,7 @@ export default function CustomerPage({}: Props) {
                                             <TableCell>{customer.code}</TableCell>
                                             <TableCell>{customer.name}</TableCell>
                                             <TableCell>{customer.phoneNumber}</TableCell>
-                                            <TableCell>{customer.totalExpense}</TableCell>
+                                            <TableCell>{formatCurrency(customer.totalExpense)}</TableCell>
                                             <TableCell>{customer.numberOfOrder}</TableCell>
 
                                         </TableRow>
@@ -279,24 +255,7 @@ export default function CustomerPage({}: Props) {
                                             <TableCell colSpan={5}>Không có khách hàng nào</TableCell>
                                         </TableRow>
                                     )}
-                                {/*{customers.map((customer) => (*/}
-                                {/*    <TableRow*/}
-                                {/*        key={customer.id}*/}
-                                {/*        sx={{*/}
-                                {/*            '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },*/}
-                                {/*            '&:hover': { backgroundColor: '#e0f7fa' },  // Hover effect*/}
-                                {/*            cursor: 'pointer'*/}
-                                {/*        }}*/}
-                                {/*        onClick={() => handleDetailsClick(customer.id)}*/}
-                                {/*    >*/}
-                                {/*        <TableCell>{customer.code}</TableCell>*/}
-                                {/*        <TableCell>{customer.name}</TableCell>*/}
-                                {/*        <TableCell>{customer.phoneNumber}</TableCell>*/}
-                                {/*        <TableCell>{customer.totalExpense}</TableCell>*/}
-                                {/*        <TableCell>{customer.numberOfOrder}</TableCell>*/}
 
-                                {/*    </TableRow>*/}
-                                {/*))}*/}
                             </TableBody>
                         </Table>
 
@@ -448,7 +407,6 @@ export default function CustomerPage({}: Props) {
 
 
                 </Dialog>
-
 
             </MainBox>
         </Box>
