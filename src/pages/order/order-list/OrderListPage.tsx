@@ -54,6 +54,7 @@ export default function OrderListPage({}: Props) {
   const [search, setSearch] = useState('');
   const [startDate, setStartDate] = useState<Dayjs | null>(dayjs().subtract(10, 'day'));
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs());
+  const [isLoading, setIsLoading] = useState(true);
 
   const navigate = useNavigate();
 
@@ -76,14 +77,19 @@ export default function OrderListPage({}: Props) {
   }
 
   useEffect(() => {
-    getAllOrders(page, pageSize, '', '20/09/2024', '30/09/2024').then((res) => {
+    const startDateStr = startDate?.format('DD/MM/YYYY') || dayjs().format('DD/MM/YYYY');
+    const endDateStr = endDate?.format('DD/MM/YYYY') || dayjs().format('DD/MM/YYYY');
+    getAllOrders(page, pageSize, '',  startDateStr, endDateStr).then((res) => {
       setOrderData(res.data);
     })
   }, [page, pageSize])
 
   useEffect(() => {
-    getNumberOfOrders('', '20/09/2024', '30/09/2024').then((res) => {
+    const startDateStr = startDate?.format('DD/MM/YYYY') || dayjs().subtract(10, 'day').format('DD/MM/YYYY');
+    const endDateStr = endDate?.format('DD/MM/YYYY') || dayjs().format('DD/MM/YYYY');
+    getNumberOfOrders('', startDateStr, endDateStr).then((res) => {
       setTotalPage(res.data);
+      setIsLoading(false);
     })
   }, [])
 
@@ -136,7 +142,7 @@ export default function OrderListPage({}: Props) {
               </TableHead>
               <TableBody>
                 {
-                  orderData.map((order: any) => (
+                  !isLoading ? orderData.map((order: any) => (
                     <TableRow sx={{ cursor: 'pointer' }} key={order.code} hover onClick={() => navigate(`${order.id}`)}>
                       <TableCell sx={{ color: '#08F' }}>{order.code}</TableCell>
                       <TableCell>{formatDate(order.createdOn)}</TableCell>
@@ -144,7 +150,10 @@ export default function OrderListPage({}: Props) {
                       <TableCell>{order.totalQuantity}</TableCell>
                       <TableCell>{formatCurrency(order.totalPayment)}</TableCell>
                     </TableRow>
-                  ))
+                  )) :
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">Đang tải dữ liệu...</TableCell>
+                  </TableRow>
                 }
               </TableBody>
               <TableFooter>

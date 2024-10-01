@@ -1,10 +1,11 @@
 import axios from 'axios';
+import apiClient from './api-clients';
 
 const BASE_URL = 'http://localhost:8080/v1/orders';
 
 const getAllOrders = async (page: number, limit: number, query: string, startDate: string, endDate: string): Promise<any> => {
     try {
-        const response = await axios.get(`${BASE_URL}/`, {
+        const response = await apiClient.get(`${BASE_URL}/`, {
             params: {
                 page: page,
                 limit: limit,
@@ -21,7 +22,7 @@ const getAllOrders = async (page: number, limit: number, query: string, startDat
 
 const getNumberOfOrders = async (query: string, startDate: string, endDate: string): Promise<any> => {
     try {
-        const response = await axios.get(`${BASE_URL}/count`, {
+        const response = await apiClient.get(`${BASE_URL}/count`, {
             params: {
                 query: query,
                 startDate: startDate,
@@ -36,7 +37,7 @@ const getNumberOfOrders = async (query: string, startDate: string, endDate: stri
 
 const getOrderDetail = async (orderCode: string | undefined): Promise<any> => {
     try {
-        const response = await axios.get(`${BASE_URL}/${orderCode}`);
+        const response = await apiClient.get(`${BASE_URL}/${orderCode}`);
         return response.data;
     } catch (error) {
         return null;
@@ -44,7 +45,7 @@ const getOrderDetail = async (orderCode: string | undefined): Promise<any> => {
 }
 
 const createOrder = async (order: any): Promise<any> => {
-    return await axios.post(`${BASE_URL}/create`, order);
+    return await apiClient.post(`${BASE_URL}/create`, order);
 }
 const getTodayOrders = async (pageNum, pageSize) => {
     try {

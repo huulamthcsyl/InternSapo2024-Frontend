@@ -11,9 +11,9 @@ export default class Variant {
     initialPrice: number;
     priceForSale: number;
     status: boolean;
-    imagePath: string[];
+    imagePath: string;
 
-    constructor(id: number, name: string, productId: number, productName: string, sku: string, size: string, color: string, material: string, quantity: number, initialPrice: number, priceForSale: number, status: boolean, imagePath: string[]) {
+    constructor(id: number, name: string, productId: number, productName: string, sku: string, size: string, color: string, material: string, quantity: number, initialPrice: number, priceForSale: number, status: boolean, imagePath: string) {
         this.id = id;
         this.name = name;
         this.productId = productId;
