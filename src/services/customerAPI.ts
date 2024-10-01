@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Customer from '../models/Customer';
 
-const BASE_URL = 'http://localhost:8000/customers';
+const BASE_URL = 'http://localhost:8000/v1/customers';
 
 const INFINITY = 1000000000;
 
@@ -32,9 +32,6 @@ const fetchCustomers = async (pageNum: number, pageSize: number, keyword: string
             }
         });
 
-        if (response.status === 404) {
-            throw new Error('Không tồn tại khách hàng.');
-        }
 
         return response.data;
     } catch (error) {
