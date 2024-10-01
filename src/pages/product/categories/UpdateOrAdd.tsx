@@ -39,13 +39,15 @@ export default function UpdateOrAdd({
     }
     function handleUpdateCategory() {
         updateCategory(form.id, form)
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Cập nhật loại sản phẩm thành công", {
                     position: "top-center",
                 });
                 onUpdate();
-                setSelectedCategory(null);
-                setIsUpdate(0);
+                setTimeout(() => {
+                    setSelectedCategory(null);
+                    setIsUpdate(0);
+                }, 1000);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -54,11 +56,13 @@ export default function UpdateOrAdd({
 
     function handleCreateCategory() {
         createCategory(form)
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Tạo loại sản phẩm thành công");
                 onUpdate();
-                setSelectedCategory(null);
-                setIsUpdate(0);
+                setTimeout(() => {
+                    setSelectedCategory(null);
+                    setIsUpdate(0);
+                }, 1000);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -67,11 +71,13 @@ export default function UpdateOrAdd({
 
     function handleDeleteCategory() {
         deleteCategory(form.id)
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Xoá loại sản phẩm thành công");
                 onUpdate();
-                setSelectedCategory(null);
-                setIsUpdate(0);
+                setTimeout(() => {
+                    setSelectedCategory(null);
+                    setIsUpdate(0);
+                }, 1000);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -97,6 +103,7 @@ export default function UpdateOrAdd({
                 zIndex: 10000,
             }}
         >
+            <ToastContainer hideProgressBar autoClose={3000} />
             {!openConfirmDialog ? (
                 <Box
                     sx={{
@@ -106,7 +113,7 @@ export default function UpdateOrAdd({
                         padding: "10px 30px 30px 30px",
                         display: "flex",
                         flexDirection: "column",
-                        gap: "10px",
+                        gap: "15px",
                         border: "1px solid black",
                         borderRadius: "5px",
                     }}
@@ -136,36 +143,55 @@ export default function UpdateOrAdd({
                             gap: "20px",
                         }}
                     >
+                        <Box sx={{ width: "50%" }}>
+                            <Typography
+                                sx={{ color: "#000", fontSize: "0.9rem" }}
+                            >
+                                Tên loại sản phẩm
+                                <span style={{ color: "#FF4D4D" }}>*</span>
+                            </Typography>
+                            <TextField
+                                fullWidth
+                                value={form.name}
+                                required={true}
+                                name="name"
+                                size="small"
+                                onChange={handleFormChange}
+                            />
+                        </Box>
+
+                        <Box sx={{ width: "50%" }}>
+                            <Typography
+                                variant="body1"
+                                sx={{ color: "#000", fontSize: "0.9rem" }}
+                            >
+                                Mã loại
+                            </Typography>
+                            <TextField
+                                fullWidth
+                                name="code"
+                                value={form.code}
+                                size="small"
+                                onChange={handleFormChange}
+                            />
+                        </Box>
+                    </Box>
+                    <Box>
+                        <Typography
+                            variant="body1"
+                            sx={{ color: "#000", fontSize: "0.9rem" }}
+                        >
+                            Ghi chú
+                        </Typography>
                         <TextField
-                            sx={{ width: "50%" }}
-                            value={form.name}
-                            required={true}
-                            name="name"
-                            size="small"
-                            label="Tên loại sản phẩm"
+                            fullWidth
+                            multiline
+                            name="description"
+                            value={form.description}
+                            rows={4}
                             onChange={handleFormChange}
-                            margin="normal"
-                        />
-                        <TextField
-                            sx={{ width: "50%" }}
-                            label="Mã loại"
-                            name="code"
-                            value={form.code}
-                            size="small"
-                            onChange={handleFormChange}
-                            margin="normal"
                         />
                     </Box>
-                    <TextField
-                        fullWidth
-                        multiline
-                        name="description"
-                        value={form.description}
-                        rows={4}
-                        label="Ghi chú"
-                        onChange={handleFormChange}
-                        margin="normal"
-                    />
                     <Box
                         sx={{
                             display: "flex",
@@ -261,7 +287,6 @@ export default function UpdateOrAdd({
                     </Box>
                 </Box>
             )}
-            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }

@@ -20,6 +20,9 @@ const getAllVariantsForSearch = async (query: string): Promise<Variant[]> => {
                 limit: LIMIT,
                 query: query,
             },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
         });
         return response.data.data;
     } catch (error) {
@@ -39,6 +42,9 @@ const getListOfProducts = async (
                 limit: limit,
                 query: query,
             },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
         });
         return response.data.data;
     } catch (error) {
@@ -52,6 +58,9 @@ const getNumberOfProducts = async (query: string): Promise<number> => {
             params: {
                 query: query,
             },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
         });
         return parseInt(response.data.data);
     } catch (error) {
@@ -62,14 +71,18 @@ const getNumberOfProducts = async (query: string): Promise<number> => {
 const getProductById = async (
     id: string | undefined
 ): Promise<ProductResponse> => {
-    const response = await axios.get(`${BASE_URL}/${id}`);
+    const response = await axios.get(`${BASE_URL}/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
     return response.data.data;
 };
 
 const createProduct = async (
     product: ProductRequest
 ): Promise<ProductResponse> => {
-    const response = await axios.post(`${BASE_URL}/create`, product);
+    const response = await axios.post(`${BASE_URL}/create`, product, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
     return response.data.data;
 };
 
@@ -77,12 +90,16 @@ const updateProduct = async (
     id: string | undefined,
     product: ProductRequest
 ): Promise<ProductResponse> => {
-    const response = await axios.put(`${BASE_URL}/${id}/edit`, product);
+    const response = await axios.put(`${BASE_URL}/${id}/edit`, product, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
     return response.data.data;
 };
 
 const deleteProduct = async (id: string | undefined): Promise<any> => {
-    const response = await axios.delete(`${BASE_URL}/${id}`);
+    const response = await axios.delete(`${BASE_URL}/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
     return response.data.data;
 };
 
@@ -98,6 +115,9 @@ const getListOfVariants = async (
                 limit: limit,
                 query: query,
             },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
         });
         return response.data.data;
     } catch (error) {
@@ -110,6 +130,9 @@ const getNumberOfVariants = async (query: string): Promise<number> => {
         const response = await axios.get(`${BASE_URL}/total-variants`, {
             params: {
                 query: query,
+            },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return parseInt(response.data.data);
@@ -124,7 +147,12 @@ const createVariant = async (
 ): Promise<VariantResponse> => {
     const response = await axios.post(
         `${BASE_URL}/${id}/variants/create`,
-        variant
+        variant,
+        {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+        }
     );
     return response.data.data;
 };
@@ -139,6 +167,7 @@ const deleteVariantByProperty = async (
             prop: prop,
             value: value,
         },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data.data;
 };

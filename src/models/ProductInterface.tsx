@@ -16,6 +16,26 @@ export interface ProductResponse {
     updatedOn: Date;
     variants: VariantResponse[];
 }
+
+export const initialProductResponse = {
+    id: 0,
+    name: "",
+    categoryId: 0,
+    categoryName: "",
+    brandId: 0,
+    brandName: "",
+    description: "",
+    totalQuantity: 0,
+    status: false,
+    size: [],
+    color: [],
+    material: [],
+    imagePath: [],
+    createdOn: new Date(),
+    updatedOn: new Date(),
+    variants: [],
+};
+
 export interface VariantResponse {
     id: number;
     name: string;
@@ -34,6 +54,24 @@ export interface VariantResponse {
     priceForSale: number;
 }
 
+export const initialVariantResponse = {
+    id: 0,
+    name: "",
+    productId: 0,
+    productName: "",
+    sku: "",
+    quantity: 0,
+    status: true,
+    size: "",
+    color: "",
+    material: "",
+    imagePath: "",
+    initialPrice: 0,
+    priceForSale: 0,
+    createdOn: new Date(),
+    updatedOn: new Date(),
+};
+
 export interface ProductRequest {
     name: string;
     categoryId: number;
@@ -44,6 +82,16 @@ export interface ProductRequest {
     updatedOn: Date;
     variants: VariantRequest[];
 }
+export const initialProductRequest = {
+    name: "",
+    categoryId: 0,
+    brandId: 0,
+    description: "",
+    imagePath: [],
+    createdOn: new Date(),
+    updatedOn: new Date(),
+    variants: [],
+};
 
 export interface VariantRequest {
     id?: number;
@@ -58,6 +106,20 @@ export interface VariantRequest {
     initialPrice: number;
     priceForSale: number;
 }
+
+export const initialVariantRequest = {
+    id: 0,
+    name: "",
+    productId: 0,
+    quantity: 0,
+    sku: "",
+    size: "",
+    color: "",
+    material: "",
+    imagePath: "",
+    initialPrice: 0,
+    priceForSale: 0,
+};
 
 export interface CategoryResponse {
     id: number;

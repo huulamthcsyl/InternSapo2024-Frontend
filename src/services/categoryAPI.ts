@@ -13,6 +13,9 @@ const getAllCategories = async (query: string): Promise<CategoryResponse[]> => {
                 limit: INFINITY,
                 query: query,
             },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
         });
 
         return response.data.data;
@@ -33,6 +36,9 @@ const getListOfCategories = async (
                 limit: limit,
                 query: query,
             },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
         });
         return response.data.data;
     } catch (error) {
@@ -46,6 +52,9 @@ const getNumberOfCategories = async (query: string): Promise<number> => {
             params: {
                 query: query,
             },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
         });
         return parseInt(response.data.data);
     } catch (error) {
@@ -56,7 +65,11 @@ const getNumberOfCategories = async (query: string): Promise<number> => {
 const createCategory = async (
     category: CategoryRequest
 ): Promise<CategoryResponse> => {
-    const response = await axios.post(`${BASE_URL}/create`, category);
+    const response = await axios.post(`${BASE_URL}/create`, category, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+    });
     return response.data.data;
 };
 
@@ -64,12 +77,20 @@ const updateCategory = async (
     id: number | undefined,
     category: CategoryRequest
 ): Promise<CategoryResponse> => {
-    const response = await axios.put(`${BASE_URL}/${id}/edit`, category);
+    const response = await axios.put(`${BASE_URL}/${id}/edit`, category, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+    });
     return response.data.data;
 };
 
 const deleteCategory = async (id: number | undefined): Promise<any> => {
-    const response = await axios.delete(`${BASE_URL}/${id}`);
+    const response = await axios.delete(`${BASE_URL}/${id}`, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+    });
     return response.data.data;
 };
 
