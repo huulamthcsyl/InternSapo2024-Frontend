@@ -24,7 +24,7 @@ import Property from "../../Property";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { storage } from "../../../../../firebaseConfig";
 import NumericFormatCustom from "../../../../utils/NumericFormatCustom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getAllCategories } from "../../../../services/categoryAPI";
 import { getProductById, updateProduct } from "../../../../services/productAPI";
@@ -137,9 +137,7 @@ export default function ProductDetail({}: Props) {
         })
             .then((_res) => {
                 toast.success("Cập nhật sản phẩm thành công");
-                setTimeout(() => {
-                    navigate(`/products/${_res.id}`);
-                }, 1000);
+                navigate(`/products/${_res.id}`);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -251,7 +249,6 @@ export default function ProductDetail({}: Props) {
         <Box>
             <ProductEditAppBar id={id} submit={handleUpdateProduct} />
             <MainBox>
-                <ToastContainer hideProgressBar autoClose={3000} />
                 <Box sx={{ padding: "20px 24px", backgroundColor: "#F0F1F1" }}>
                     <Box
                         sx={{
@@ -936,7 +933,7 @@ export default function ProductDetail({}: Props) {
                                 </Box>
                                 {variants.map((variant, index) =>
                                     currentVariant == index ? (
-                                        <Box sx={{ flexGrow: 1 }}>
+                                        <Box sx={{ flexGrow: 1 }} key={index}>
                                             <Box
                                                 sx={{
                                                     borderRadius: "5px",

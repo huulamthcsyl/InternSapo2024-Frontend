@@ -74,7 +74,17 @@ export default function HomeDrawer({ }: Props) {
           </List>
           <List disablePadding>
             <ListItemButton sx={{ pl: 4, color: '#fff' }}>
-              <ListItemText primary="Quản lý kho" onClick={() => navigate('/products/categories')}/>
+              <ListItemText primary="Quản lý danh mục" onClick={() => navigate('/products/categories')}/>
+            </ListItemButton>
+          </List>
+          <List disablePadding>
+            <ListItemButton sx={{ pl: 4, color: '#fff' }}>
+              <ListItemText primary="Quản lý nhãn hiệu" onClick={() => navigate('/products/brands')}/>
+            </ListItemButton>
+          </List>
+          <List disablePadding>
+            <ListItemButton sx={{ pl: 4, color: '#fff' }}>
+              <ListItemText primary="Quản lý phiên bản" onClick={() => navigate('/products/variants')}/>
             </ListItemButton>
           </List>
         </Collapse>
