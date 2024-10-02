@@ -2,7 +2,6 @@ import {
     Box,
     CardMedia,
     CircularProgress,
-    TextField,
     Typography,
 } from "@mui/material";
 import ProductDetailAppBar from "./ProductDetailAppBar";
