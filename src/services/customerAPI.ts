@@ -2,7 +2,7 @@ import axios from 'axios';
 import Customer from '../models/Customer';
 import apiClient from './api-clients';
 
-const BASE_URL = 'http://localhost:8000/v1/customers';
+const BASE_URL = 'http://13.211.146.23:8080/v1/customers';
 
 const INFINITY = 1000000000;
 
@@ -56,7 +56,7 @@ const submitNewCustomer = async (newCustomer: any) => {
         }
 
         return response.data; // Trả về dữ liệu khách hàng vừa tạo
-    } catch (error) {
+    } catch (error: any) {
         throw new Error(error.response?.data?.message || error.message);
     }
 };
@@ -64,7 +64,7 @@ const getCustomerById = async (id: string | undefined): Promise<Customer | null>
     try {
         const response = await axios.get(`${BASE_URL}/${id}`);
         return Customer.fromJson(response.data);
-    } catch (error) {
+    } catch (error: any) {
         return error;
     }
 }
@@ -73,16 +73,16 @@ const createCustomer = async (customer: any): Promise<any> => {
     return await axios.post(`${BASE_URL}/create`, customer);
 }
 
-const deleteCustomer = async (customerId) => {
+const deleteCustomer = async (customerId: number) => {
     try {
         const response = await axios.delete(`${BASE_URL}/delete/${customerId}`);
         return response.data; // Trả về dữ liệu nhận được từ server
-    } catch (error) {
+    } catch (error: any) {
         // Lấy thông báo lỗi từ response nếu có
         throw new Error('Lỗi khi xóa khách hàng: ' + (error.response?.data?.message || error.message));
     }
 };
-const updateCustomer = async (customerId, customerData) => {
+const updateCustomer = async (customerId: string | undefined, customerData: any) => {
     try {
         const response = await axios.put(`${BASE_URL}/update/${customerId}`, customerData, {
             headers: {
@@ -91,7 +91,7 @@ const updateCustomer = async (customerId, customerData) => {
         });
 
         return response.data; // Trả về dữ liệu nhận được từ server
-    } catch (error) {
+    } catch (error: any) {
         // Kiểm tra lỗi 409 và trả về thông báo tương ứng
         if (error.response?.status === 409) {
             throw new Error('Số điện thoại đã tồn tại');
