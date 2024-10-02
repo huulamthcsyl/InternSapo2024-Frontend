@@ -28,7 +28,7 @@ export default function AdminDrawer({}: Props) {
       </Toolbar>
       <Divider />
       <List sx={{ p: 0 }}>
-        <DrawerItem name="Cửa hàng" icon={<HomeIcon />} link="/overview" />
+        <DrawerItem name="Cửa hàng" icon={<HomeIcon />} link="/" />
       </List>
     </Drawer>
   )
