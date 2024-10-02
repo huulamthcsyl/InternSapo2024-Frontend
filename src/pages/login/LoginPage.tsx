@@ -23,7 +23,7 @@ const LoginPage: React.FC = () => {
         setMessage('');  
 
         try {  
-            const response = await axios.post('http://localhost:8080/v1/auth/login', {  
+            const response = await axios.post('http://13.211.146.23:8080/v1/auth/login', {  
                 email,  
                 password,  
             });  
