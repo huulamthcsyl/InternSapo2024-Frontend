@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import MainBox from "../../../components/layout/MainBox"
 import OrderListAppBar from "./OrderListAppBar"
-import { Box, Button, Paper, TableBody, TableContainer, Table, TableHead, TableRow, TableCell, TableFooter, TablePagination, TextField, Typography, InputBase } from '@mui/material'
+import { Box, Button, Paper, TableBody, TableContainer, Table, TableHead, TableRow, TableCell, TableFooter, TablePagination, Typography, InputBase } from '@mui/material'
 import { getAllOrders, getNumberOfOrders } from "../../../services/orderAPI"
 import { formatDate } from "../../../utils/formatDate"
 import { formatCurrency } from "../../../utils/formatCurrency"

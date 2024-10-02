@@ -78,16 +78,16 @@ export default function CustomerPage() {
     useEffect(() => {
         loadCustomers();
     }, [pageNum, pageSize, keyword]);
-    const handleChangePage = (event, newPage) => {
+    const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
         setPageNum(newPage);
     };
-    const handleChangeRowsPerPage = (event) => {
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPageSize(parseInt(event.target.value, 10)); // Cập nhật số hàng trên mỗi trang
         setPageNum(0); // Reset về trang đầu khi thay đổi số hàng
     };
 
     // Hàm xử lý khi người dùng nhấn phím
-    const handleKeyPress = (event) => {
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
             setKeyword(searchTerm); // Cập nhật từ khóa và gọi API tìm kiếm
             setPageNum(0); // Reset lại trang đầu tiên
@@ -162,14 +162,14 @@ export default function CustomerPage() {
         setOpenModal(false);  // Đóng modal sau khi submit
     };
     // Cập nhật state khi nhập dữ liệu vào form
-    const handleChangeNewCustomer = (e) => {
+    const handleChangeNewCustomer = (e: any) => {
         setNewCustomer({
             ...newCustomer,
             [e.target.name]: e.target.value
         });
     };
 
-    const handleDetailsClick = (customerId) => {
+    const handleDetailsClick = (customerId: number) => {
         navigate(`/customers/${customerId}`); // Chuyển hướng tới trang chi tiết của khách hàng
     };
 
