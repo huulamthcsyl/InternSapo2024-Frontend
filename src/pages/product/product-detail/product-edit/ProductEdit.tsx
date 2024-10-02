@@ -1298,6 +1298,7 @@ export default function ProductDetail({}: Props) {
                                                         <Box
                                                             sx={{
                                                                 width: "48.5%",
+                                                                mt: "15px",
                                                             }}
                                                         >
                                                             <Typography
