@@ -37,10 +37,10 @@ interface UserData {
 }
 
 const roleMap: { [key: string]: string } = {
-  ROLE_ADMIN: "ADMIN",
-  ROLE_REPOSITORY: "NHÂN VIÊN KHO",
-  ROLE_SALE: "NHÂN VIÊN BÁN HÀNG",
-  ROLE_SUPPORT: "NHÂN VIÊN CHĂM SÓC",
+  ROLE_ADMIN: "ADMIN (Chủ cửa hàng)",
+  ROLE_REPOSITORY: "NHÂN VIÊN KHO (Quản lý kho)",
+  ROLE_SALE: "NHÂN VIÊN BÁN HÀNG (Quản lý bán hàng)",
+  ROLE_SUPPORT: "NHÂN VIÊN CHĂM SÓC (Chăm sóc khách hàng)",
 };
 
 const UserProfile: React.FC = () => {
@@ -258,7 +258,7 @@ const UserProfile: React.FC = () => {
                 </Typography> */}
               <Button
                 color="primary"
-                sx={{ textTransform: "none", fontSize: "16px" }}
+                sx={{ textTransform: "none", fontSize: "16px" , marginTop: 2 }}
                 variant="text"
                 onClick={() => navigate(`/account/change-password/${id}`)}
               >

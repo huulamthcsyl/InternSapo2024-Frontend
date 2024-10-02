@@ -29,10 +29,10 @@ interface Role {
 }
 
 const roleMap: { [key: string]: string } = {
-  ROLE_ADMIN: "ADMIN",
-  ROLE_REPOSITORY: "NHÂN VIÊN KHO",
-  ROLE_SALE: "NHÂN VIÊN BÁN HÀNG",
-  ROLE_SUPPORT: "NHÂN VIÊN CHĂM SÓC",
+  ROLE_ADMIN: "ADMIN (Chủ cửa hàng)",
+  ROLE_REPOSITORY: "NHÂN VIÊN KHO (Quản lý kho)",
+  ROLE_SALE: "NHÂN VIÊN BÁN HÀNG (Quản lý bán hàng)",
+  ROLE_SUPPORT: "NHÂN VIÊN CHĂM SÓC (Chăm sóc khách hàng)",
 };
 
 interface UserDetail {

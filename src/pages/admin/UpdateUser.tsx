@@ -23,10 +23,10 @@ import dayjs , { Dayjs } from "dayjs";
 
 // Role options that match backend roles
 const roleOptions = [
-  { value: "ROLE_ADMIN", label: "ADMIN" },
-  { value: "ROLE_REPOSITORY", label: "NHÂN VIÊN KHO" },
-  { value: "ROLE_SALE", label: "NHÂN VIÊN BÁN HÀNG" },
-  { value: "ROLE_SUPPORT", label: "NHÂN VIÊN CHĂM SÓC" },
+  { value: "ROLE_ADMIN", label: "ADMIN (Chủ cửa hàng)" },
+  { value: "ROLE_REPOSITORY", label: "NHÂN VIÊN KHO (Quản lý kho)" },
+  { value: "ROLE_SALE", label: "NHÂN VIÊN BÁN HÀNG (Quản lý bán hàng)" },
+  { value: "ROLE_SUPPORT", label: "NHÂN VIÊN CHĂM SÓC (Chăm sóc khách hàng)" },
 ];
 
 const UpdateUser = () => {

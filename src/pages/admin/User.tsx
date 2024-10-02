@@ -21,6 +21,7 @@ import {
   Chip,
   CircularProgress,
   Pagination,
+  TextField, // Thêm TextField
   TableFooter,
   TablePagination,
   TableSortLabel,
@@ -84,14 +85,16 @@ export default function User({}: Props) {
   const [selectedRole, setSelectedRole] = useState<string | "">("");
   const [anchorEl, setAnchorEl] = useState<any | HTMLElement>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState<string>(""); // Thêm searchQuery
   const navigate = useNavigate();
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const roleFilter = selectedRole ? `&role=${selectedRole}` : "";
+      const searchFilter = searchQuery ? `&search=${searchQuery}` : ""; // Thêm search query
       const response = await fetch(
-        `http://localhost:8080/v1/user?page=${page}&limit=${pageSize}&sort=${sortColumn}&order=${sortOrder}${roleFilter}`
+        `http://localhost:8080/v1/user?page=${page}&limit=${pageSize}&sort=${sortColumn}&order=${sortOrder}${roleFilter}${searchFilter}`
       );
       const data: ApiResponse = await response.json();
       setUsers(data.data.content);
@@ -111,7 +114,7 @@ export default function User({}: Props) {
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
-  }, [page, pageSize, sortColumn, sortOrder, selectedRole]);
+  }, [page, pageSize, sortColumn, sortOrder, selectedRole , searchQuery]);
 
   const handlePageChange = (
     _event: React.MouseEvent<HTMLButtonElement> | null,
@@ -139,6 +142,10 @@ export default function User({}: Props) {
   const handleRoleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setSelectedRole(event.target.value as string); // Update selected role
     setPage(0); // Reset to page 0 when filtering
+  };
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value); // Cập nhật giá trị search query
+    setPage(0); // Reset về trang đầu khi tìm kiếm
   };
 
   function TablePaginationActions({
@@ -230,7 +237,20 @@ export default function User({}: Props) {
       </Box>
 
       <Box sx={{ padding: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
+
+
+        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+        <TextField
+          label="Tìm kiếm theo tên hoặc số điện thoại"
+          variant="outlined"
+          value={searchQuery}
+          onChange={handleSearchChange} // Sử dụng hàm này để cập nhật khi người dùng nhập
+          sx={{ width: "40%" , backgroundColor: "white",  }}
+          InputProps={{
+            style: { backgroundColor: "white" }, // This ensures the input field background is white
+          }}
+          
+        />
           <Button
             variant="contained"
             color="primary"
@@ -319,14 +339,14 @@ export default function User({}: Props) {
                           color={user.status ? "success" : "error"}
                         />
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <Button
                           color="primary"
                           onClick={() => navigate(`/admin/user/${user.id}`)}
                         >
                           Chi tiết
                         </Button>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>

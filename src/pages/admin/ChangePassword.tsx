@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import {
   Box,
   Button,
+  Card,
+  CardContent,
   TextField,
   Typography,
   Container,
@@ -109,11 +111,14 @@ const ChangePassword: React.FC = () => {
           {user}
         </Typography>
       </Box>
-      <Container
+      <Box sx={{ padding: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
+        <Card>
+          <CardContent>
+          {/* <Container
         component={Paper}
         elevation={3}
         sx={{ padding: 4, marginTop: 5 }}
-      >
+      > */}
         <Typography variant="h5" gutterBottom>
           Đổi mật khẩu
         </Typography>
@@ -163,7 +168,7 @@ const ChangePassword: React.FC = () => {
             </Button>
             <Button
               variant="outlined"
-              color="secondary"
+              color="error"
               sx={{ marginLeft: 2 }}
               onClick={() => navigate(`/account/${id}`)}
             >
@@ -171,7 +176,11 @@ const ChangePassword: React.FC = () => {
             </Button>
           </Box>
         </Box>
-      </Container>
+      {/* </Container> */}
+          </CardContent>
+        </Card>
+      </Box>
+      
     </Box>
   );
 };
