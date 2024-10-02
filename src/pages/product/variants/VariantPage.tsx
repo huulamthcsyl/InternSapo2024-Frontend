@@ -91,7 +91,7 @@ export default function VariantPage({}: Props) {
                     <Box sx={{ backgroundColor: "white", padding: "16px" }}>
                         <SearchField
                             onKeyPress={setQuery}
-                            placeHolder="Tìm kiếm phiên bản theo tên, mã SKU ..."
+                            placeHolder="Tìm kiếm phiên bản theo tên hoặc mã SKU"
                         />
                         <TableContainer component={Paper} sx={{ mt: "16px" }}>
                             <Table>
