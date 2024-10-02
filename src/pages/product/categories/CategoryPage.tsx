@@ -129,7 +129,7 @@ export default function CategoryPage({}: Props) {
                     <Box sx={{ backgroundColor: "white", padding: "16px" }}>
                         <SearchField
                             onKeyPress={setQuery}
-                            placeHolder="Tìm kiếm loại sản phẩm theo tên ..."
+                            placeHolder="Tìm kiếm loại sản phẩm theo tên"
                         />
                         <TableContainer component={Paper} sx={{ mt: "16px" }}>
                             <Table>
