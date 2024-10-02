@@ -82,10 +82,8 @@ export default function AddVariant({}: Props) {
 
             uploadTask.on(
                 "state_changed",
-                (snapshot) => {
+                (_snapshot) => {
                     //Clearing snapshot cannot upload images
-                    const _progressPercent =
-                        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 },
                 (error) => {
                     console.error("Upload failed:", error);
