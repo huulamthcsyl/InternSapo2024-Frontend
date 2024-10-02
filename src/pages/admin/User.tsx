@@ -71,7 +71,7 @@ export default function User({ }: Props) {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8080/v1/user?page=${page - 1}&limit=10`
+        `http://13.211.146.23:8080/v1/user?page=${page - 1}&limit=10`
       );
       const data: ApiResponse = await response.json();
       setUsers(data.data.content);

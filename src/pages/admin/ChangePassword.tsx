@@ -38,7 +38,7 @@ const ChangePassword: React.FC = () => {
     // }
 
     try {
-      const response = await fetch(`http://localhost:8080/v1/user/change_password/${id}`, {
+      const response = await fetch(`http://13.211.146.23:8080/v1/user/change_password/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -74,7 +74,7 @@ export default function CreateUser({}: Props) {
   const checkEmail = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/v1/user/check-email/${formData.email}`,
+        `http://13.211.146.23:8080/v1/user/check-email/${formData.email}`,
         {
           method: "GET",
           headers: {

@@ -32,14 +32,14 @@ export default function OverviewPage({}: Props) {
     useEffect(() => {
         fetchTodayOrders();
     }, [pageNum,pageSize]);
-    const handleChangePage = (event, newPage) => {
+    const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
         setPageNum(newPage);
     };
-    const handleChangeRowsPerPage = (event) => {
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPageSize(parseInt(event.target.value, 10)); // Cập nhật số hàng trên mỗi trang
         setPageNum(0); // Reset về trang đầu khi thay đổi số hàng
     };
-    const handleDetailsClick = (orderId) => {
+    const handleDetailsClick = (orderId: number) => {
         navigate(`/order/${orderId}`); // Chuyển hướng tới trang chi tiết của khách hàng
     };
     return (
@@ -138,7 +138,7 @@ export default function OverviewPage({}: Props) {
                                 </TableHead>
                                 <TableBody>
                                     {totalOrders > 0 ? (
-                                        orders.map((order) => (
+                                        orders.map((order: any) => (
                                             <TableRow
                                                 key={order.id}
                                                 sx={{
