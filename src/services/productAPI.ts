@@ -1,4 +1,3 @@
-import axios from "axios";
 import Variant from "../models/Variant";
 import {
     ProductRequest,
@@ -6,27 +5,22 @@ import {
     VariantRequest,
     VariantResponse,
 } from "../models/ProductInterface";
+import apiClient from "./api-clients";
 
-const BASE_URL = "http://localhost:8080/v1/products";
+const BASE_URL = "http://13.211.146.23:8080/v1/products";
 
-const INFINITY = 1000000000;
+const LIMIT = 10;
 
-const getAllVariants = async (query: string): Promise<Variant[]> => {
+const getAllVariantsForSearch = async (query: string): Promise<Variant[]> => {
     try {
-        const response = await axios.get(BASE_URL, {
+        const response = await apiClient.get(`${BASE_URL}/variants`, {
             params: {
                 page: 0,
-                limit: INFINITY,
+                limit: LIMIT,
                 query: query,
             },
         });
-        let variants: Variant[] = [];
-        await response.data.data.map((product: any) => {
-            product.variants.forEach((variant: any) => {
-                variants.push(Variant.fromJson(variant));
-            });
-        });
-        return variants;
+        return response.data.data;
     } catch (error) {
         return [];
     }
@@ -38,7 +32,7 @@ const getListOfProducts = async (
     query: string
 ): Promise<ProductResponse[]> => {
     try {
-        const response = await axios.get(`${BASE_URL}`, {
+        const response = await apiClient.get(`${BASE_URL}`, {
             params: {
                 page: page,
                 limit: limit,
@@ -53,7 +47,7 @@ const getListOfProducts = async (
 
 const getNumberOfProducts = async (query: string): Promise<number> => {
     try {
-        const response = await axios.get(`${BASE_URL}/total-products`, {
+        const response = await apiClient.get(`${BASE_URL}/total-products`, {
             params: {
                 query: query,
             },
@@ -67,14 +61,14 @@ const getNumberOfProducts = async (query: string): Promise<number> => {
 const getProductById = async (
     id: string | undefined
 ): Promise<ProductResponse> => {
-    const response = await axios.get(`${BASE_URL}/${id}`);
+    const response = await apiClient.get(`${BASE_URL}/${id}`);
     return response.data.data;
 };
 
 const createProduct = async (
     product: ProductRequest
 ): Promise<ProductResponse> => {
-    const response = await axios.post(`${BASE_URL}/create`, product);
+    const response = await apiClient.post(`${BASE_URL}/create`, product);
     return response.data.data;
 };
 
@@ -82,12 +76,12 @@ const updateProduct = async (
     id: string | undefined,
     product: ProductRequest
 ): Promise<ProductResponse> => {
-    const response = await axios.put(`${BASE_URL}/${id}/edit`, product);
+    const response = await apiClient.put(`${BASE_URL}/${id}/edit`, product);
     return response.data.data;
 };
 
 const deleteProduct = async (id: string | undefined): Promise<any> => {
-    const response = await axios.delete(`${BASE_URL}/${id}`);
+    const response = await apiClient.delete(`${BASE_URL}/${id}`);
     return response.data.data;
 };
 
@@ -97,7 +91,7 @@ const getListOfVariants = async (
     query: string
 ): Promise<VariantResponse[]> => {
     try {
-        const response = await axios.get(`${BASE_URL}/variants`, {
+        const response = await apiClient.get(`${BASE_URL}/variants`, {
             params: {
                 page: page,
                 limit: limit,
@@ -112,7 +106,7 @@ const getListOfVariants = async (
 
 const getNumberOfVariants = async (query: string): Promise<number> => {
     try {
-        const response = await axios.get(`${BASE_URL}/total-variants`, {
+        const response = await apiClient.get(`${BASE_URL}/total-variants`, {
             params: {
                 query: query,
             },
@@ -127,7 +121,7 @@ const createVariant = async (
     id: string | undefined,
     variant: VariantRequest
 ): Promise<VariantResponse> => {
-    const response = await axios.post(
+    const response = await apiClient.post(
         `${BASE_URL}/${id}/variants/create`,
         variant
     );
@@ -139,7 +133,7 @@ const deleteVariantByProperty = async (
     prop: string | undefined,
     value: string
 ): Promise<any> => {
-    const response = await axios.delete(BASE_URL, {
+    const response = await apiClient.delete(`${BASE_URL}/${id}/variants`, {
         params: {
             prop: prop,
             value: value,
@@ -149,7 +143,7 @@ const deleteVariantByProperty = async (
 };
 
 export {
-    getAllVariants,
+    getAllVariantsForSearch,
     getListOfProducts,
     getNumberOfProducts,
     getProductById,

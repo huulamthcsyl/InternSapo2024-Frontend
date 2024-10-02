@@ -5,60 +5,32 @@ import {
     CategoryRequest,
     CategoryResponse,
 } from "../../../models/ProductInterface";
-import {
-    createCategory,
-    deleteCategory,
-    updateCategory,
-} from "../../../services/categoryAPI";
-import { toast, ToastContainer } from "react-toastify";
+import { deleteCategory, updateCategory } from "../../../services/categoryAPI";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 type Props = {
-    isUpdate: number;
-    setIsUpdate: React.Dispatch<React.SetStateAction<number>>;
-    selectedCategory: any;
-    setSelectedCategory: React.Dispatch<
-        React.SetStateAction<CategoryResponse | null>
-    >;
+    setIsUpdate: React.Dispatch<React.SetStateAction<boolean>>;
+    selectedCategory: CategoryResponse;
     onUpdate: () => void;
 };
 
-export default function UpdateOrAdd({
-    isUpdate,
+export default function UpdateCategory({
     setIsUpdate,
     selectedCategory,
-    setSelectedCategory,
     onUpdate,
 }: Props) {
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-    const [form, setForm] = useState<CategoryRequest>(
-        { ...selectedCategory } || { name: "", code: "", description: "" }
-    );
+    const [form, setForm] = useState<CategoryRequest>({ ...selectedCategory });
     function handleFormChange(e: React.ChangeEvent<HTMLInputElement>) {
         setForm({ ...form, [e.target.name]: e.target.value });
     }
     function handleUpdateCategory() {
         updateCategory(form.id, form)
-            .then((res) => {
-                toast.success("Cập nhật loại sản phẩm thành công", {
-                    position: "top-center",
-                });
+            .then((_res) => {
+                toast.success("Cập nhật loại sản phẩm thành công");
                 onUpdate();
-                setSelectedCategory(null);
-                setIsUpdate(0);
-            })
-            .catch((error) => {
-                toast.error(error.response.data.message);
-            });
-    }
-
-    function handleCreateCategory() {
-        createCategory(form)
-            .then((res) => {
-                toast.success("Tạo loại sản phẩm thành công");
-                onUpdate();
-                setSelectedCategory(null);
-                setIsUpdate(0);
+                setIsUpdate(false);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -67,21 +39,16 @@ export default function UpdateOrAdd({
 
     function handleDeleteCategory() {
         deleteCategory(form.id)
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Xoá loại sản phẩm thành công");
                 onUpdate();
-                setSelectedCategory(null);
-                setIsUpdate(0);
+                setIsUpdate(false);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
             });
     }
 
-    function backToListCategories() {
-        setIsUpdate(0);
-        setSelectedCategory(null);
-    }
     return (
         <Box
             sx={{
@@ -106,7 +73,7 @@ export default function UpdateOrAdd({
                         padding: "10px 30px 30px 30px",
                         display: "flex",
                         flexDirection: "column",
-                        gap: "10px",
+                        gap: "15px",
                         border: "1px solid black",
                         borderRadius: "5px",
                     }}
@@ -119,15 +86,10 @@ export default function UpdateOrAdd({
                             borderBottom: "1px solid #d9d9d9",
                         }}
                     >
-                        {isUpdate === 2 ? (
-                            <Typography variant="h5">
-                                Thêm mới loại sản phẩm
-                            </Typography>
-                        ) : (
-                            <Typography variant="h5">
-                                Cập nhật loại sản phẩm
-                            </Typography>
-                        )}
+                        <Typography variant="h5">
+                            Cập nhật loại sản phẩm
+                        </Typography>
+
                         <Close color="disabled" />
                     </Box>
                     <Box
@@ -136,36 +98,55 @@ export default function UpdateOrAdd({
                             gap: "20px",
                         }}
                     >
+                        <Box sx={{ width: "50%" }}>
+                            <Typography
+                                sx={{ color: "#000", fontSize: "0.9rem" }}
+                            >
+                                Tên loại sản phẩm
+                                <span style={{ color: "#FF4D4D" }}>*</span>
+                            </Typography>
+                            <TextField
+                                fullWidth
+                                value={form.name}
+                                required={true}
+                                name="name"
+                                size="small"
+                                onChange={handleFormChange}
+                            />
+                        </Box>
+
+                        <Box sx={{ width: "50%" }}>
+                            <Typography
+                                variant="body1"
+                                sx={{ color: "#000", fontSize: "0.9rem" }}
+                            >
+                                Mã loại
+                            </Typography>
+                            <TextField
+                                fullWidth
+                                name="code"
+                                value={form.code}
+                                size="small"
+                                onChange={handleFormChange}
+                            />
+                        </Box>
+                    </Box>
+                    <Box>
+                        <Typography
+                            variant="body1"
+                            sx={{ color: "#000", fontSize: "0.9rem" }}
+                        >
+                            Ghi chú
+                        </Typography>
                         <TextField
-                            sx={{ width: "50%" }}
-                            value={form.name}
-                            required={true}
-                            name="name"
-                            size="small"
-                            label="Tên loại sản phẩm"
+                            fullWidth
+                            multiline
+                            name="description"
+                            value={form.description}
+                            rows={4}
                             onChange={handleFormChange}
-                            margin="normal"
-                        />
-                        <TextField
-                            sx={{ width: "50%" }}
-                            label="Mã loại"
-                            name="code"
-                            value={form.code}
-                            size="small"
-                            onChange={handleFormChange}
-                            margin="normal"
                         />
                     </Box>
-                    <TextField
-                        fullWidth
-                        multiline
-                        name="description"
-                        value={form.description}
-                        rows={4}
-                        label="Ghi chú"
-                        onChange={handleFormChange}
-                        margin="normal"
-                    />
                     <Box
                         sx={{
                             display: "flex",
@@ -173,39 +154,28 @@ export default function UpdateOrAdd({
                             gap: "25px",
                         }}
                     >
-                        {isUpdate === 1 ? (
-                            <Button
-                                variant="outlined"
-                                color="error"
-                                onClick={() => setOpenConfirmDialog(true)}
-                            >
-                                Xóa
-                            </Button>
-                        ) : (
-                            <></>
-                        )}
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => setOpenConfirmDialog(true)}
+                        >
+                            Xóa
+                        </Button>
+
                         <Button
                             variant="outlined"
                             color="primary"
-                            onClick={backToListCategories}
+                            onClick={() => setIsUpdate(false)}
                         >
                             Thoát
                         </Button>
-                        {isUpdate === 1 ? (
-                            <Button
-                                variant="contained"
-                                onClick={handleUpdateCategory}
-                            >
-                                Lưu
-                            </Button>
-                        ) : (
-                            <Button
-                                variant="contained"
-                                onClick={handleCreateCategory}
-                            >
-                                Thêm
-                            </Button>
-                        )}
+
+                        <Button
+                            variant="contained"
+                            onClick={handleUpdateCategory}
+                        >
+                            Lưu
+                        </Button>
                     </Box>
                 </Box>
             ) : (
@@ -247,7 +217,7 @@ export default function UpdateOrAdd({
                         <Button
                             variant="outlined"
                             color="error"
-                            onClick={backToListCategories}
+                            onClick={() => setIsUpdate(false)}
                         >
                             Thoát
                         </Button>
@@ -261,7 +231,6 @@ export default function UpdateOrAdd({
                     </Box>
                 </Box>
             )}
-            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }

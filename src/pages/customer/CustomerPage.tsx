@@ -1,8 +1,7 @@
 import {
     Box,
     Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormControlLabel, FormLabel, Grid,
-    InputAdornment, InputLabel, MenuItem, Pagination, Radio, RadioGroup, Select, Snackbar,
-    Table,
+    InputAdornment, Radio, RadioGroup, Table,
     TableBody,
     TableCell,
     TableHead, TablePagination,
@@ -14,33 +13,39 @@ import CustomerPageAppBar from "./CustomerPageAppBar.tsx"
 import MainBox from "../../components/layout/MainBox"
 import SearchIcon from '@mui/icons-material/Search';
 import React, {useEffect, useState} from "react";
-import {useLocation, useNavigate} from "react-router-dom";
-import Toolbar from "@mui/material/Toolbar";
-import {Alert} from "@mui/lab";
 import Customer from "../../models/Customer.ts";
 import {fetchCustomers, submitNewCustomer} from "../../services/customerAPI.ts";
 
-type Props = {}
+import {formatCurrency} from "../../utils/formatCurrency.ts";
+import {toast} from "react-toastify";
+import {useNavigate} from "react-router-dom";
 
-export default function CustomerPage({}: Props) {
+
+type newCustomer = {
+    name: string;
+    phoneNumber: string;
+    totalExpense: number;
+    numberOfOrder: number;
+    gender: boolean;
+    birthday: Date | null;  // Có thể là null khi chưa có giá trị
+    email: string;
+    address: string;
+};
+export default function CustomerPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [customers, setCustomers] = useState<Customer[]>([]);
-    const [keyword, setKeyword] = useState("");
-    const [pageNum, setPageNum] = useState(0);
-    const [pageSize, setPageSize] = useState(5); // Số khách hàng mỗi trang
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalCustomers, setTotalCustomers] = useState(0);
-    const [errorMessage, setErrorMessage] = useState(""); // State để lưu thông báo lỗi
-    const navigate = useNavigate();  // Khởi tạo useNavigate để điều hướng
+    const [keyword, setKeyword] = useState<string>("");
+    const [pageNum, setPageNum] = useState<number>(0);
+    const [pageSize, setPageSize] = useState<number>(5); // Số khách hàng mỗi trang
 
-    const [successMessage, setSuccessMessage] = useState(""); // State để lưu thông báo thành công
+    const [totalCustomers, setTotalCustomers] = useState<number>(0);
+    const navigate = useNavigate();
 
 
 
 
-
-    const [openModal, setOpenModal] = useState(false);  // State để quản lý việc mở/đóng modal
-    const [newCustomer, setNewCustomer] = useState<>({
+    const [openModal, setOpenModal] = useState<boolean>(false);  // State để quản lý việc mở/đóng modal
+    const [newCustomer, setNewCustomer] = useState<newCustomer>({
         name: '',
         phoneNumber: '',
         totalExpense: 0,
@@ -51,40 +56,26 @@ export default function CustomerPage({}: Props) {
         address: '' // Added address field
     });
 
-
-
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-
-            setErrorMessage('');
-            setSuccessMessage('');
-        }, 3000); // Thời gian hiển thị 3 giây
-
-        return () => clearTimeout(timeout); // Dọn dẹp timeout khi component unmount hoặc cập nhật
-    }, [ errorMessage, successMessage]);
-
-
-   
     const loadCustomers = async () => {
         try {
             const fetchedCustomers = await fetchCustomers(pageNum, pageSize, keyword);
             setCustomers(fetchedCustomers.content);
-            setTotalPages(fetchedCustomers.totalPages);// Cập nhật số trang
+
             setTotalCustomers(fetchedCustomers.totalElements);
-            setErrorMessage("");
-        } catch (error) {
-            if (error.message.includes('Không tồn tại khách hàng')) {
-                setCustomers([]);
+
+        } catch (error: any) {
+            if (error.response && error.response.status === 404) {
+                setCustomers([]); // Đảm bảo luôn là mảng
                 setTotalCustomers(0);
-                setErrorMessage(error.message);
+                // toast.error("Không tồn tại khách hàng!"); // Hiển thị thông báo lỗi
             } else {
                 console.error('Lỗi khi lấy danh sách khách hàng:', error);
+                toast.error('Lỗi khi lấy danh sách khách hàng:', error);
+                setCustomers([]); // Đảm bảo customers là mảng rỗng khi có lỗi
             }
         }
     };
     useEffect(() => {
-
-
         loadCustomers();
     }, [pageNum, pageSize, keyword]);
     const handleChangePage = (event, newPage) => {
@@ -128,6 +119,10 @@ export default function CustomerPage({}: Props) {
     };
 
     const handleSubmitNewCustomer = async () => {
+        if(newCustomer.name === '' || newCustomer.phoneNumber === ''){
+            toast.error("Vui lòng nhập tên và số điện thoại khách hàng");
+            return;
+        }
         try {
             console.log("Thông tin khách hàng mới:", newCustomer);
 
@@ -135,7 +130,7 @@ export default function CustomerPage({}: Props) {
             const createdCustomer = await submitNewCustomer(newCustomer);
             console.log("Tạo khách hàng thành công:", createdCustomer);
 
-            setSuccessMessage("Tạo khách hàng thành công!"); // Thiết lập thông báo thành công
+            // setSuccessMessage("Tạo khách hàng thành công!"); // Thiết lập thông báo thành công
             setNewCustomer({
                 name: '',
                 phoneNumber: '',
@@ -148,10 +143,11 @@ export default function CustomerPage({}: Props) {
             });
             setOpenModal(false);  // Đóng modal sau khi tạo thành công
             loadCustomers(); // Gọi lại API để cập nhật danh sách khách hàng
+            toast.success("Tạo khách hàng thành công!");
         } catch (error: any) {
             console.error("Lỗi khi tạo khách hàng:", error.message);
-            setErrorMessage(error.message); // Cập nhật thông báo lỗi
-
+            // setErrorMessage(error.message); // Cập nhật thông báo lỗi
+            toast.error(error.message);
             setNewCustomer({
                 name: '',
                 phoneNumber: '',
@@ -178,6 +174,8 @@ export default function CustomerPage({}: Props) {
     };
 
 
+
+
     return (
         <Box>
             <CustomerPageAppBar />
@@ -190,7 +188,7 @@ export default function CustomerPage({}: Props) {
                     <Typography variant="h6" sx={{
                         color: '#000', // Màu chữ
                         fontFamily: '"Segoe UI", sans-serif', // Phông chữ
-                        fontSize: '20px', // Kích thước chữ
+                        fontSize: '25px', // Kích thước chữ
                         fontStyle: 'normal', // Kiểu chữ
                         fontWeight: 600, // Độ đậm của chữ
                         lineHeight: 'normal', // Chiều cao dòng
@@ -198,29 +196,14 @@ export default function CustomerPage({}: Props) {
                     <Button sx={{ backgroundColor: 'primary.main', color: 'white',fontFamily: '"Segoe UI", sans-serif', // Phông chữ
                         fontSize: '14px', // Kích thước chữ
                         fontStyle: 'normal', // Kiểu chữ
-                        fontWeight: 400, }} onClick={handleAddCustomerClick}>+ Thêm khách hàng</Button>
+                        fontWeight: 600, }} onClick={handleAddCustomerClick}>+ Thêm khách hàng</Button>
                 </Box>
 
-                {/*Hiển thị thông báo alert*/}
-                <Box sx={{ padding: '16px 14px 16px 14px' }}>
-                    {/* Hiển thị thông báo lỗi nếu có */}
-                    {errorMessage && (
-                        <Alert severity="error" sx={{ marginTop: '16px' }}>
-                            {errorMessage}
-                        </Alert>
-                    )}
-                    {/* Hiển thị thông báo thành công nếu có */}
-                    {successMessage && (
-                        <Alert severity="success" sx={{ marginTop: '16px' }}>
-                            {successMessage}
-                        </Alert>
-                    )}
 
-                </Box>
 
                 {/*thanh tìm kiếm và bảng listCustomers*/}
                 <Box sx={{background: '#FFFFFF', margin: '10px 20px'}}>
-                    <Box sx={{   }}>
+                    <Box sx={{ padding: 2  }}>
                         <TextField
                             variant="outlined"
                             placeholder="Tìm kiếm khách hàng theo tên hoặc SĐT"
@@ -236,49 +219,43 @@ export default function CustomerPage({}: Props) {
                             sx={{ width: '100%' }}
                         />
                     </Box>
-                    <Box sx={{ padding: 2, backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+                    <Box sx={{ padding: '0 16px 16px 16px', borderRadius: '8px' }}>
                         <Table sx={{ minWidth: 650 }}>
                             <TableHead>
-                                <TableRow sx={{ backgroundColor: '#e0f7fa' }}>
+                                <TableRow sx={{  }}>
                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Mã khách hàng</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Tên khách hàng</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số điện thoại</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Tổng chi tiêu</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Tổng số đơn hàng</TableCell>
-                                    <TableCell></TableCell>
+
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {customers.map((customer) => (
-                                    <TableRow
-                                        key={customer.id}
-                                        sx={{
-                                            // '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
-                                            // '&:hover': { backgroundColor: '#e0f7fa' },  // Hover effect
-                                        }}
-                                    >
-                                        <TableCell>{customer.code}</TableCell>
-                                        <TableCell>{customer.name}</TableCell>
-                                        <TableCell>{customer.phoneNumber}</TableCell>
-                                        <TableCell>{customer.totalExpense}</TableCell>
-                                        <TableCell>{customer.numberOfOrder}</TableCell>
-                                        <TableCell>
-                                            <Typography
-                                                onClick={() => handleDetailsClick(customer.id)} // Chuyển hướng khi nhấn vào
-                                                sx={{
-                                                    color: 'blue',
-                                                    textDecoration: 'underline',
-                                                    cursor: 'pointer',
-                                                    '&:hover': {
-                                                        color: 'darkblue', // Đổi màu khi hover
-                                                    },
-                                                }}
-                                            >
-                                                Chi tiết
-                                            </Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                {customers.length > 0 ?
+                                    customers.map((customer) => (
+                                        <TableRow
+                                            key={customer.id}
+                                            sx={{
+                                                '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
+                                                '&:hover': { backgroundColor: '#e0f7fa' },  // Hover effect
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={() => handleDetailsClick(customer.id)}
+                                        >
+                                            <TableCell>{customer.code}</TableCell>
+                                            <TableCell>{customer.name}</TableCell>
+                                            <TableCell>{customer.phoneNumber}</TableCell>
+                                            <TableCell>{formatCurrency(customer.totalExpense)}</TableCell>
+                                            <TableCell>{customer.numberOfOrder}</TableCell>
+
+                                        </TableRow>
+                                    )) : (
+                                        <TableRow>
+                                            <TableCell colSpan={5}>Không có khách hàng nào</TableCell>
+                                        </TableRow>
+                                    )}
+
                             </TableBody>
                         </Table>
 
@@ -289,7 +266,9 @@ export default function CustomerPage({}: Props) {
                             onPageChange={handleChangePage}
                             rowsPerPage={pageSize}
                             onRowsPerPageChange={handleChangeRowsPerPage}
-                            rowsPerPageOptions={[5, 10, 20, 50]} // Các tùy chọn số hàng
+                            labelRowsPerPage="Số hàng trên mỗi trang"
+                            labelDisplayedRows={({ from, to, count }) => `${from}-${to} trong tổng số ${count}`}
+                            rowsPerPageOptions={[5, 10]} // Các tùy chọn số hàng
                             sx={{ mt: 2 }} // Margin top
                         />
                     </Box>
@@ -428,7 +407,6 @@ export default function CustomerPage({}: Props) {
 
 
                 </Dialog>
-
 
             </MainBox>
         </Box>

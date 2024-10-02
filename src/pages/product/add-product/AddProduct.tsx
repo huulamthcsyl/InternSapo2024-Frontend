@@ -2,8 +2,6 @@ import {
     Box,
     Button,
     CardMedia,
-    FormControl,
-    InputLabel,
     MenuItem,
     Paper,
     Select,
@@ -17,12 +15,13 @@ import {
     Typography,
 } from "@mui/material";
 import MainBox from "../../../components/layout/MainBox";
-import { Add, Image, Cancel } from "@mui/icons-material";
+import { Add, Image, Cancel, AddCircle } from "@mui/icons-material";
 import AddProductAppBar from "./AddProductAppBar";
 import { useEffect, useState } from "react";
 import {
     BrandResponse,
     CategoryResponse,
+    initialProductRequest,
     ProductRequest,
     VariantRequest,
 } from "../../../models/ProductInterface";
@@ -31,22 +30,20 @@ import { storage } from "../../../../firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import NumericFormatCustom from "../../../utils/NumericFormatCustom";
 import { createProduct } from "../../../services/productAPI";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getAllBrands } from "../../../services/brandAPI";
+import { getAllCategories } from "../../../services/categoryAPI";
+import { useNavigate } from "react-router-dom";
+import AddCategory from "../categories/AddCategory";
+import AddBrand from "../brands/AddBrand";
 
 type Props = {};
 
 export default function AddProduct({}: Props) {
-    const [newProduct, setNewProduct] = useState<ProductRequest>({
-        name: "",
-        categoryId: 0,
-        brandId: 0,
-        description: "",
-        imagePath: [],
-        createdOn: new Date(),
-        updatedOn: new Date(),
-        variants: [],
-    });
+    const [newProduct, setNewProduct] = useState<ProductRequest>(
+        initialProductRequest
+    );
     const [priceForSale, setPriceForSale] = useState(0);
     const [initialPrice, setInitialPrice] = useState(0);
     const [sizes, setSizes] = useState<string[]>([]);
@@ -57,36 +54,40 @@ export default function AddProduct({}: Props) {
     const [variants, setVariants] = useState<VariantRequest[]>([]);
     const [nameError, setNameError] = useState<boolean>(false);
     const [images, setImages] = useState<string[]>([]);
+    const [createCategory, setCreateCategory] = useState<boolean>(false);
+    const [createBrand, setCreateBrand] = useState<boolean>(false);
+    const navigate = useNavigate();
 
     function setAllInitialPrices(newInitialPrice: number) {
-        setInitialPrice(newInitialPrice);
         const updatedVariants = variants.map((variant) => ({
             ...variant,
             initialPrice: newInitialPrice,
         }));
         setVariants(updatedVariants);
+        setInitialPrice(newInitialPrice);
     }
 
     function setAllPriceForSale(newPriceForSale: number) {
-        setPriceForSale(newPriceForSale);
-        const updatedVariants = variants.map((variant) => ({
+        const updatedVariants: VariantRequest[] = variants.map((variant) => ({
             ...variant,
             priceForSale: newPriceForSale,
         }));
-
         setVariants(updatedVariants);
+        setPriceForSale(newPriceForSale);
     }
 
-    function handleDataChange(e) {
-        const { name, value } = e.target;
-        setNewProduct((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-        if (name === "name" && value.trim() === "") {
-            setNameError(true);
-        } else {
-            setNameError(false);
+    function handleDataChange(e: any) {
+        if (e.target.value != -1) {
+            const { name, value } = e.target;
+            setNewProduct((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+            if (name === "name" && value.trim() === "") {
+                setNameError(true);
+            } else {
+                setNameError(false);
+            }
         }
     }
 
@@ -98,20 +99,43 @@ export default function AddProduct({}: Props) {
         };
         setVariants(updatedVariants);
     }
-
     function handleAddNewProduct() {
         if (newProduct.name.trim() !== "") {
-            // if(variants.length==0){
-            //     const emptyVarinant:VariantRequest={}
-            //     setVariants([{...emptyVarinant,name:newProduct.name}]);
-            // }
+            let updatedVariants: VariantRequest[] = [];
+            if (variants.length == 0) {
+                updatedVariants.push({
+                    name: newProduct.name,
+                    sku: "",
+                    size: "",
+                    color: "",
+                    material: "",
+                    imagePath: images[0] || "",
+                    priceForSale: priceForSale,
+                    initialPrice: initialPrice,
+                });
+            } else {
+                updatedVariants = variants.map((variant) => {
+                    return {
+                        ...variant,
+                        priceForSale:
+                            variant.priceForSale == 0
+                                ? priceForSale
+                                : variant.priceForSale,
+                        initialPrice:
+                            variant.initialPrice == 0
+                                ? initialPrice
+                                : variant.initialPrice,
+                    };
+                });
+            }
             createProduct({
                 ...newProduct,
-                variants: variants,
+                variants: updatedVariants,
                 imagePath: images,
             })
-                .then((res) => {
-                    toast.success("Tạo đơn hàng thành công");
+                .then((_res) => {
+                    toast.success("Tạo sản phẩm thành công");
+                    navigate(`/products/${_res.id}`);
                 })
                 .catch((error) => {
                     toast.error(error.response.data.message);
@@ -137,7 +161,7 @@ export default function AddProduct({}: Props) {
                 "state_changed",
                 (snapshot) => {
                     //Clearing snapshot cannot upload images
-                    const progressPercent =
+                    const _progressPercent =
                         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 },
                 (error) => {
@@ -167,19 +191,33 @@ export default function AddProduct({}: Props) {
         });
     }
 
+    function loadAllCategories() {
+        getAllCategories("").then((res) => {
+            setCategories(res);
+            setNewProduct((prev) => ({
+                ...prev,
+                categoryId: res[0].id,
+            }));
+        });
+    }
+
+    function loadAllBrands() {
+        getAllBrands("").then((res) => {
+            setBrands(res);
+            setNewProduct((prev) => ({
+                ...prev,
+                brandId: res[0].id,
+            }));
+        });
+    }
+
     useEffect(() => {
-        fetch(
-            `http://localhost:8080/v1/products/categories?page=0&limit=10&query=`
-        )
-            .then((res) => res.json())
-            .then((result) => {
-                setCategories(result.data);
-            });
-        fetch(`http://localhost:8080/v1/products/brands?page=0&limit=10&query=`)
-            .then((res) => res.json())
-            .then((result) => {
-                setBrands(result.data);
-            });
+        getAllCategories("").then((res) => {
+            setCategories(res);
+        });
+        getAllBrands("").then((res) => {
+            setBrands(res);
+        });
     }, []);
 
     useEffect(() => {
@@ -194,9 +232,10 @@ export default function AddProduct({}: Props) {
                         const variant: VariantRequest = {
                             name:
                                 newProduct.name +
+                                    " - " +
                                     [sizes[i], colors[j], materials[k]]
                                         .filter(Boolean)
-                                        .join(" - ") || "",
+                                        .join(" - ") || " ",
                             sku: "",
                             size: sizes[i] || "",
                             color: colors[j] || "",
@@ -205,17 +244,16 @@ export default function AddProduct({}: Props) {
                             initialPrice: 0,
                             priceForSale: 0,
                         };
-                        console.log(variant);
                         updatedVariants.push(variant);
                     }
                 }
             }
+
             setVariants(updatedVariants);
         } else {
             setVariants([]);
         }
     }, [sizes, materials, colors, newProduct.name]);
-
     return (
         <Box>
             <AddProductAppBar submit={handleAddNewProduct} />
@@ -248,15 +286,22 @@ export default function AddProduct({}: Props) {
                                         borderBottom: "1px solid #d9d9d9",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Thông tin sản phẩm
                                     </Typography>
                                 </Box>
                                 <Box sx={{ padding: "16px" }}>
-                                    <FormControl required={true} fullWidth>
+                                    <Box>
+                                        <Typography
+                                            sx={{
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Tên sản phẩm
+                                        </Typography>
                                         <TextField
+                                            fullWidth
                                             name="name"
-                                            label="Tên sản phẩm"
                                             value={newProduct.name}
                                             onChange={handleDataChange}
                                             error={nameError}
@@ -265,20 +310,26 @@ export default function AddProduct({}: Props) {
                                                     ? "Tên sản phẩm là bắt buộc"
                                                     : ""
                                             }
-                                            margin="normal"
                                             size="small"
                                         />
+                                    </Box>
+                                    <Box sx={{ mt: "15px" }}>
+                                        <Typography
+                                            sx={{
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Mô tả sản phẩm
+                                        </Typography>
                                         <TextField
                                             fullWidth
                                             multiline
                                             rows={4}
                                             name="description"
-                                            label="Mô tả sản phẩm"
                                             value={newProduct.description}
                                             onChange={handleDataChange}
-                                            margin="normal"
                                         />
-                                    </FormControl>
+                                    </Box>
                                 </Box>
                             </Box>
                             <Box
@@ -297,7 +348,7 @@ export default function AddProduct({}: Props) {
                                         mt: "24px",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Ảnh sản phẩm
                                     </Typography>
                                     <Button
@@ -403,7 +454,7 @@ export default function AddProduct({}: Props) {
                                         borderBottom: "1px solid #d9d9d9",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Giá sản phẩm
                                     </Typography>
                                 </Box>
@@ -414,42 +465,60 @@ export default function AddProduct({}: Props) {
                                         gap: "20px",
                                     }}
                                 >
-                                    <TextField
-                                        label="Giá bán"
-                                        size="small"
-                                        value={priceForSale}
-                                        name="priceForSale"
-                                        onChange={(e) => {
-                                            setAllPriceForSale(
-                                                parseInt(e.target.value)
-                                            );
-                                        }}
-                                        sx={{ width: "50%" }}
-                                        slotProps={{
-                                            input: {
-                                                inputComponent:
-                                                    NumericFormatCustom as any,
-                                            },
-                                        }}
-                                    />
-                                    <TextField
-                                        label="Giá nhập"
-                                        size="small"
-                                        value={initialPrice}
-                                        name="initialPrice"
-                                        onChange={(e) => {
-                                            setAllInitialPrices(
-                                                parseInt(e.target.value)
-                                            );
-                                        }}
-                                        sx={{ width: "50%" }}
-                                        slotProps={{
-                                            input: {
-                                                inputComponent:
-                                                    NumericFormatCustom as any,
-                                            },
-                                        }}
-                                    />
+                                    <Box sx={{ width: "50%" }}>
+                                        <Typography
+                                            sx={{
+                                                color: "#000",
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Giá bán
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            value={priceForSale}
+                                            name="priceForSale"
+                                            onChange={(e) => {
+                                                setAllPriceForSale(
+                                                    parseInt(e.target.value)
+                                                );
+                                            }}
+                                            slotProps={{
+                                                input: {
+                                                    inputComponent:
+                                                        NumericFormatCustom as any,
+                                                },
+                                            }}
+                                        />
+                                    </Box>
+                                    <Box sx={{ width: "50%" }}>
+                                        <Typography
+                                            sx={{
+                                                color: "#000",
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Giá nhập
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            value={initialPrice}
+                                            name="initialPrice"
+                                            onChange={(e) => {
+                                                setAllInitialPrices(
+                                                    parseInt(e.target.value)
+                                                );
+                                            }}
+                                            slotProps={{
+                                                input: {
+                                                    inputComponent:
+                                                        NumericFormatCustom as any,
+                                                },
+                                            }}
+                                        />
+                                    </Box>
                                 </Box>
                             </Box>
 
@@ -469,7 +538,7 @@ export default function AddProduct({}: Props) {
                                         mt: "24px",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Thuộc tính
                                     </Typography>
                                 </Box>
@@ -565,27 +634,52 @@ export default function AddProduct({}: Props) {
                                     borderBottom: "1px solid #d9d9d9",
                                 }}
                             >
-                                <Typography sx={{ fontSize: "20px" }}>
+                                <Typography sx={{ fontSize: "18px" }}>
                                     Phân loại
                                 </Typography>
                             </Box>
                             <Box sx={{ padding: "16px" }}>
-                                <FormControl fullWidth margin="normal">
-                                    <InputLabel id="category">
+                                <Box>
+                                    <Typography
+                                        sx={{
+                                            color: "#000",
+                                            fontSize: "0.9rem",
+                                        }}
+                                    >
                                         Loại sản phẩm
-                                    </InputLabel>
+                                    </Typography>
                                     <Select
-                                        labelId="category"
                                         id="category"
                                         name="categoryId"
-                                        label="Loại sản phẩm"
+                                        size="small"
+                                        fullWidth
                                         value={
-                                            newProduct.categoryId !== undefined
+                                            newProduct.categoryId !== 0
                                                 ? newProduct.categoryId
                                                 : ""
                                         }
                                         onChange={handleDataChange}
                                     >
+                                        <MenuItem value={-1}>
+                                            <Button
+                                                startIcon={
+                                                    <AddCircle
+                                                        sx={{
+                                                            width: 20,
+                                                            height: 20,
+                                                        }}
+                                                        color="primary"
+                                                    />
+                                                }
+                                                sx={{ textTransform: "none" }}
+                                                variant="text"
+                                                onClick={() =>
+                                                    setCreateCategory(true)
+                                                }
+                                            >
+                                                Thêm loại sản phẩm
+                                            </Button>
+                                        </MenuItem>
                                         {categories?.map((category) => (
                                             <MenuItem
                                                 key={category.id}
@@ -595,22 +689,48 @@ export default function AddProduct({}: Props) {
                                             </MenuItem>
                                         ))}
                                     </Select>
-                                </FormControl>
-                                <FormControl fullWidth margin="normal">
-                                    <InputLabel id="brand">
+                                </Box>
+                                <Box sx={{ mt: "15px" }}>
+                                    <Typography
+                                        sx={{
+                                            color: "#000",
+                                            fontSize: "0.9rem",
+                                        }}
+                                    >
                                         Nhãn hiệu
-                                    </InputLabel>
+                                    </Typography>
                                     <Select
-                                        labelId="brand"
+                                        fullWidth
+                                        size="small"
                                         id="brand"
                                         name="brandId"
                                         value={
-                                            newProduct.brandId !== undefined
+                                            newProduct.brandId !== 0
                                                 ? newProduct.brandId
                                                 : ""
                                         }
                                         onChange={handleDataChange}
                                     >
+                                        <MenuItem value={-1}>
+                                            <Button
+                                                startIcon={
+                                                    <AddCircle
+                                                        sx={{
+                                                            width: 20,
+                                                            height: 20,
+                                                        }}
+                                                        color="primary"
+                                                    />
+                                                }
+                                                sx={{ textTransform: "none" }}
+                                                variant="text"
+                                                onClick={() =>
+                                                    setCreateBrand(true)
+                                                }
+                                            >
+                                                Thêm nhãn hiệu
+                                            </Button>
+                                        </MenuItem>
                                         {brands?.map((brand) => (
                                             <MenuItem
                                                 key={brand.id}
@@ -620,7 +740,7 @@ export default function AddProduct({}: Props) {
                                             </MenuItem>
                                         ))}
                                     </Select>
-                                </FormControl>
+                                </Box>
                             </Box>
                         </Box>
                     </Box>
@@ -868,8 +988,23 @@ export default function AddProduct({}: Props) {
                         <></>
                     )}
                 </Box>
+                {createCategory ? (
+                    <AddCategory
+                        setIsAdd={setCreateCategory}
+                        onUpdate={loadAllCategories}
+                    />
+                ) : (
+                    <></>
+                )}
+                {createBrand ? (
+                    <AddBrand
+                        setIsAdd={setCreateBrand}
+                        onUpdate={loadAllBrands}
+                    />
+                ) : (
+                    <></>
+                )}
             </MainBox>
-            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }

@@ -1,26 +1,27 @@
 import {Box, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, Typography} from "@mui/material"
-import HomePageAppBar from "./HomePageAppBar"
 import MainBox from "../../components/layout/MainBox"
 import MainAppBar from "../../components/layout/MainAppBar.tsx";
 import React, {useEffect, useState} from "react";
 import {getTodayOrders} from "../../services/orderAPI.ts";
+import {formatCurrency} from "../../utils/formatCurrency.ts";
+import {useNavigate} from "react-router-dom";
 
 type Props = {}
 
 export default function OverviewPage({}: Props) {
-    const [pageNum, setPageNum] = useState(0);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageNum, setPageNum] = useState<number>(0);
+    const [pageSize, setPageSize] = useState<number>(5);
     const [orders, setOrders] = useState([]);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalOrders, setTotalOrders] = useState(0);
-    const [totalRevenue, setTotalRevenue] = useState(0);
-    
+
+    const [totalOrders, setTotalOrders] = useState<number>(0);
+    const [totalRevenue, setTotalRevenue] = useState<number>(0);
+    const navigate = useNavigate();
 
     const fetchTodayOrders = async () => {
         try {
             const data = await getTodayOrders(pageNum, pageSize); // Gọi API
             setOrders(data.orders.content);
-            setTotalPages(data.orders.totalPages);
+            // setTotalPages(data.orders.totalPages);
             setTotalOrders(data.orders.totalElements);
             setTotalRevenue(data.totalRevenue);
         } catch (error) {
@@ -37,6 +38,9 @@ export default function OverviewPage({}: Props) {
     const handleChangeRowsPerPage = (event) => {
         setPageSize(parseInt(event.target.value, 10)); // Cập nhật số hàng trên mỗi trang
         setPageNum(0); // Reset về trang đầu khi thay đổi số hàng
+    };
+    const handleDetailsClick = (orderId) => {
+        navigate(`/order/${orderId}`); // Chuyển hướng tới trang chi tiết của khách hàng
     };
     return (
         <Box>
@@ -129,39 +133,27 @@ export default function OverviewPage({}: Props) {
                                         <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số lượng sản phẩm</TableCell>
                                         <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số tiền thanh toán</TableCell>
                                         {/*<TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Nhân viên xử lý đơn</TableCell>*/}
-                                        <TableCell></TableCell>
+
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {totalOrders > 0 ? (
-                                        orders.map((order, index) => (
+                                        orders.map((order) => (
                                             <TableRow
                                                 key={order.id}
                                                 sx={{
                                                     '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
                                                     '&:hover': { backgroundColor: '#e0f7fa' }, // Hover effect
+                                                    cursor: 'pointer'
                                                 }}
+                                                onClick={() => handleDetailsClick(order.id)}
                                             >
                                                 <TableCell>{order.id}</TableCell>
                                                 <TableCell>{order.customer.name}</TableCell>
                                                 <TableCell>{order.createdOn}</TableCell>
                                                 <TableCell>{order.totalQuantity}</TableCell>
-                                                <TableCell>{order.totalPayment}</TableCell>
-                                                <TableCell>
-                                                    <Typography
-                                                        // onClick={() => handleDetailsClick(customer.id)} // Chuyển hướng khi nhấn vào
-                                                        sx={{
-                                                            color: 'blue',
-                                                            textDecoration: 'underline',
-                                                            cursor: 'pointer',
-                                                            '&:hover': {
-                                                                color: 'darkblue', // Đổi màu khi hover
-                                                            },
-                                                        }}
-                                                    >
-                                                        Chi tiết
-                                                    </Typography>
-                                                </TableCell>
+                                                <TableCell>{formatCurrency(order.totalPayment)}</TableCell>
+
                                             </TableRow>
                                         ))
                                     ) : (
@@ -181,6 +173,8 @@ export default function OverviewPage({}: Props) {
                                 rowsPerPage={pageSize}
                                 onRowsPerPageChange={handleChangeRowsPerPage}
                                 rowsPerPageOptions={[5, 10]} // Các tùy chọn số hàng
+                                labelRowsPerPage="Số hàng trên mỗi trang"
+                                labelDisplayedRows={({ from, to, count }) => `${from}-${to} trong tổng số ${count}`}
                                 sx={{ mt: 2 }} // Margin top
                             />
                         </Box>

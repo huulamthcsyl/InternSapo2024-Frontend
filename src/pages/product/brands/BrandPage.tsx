@@ -4,10 +4,11 @@ import { Add } from "@mui/icons-material";
 import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
 import BrandPageAppBar from "./BrandPageAppBar";
 import { useEffect, useState } from "react";
-import { BrandResponse } from "../../../models/ProductInterface";
+import { BrandResponse, initialCategoryOrBrandResponse } from "../../../models/ProductInterface";
 import SearchField from "../SearchField";
-import UpdateOrAddBrand from "./UpdateOrAddBrand";
 import { getListOfBrands, getNumberOfBrands } from "../../../services/brandAPI";
+import UpdateBrand from "./UpdateBrand";
+import AddBrand from "./AddBrand";
 
 type Props = {};
 
@@ -19,15 +20,22 @@ export default function BrandPage({}: Props) {
         page: 0,
         pageSize: 5,
     });
-    const [isUpdate, setIsUpdate] = useState(0);
-    const [selectedBrand, setSelectedBrand] = useState<BrandResponse | null>(
-        {}
-    );
+    const [isUpdate, setIsUpdate] = useState(false);
+    const [isAdd, setIsAdd] = useState(false);
+    const [selectedBrand, setSelectedBrand] = useState<BrandResponse>(initialCategoryOrBrandResponse);
     const customLocaleText = {
         MuiTablePagination: {
             labelRowsPerPage: "Số hàng mỗi trang:",
-            labelDisplayedRows: ({ from, to, count }) =>
-                `${from}-${to} trên tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
+            labelDisplayedRows: ({
+                from,
+                to,
+                count,
+            }: {
+                from: number;
+                to: number;
+                count: number;
+            }) =>
+                `${from}-${to} trong tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
         },
     };
     const columns: GridColDef[] = [
@@ -67,7 +75,7 @@ export default function BrandPage({}: Props) {
         },
     ];
 
-    function updateListOfProducts() {
+    function updateListOfBrands() {
         getNumberOfBrands(query).then((res) => {
             setNumberOfBrands(res);
         });
@@ -79,12 +87,8 @@ export default function BrandPage({}: Props) {
             setData(res);
         });
     }
-    function handleRowClick(
-        params: GridRowParams<BrandResponse>
-        // e: GridEventListener<"rowClick">
-    ) {
-        // e.preventDefault();
-        setIsUpdate(1);
+    function handleRowClick(params: GridRowParams<BrandResponse>) {
+        setIsUpdate(true);
         setSelectedBrand(params.row);
     }
 
@@ -125,15 +129,15 @@ export default function BrandPage({}: Props) {
                         }}
                     >
                         <Typography sx={{ fontSize: "20px" }}>
-                            Loại sản phẩm
+                            Nhãn hiệu
                         </Typography>
                         <Button
                             variant="contained"
                             startIcon={<Add />}
                             sx={{ textTransform: "none" }}
-                            onClick={() => setIsUpdate(2)}
+                            onClick={() => setIsAdd(true)}
                         >
-                            Thêm loại sản phẩm
+                            Thêm nhãn hiệu
                         </Button>
                     </Box>
                     <Box sx={{ backgroundColor: "white" }}>
@@ -159,14 +163,17 @@ export default function BrandPage({}: Props) {
                     </Box>
                 </Box>
             </MainBox>
-            {isUpdate != 0 ? (
-                <UpdateOrAddBrand
-                    isUpdate={isUpdate}
-                    selectedBrand={selectedBrand}
-                    setSelectedBrand={setSelectedBrand}
+            {isUpdate ? (
+                <UpdateBrand
                     setIsUpdate={setIsUpdate}
-                    onUpdate={updateListOfProducts}
+                    selectedBrand={selectedBrand}
+                    onUpdate={updateListOfBrands}
                 />
+            ) : (
+                <></>
+            )}
+            {isAdd ? (
+                <AddBrand setIsAdd={setIsAdd} onUpdate={updateListOfBrands} />
             ) : (
                 <></>
             )}

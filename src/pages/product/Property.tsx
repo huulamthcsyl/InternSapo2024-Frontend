@@ -3,7 +3,7 @@ import { Chip, InputBase, Paper } from "@mui/material";
 import { Clear } from "@mui/icons-material";
 import DeletePropertyDialog from "./product-detail/product-edit/DeletePropertyDialog";
 import { deleteVariantByProperty } from "../../services/productAPI";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 type Props = {
@@ -67,9 +67,10 @@ export default function Property({
     }
     function handleDeleteVariantByProperty() {
         deleteVariantByProperty(id, prop, selectedValue)
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Xóa phiên bản thành công");
                 setSelectedValue("");
+               
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -88,6 +89,7 @@ export default function Property({
             }}
             onSubmit={(e) => e.preventDefault()}
         >
+            
             {fixedBadges !== undefined && fixedBadges[0] !== "" ? (
                 fixedBadges.map((badge, index) => (
                     <Chip
@@ -138,7 +140,6 @@ export default function Property({
             ) : (
                 <></>
             )}
-            <ToastContainer hideProgressBar autoClose={3000} />
         </Paper>
     );
 }

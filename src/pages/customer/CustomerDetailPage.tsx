@@ -13,7 +13,6 @@ import {
     Grid,
     Radio,
     RadioGroup,
-    Snackbar,
     Table,
     TableBody,
     TableCell,
@@ -32,27 +31,30 @@ import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import {Alert} from "@mui/lab";
+
 import MainAppBar from "../../components/layout/MainAppBar.tsx";
-import {deleteCustomer, fetchCustomers, getCustomerById, updateCustomer} from "../../services/customerAPI.ts";
+import {deleteCustomer, getCustomerById, updateCustomer} from "../../services/customerAPI.ts";
 import Customer from "../../models/Customer.ts";
 import {formatDate} from "../../utils/formatDate.ts";
+import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
+import {toast} from "react-toastify";
+import {formatCurrency} from "../../utils/formatCurrency.ts";
 
 
 
-export default function CustomerDetailPage({}: Props) {
+export default function CustomerDetailPage() {
     const navigate = useNavigate();
     const { customerId } = useParams<{ customerId: string }>();
     const [customer, setCustomer] = useState<Customer | null>(null);
     const [customer1, setCustomer1] = useState();
 
-    const [errorMessage, setErrorMessage] = useState(""); // State để lưu thông báo lỗi
 
-    const [pageNum, setPageNum] = useState(0);
-    const [pageSize, setPageSize] = useState(5);
-    const [openModal, setOpenModal] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");  // Thông báo thành công
-    const [openDeleteModal, setOpenDeleteModal] = useState(false); // Modal xác nhận xóa
+
+    const [pageNum, setPageNum] = useState<number>(0);
+    const [pageSize, setPageSize] = useState<number>(5);
+    const [openModal, setOpenModal] = useState<boolean>(false);
+
+    const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false); // Modal xác nhận xóa
     // Khai báo ref cho giá trị tạm thời
     const tempCustomerRef = useRef<Customer | null >(null);
 
@@ -65,10 +67,10 @@ export default function CustomerDetailPage({}: Props) {
             const customerById = await getCustomerById(customerId);
             setCustomer(customerById);
             tempCustomerRef.current = customerById;
-            setErrorMessage("");
+
         }catch (error) {
             setCustomer(null);
-            setErrorMessage(error.message);
+            toast.error(error.message);
         }
     }
 
@@ -80,9 +82,9 @@ export default function CustomerDetailPage({}: Props) {
     }, [customerId,customer1]);
 
 
-    const handleBackToCustomers = () => {
-        navigate("/customers"); // Điều hướng về trang danh sách khách hàng
-    };
+    // const handleBackToCustomers = () => {
+    //     navigate("/customers"); // Điều hướng về trang danh sách khách hàng
+    // };
     const [value, setValue] = useState('1');
 
     const handleChange = (event: React.SyntheticEvent, newValue: string) => {
@@ -95,12 +97,10 @@ export default function CustomerDetailPage({}: Props) {
             const updatedCustomer = await updateCustomer(customerId, customer); // Gọi API để cập nhật
             setCustomer1(updatedCustomer);
 
-            setSuccessMessage('Khách hàng đã được cập nhật thành công!'); // Set thông báo thành công
-            setErrorMessage(""); // Xóa thông báo lỗi
             setOpenModal(false); // Đóng modal
+            toast.success('Khách hàng đã được cập nhật thành công!');
         } catch (error) {
-            setErrorMessage(error.message); // Set thông báo lỗi
-            setSuccessMessage(""); // Xóa thông báo thành công
+            toast.error(error.message);
         }
     };
 
@@ -119,10 +119,12 @@ export default function CustomerDetailPage({}: Props) {
 
     };
     const handleChangeCustomer = (e) => {
-        setCustomer({
-            ...customer,
-            [e.target.name]: e.target.value
-        });
+        if (customer) {
+            setCustomer({
+                ...customer,
+                [e.target.name]: e.target.value
+            });
+        }
     };
 
 
@@ -138,38 +140,29 @@ export default function CustomerDetailPage({}: Props) {
             const data = await deleteCustomer(customerId);
             setOpenDeleteModal(false); // Đóng modal sau khi xóa
             console.log('Khách hàng đã được xóa:', data);
+
+
+            navigate('/customers');
             // Thực hiện cập nhật giao diện hoặc thông báo thành công
         } catch (error) {
             setOpenDeleteModal(false);
             console.error('Lỗi khi xóa khách hàng:', error);
             // Xử lý lỗi nếu xảy ra
         }
+
     };
-    useEffect(() => {
-        const timeout = setTimeout(() => {
 
-            setErrorMessage('');
-            setSuccessMessage('');
-        }, 3000); // Thời gian hiển thị 3 giây
-
-        return () => clearTimeout(timeout); // Dọn dẹp timeout khi component unmount hoặc cập nhật
-    }, [ errorMessage, successMessage]);
+    const handleDetailsClick = (orderId) => {
+        navigate(`/order/${orderId}`); // Chuyển hướng tới trang chi tiết của khách hàng
+    };
 
     return (
         <Box>
             <MainAppBar >
                 <Box  sx={{ width: '100%' }}  display="flex"  justifyContent="space-between" alignItems="center">
-                    <Typography variant="h6" sx={{ color: '#637381',
 
-                        /* body-text */
-                        fontFamily: 'Segoe UI',
-                        fontSize: '16px',
-                        fontStyle: 'normal',
-                        fontWeight: '400',
-                        lineHeight: 'normal',
-                        cursor: 'pointer'}} onClick={handleBackToCustomers}
-                        >&lt; Quay lại danh sách khách hàng
-                    </Typography>
+
+                    <Button variant="text" sx={{ color: '#637381' }} onClick={() => navigate(-1)}><KeyboardArrowLeft /> Quay lại danh sách đơn hàng</Button>
                     <Button
                         sx={{
                             borderRadius: '5px',
@@ -193,19 +186,7 @@ export default function CustomerDetailPage({}: Props) {
             </MainAppBar>
             <MainBox>
                 <Box>
-                    {/* Hiển thị thông báo lỗi nếu có */}
-                    {errorMessage && (
-                        <Alert severity="error" sx={{ marginTop: '16px' }}>
-                            {errorMessage}
-                        </Alert>
-                    )}
 
-                    {/* Hiển thị thông báo thành công nếu có */}
-                    {successMessage && (
-                        <Alert severity="success" sx={{ marginTop: '16px' }}>
-                            {successMessage}
-                        </Alert>
-                    )}
 
                     <Box sx={{ padding: '16px 24px 16px 24px' }}>
                         <Typography variant="h6" sx={{
@@ -384,44 +365,33 @@ export default function CustomerDetailPage({}: Props) {
                                     <Box sx={{ backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
                                         <Table sx={{ minWidth: 650 }}>
                                             <TableHead>
-                                                <TableRow sx={{ backgroundColor: '#f1f1f1' }}>
+                                                <TableRow sx={{ }}>
                                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Mã đơn hàng</TableCell>
                                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Ngày tạo đơn</TableCell>
                                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số lượng sản phẩm</TableCell>
                                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số tiền thanh toán</TableCell>
                                                     {/*<TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Nhân viên xử lý đơn</TableCell>*/}
-                                                    <TableCell></TableCell>
+
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
                                                 {Array.isArray(customer?.orders) && customer?.orders.length > 0 ? (
-                                                    customer?.orders.map((order, index) => (
+                                                    customer?.orders.map((order) => (
                                                         <TableRow
                                                             key={order.code}
                                                             sx={{
                                                                 '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
                                                                 '&:hover': { backgroundColor: '#e0f7fa' }, // Hover effect
+                                                                cursor: 'pointer'
                                                             }}
+                                                            onClick={() => handleDetailsClick(order.id)}
+
                                                         >
                                                             <TableCell>{order.code}</TableCell>
                                                             <TableCell>{formatDate(order.createdOn.toISOString())}</TableCell>
                                                             <TableCell>{order.totalQuantity}</TableCell>
-                                                            <TableCell>{order.totalPayment}</TableCell>
-                                                            <TableCell>
-                                                                <Typography
-                                                                    // onClick={() => handleDetailsClick(customer.id)} // Chuyển hướng khi nhấn vào
-                                                                    sx={{
-                                                                        color: 'blue',
-                                                                        textDecoration: 'underline',
-                                                                        cursor: 'pointer',
-                                                                        '&:hover': {
-                                                                            color: 'darkblue', // Đổi màu khi hover
-                                                                        },
-                                                                    }}
-                                                                >
-                                                                    Chi tiết
-                                                                </Typography>
-                                                            </TableCell>
+                                                            <TableCell>{formatCurrency(order.totalPayment)}</TableCell>
+
                                                         </TableRow>
                                                     ))
                                                 ) : (
@@ -441,6 +411,8 @@ export default function CustomerDetailPage({}: Props) {
                                             rowsPerPage={pageSize}
                                             onRowsPerPageChange={handleChangeRowsPerPage}
                                             rowsPerPageOptions={[5, 10]} // Các tùy chọn số hàng
+                                            labelRowsPerPage="Số hàng trên mỗi trang"
+                                            labelDisplayedRows={({ from, to, count }) => `${from}-${to} trong tổng số ${count}`}
                                             sx={{ mt: 2 }} // Margin top
                                         />
                                     </Box>
@@ -455,7 +427,12 @@ export default function CustomerDetailPage({}: Props) {
                                         value={customer?.note} // Hiển thị ghi chú từ customer.note
                                         onChange={(e) => {
                                             // Xử lý khi người dùng thay đổi ghi chú
-                                            setCustomer({ ...customer, note: e.target.value });
+                                            if (customer) {
+                                                setCustomer({
+                                                    ...customer,
+                                                    [e.target.name]: e.target.value
+                                                });
+                                            }
                                         }}
                                     />
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
@@ -555,10 +532,11 @@ export default function CustomerDetailPage({}: Props) {
                                             aria-label="gender"
                                             name="gender"
                                             value={customer?.gender ? "male" : "female"}  // Hiển thị đúng giới tính theo boolean
-                                            onChange={(e) => setCustomer({
-                                                ...customer,
-                                                gender: e.target.value === "male"  // Cập nhật giá trị boolean
-                                            })}
+                                            onChange={(e) => {
+                                                if(customer){
+                                                    setCustomer({...customer, gender: e.target.value === "male" })
+                                                }}
+                                            }
                                         >
                                             <FormControlLabel value="male" control={<Radio />} label="Nam" />
                                             <FormControlLabel value="female" control={<Radio />} label="Nữ" />
@@ -683,7 +661,7 @@ export default function CustomerDetailPage({}: Props) {
                             <Button
                                 onClick={() => {
                                     handleDeleteCustomer(customer?.id);  // Hàm xử lý xóa khách hàng
-                                    navigate('/customers');
+
                                 }}
                                 color="error"
                                 autoFocus

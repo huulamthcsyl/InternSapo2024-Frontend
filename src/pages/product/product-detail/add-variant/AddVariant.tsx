@@ -1,17 +1,26 @@
-import { Box, Button, CardMedia, TextField, Typography } from "@mui/material";
+import {
+    Box,
+    Button,
+    CardMedia,
+    CircularProgress,
+    TextField,
+    Typography,
+} from "@mui/material";
 import MainBox from "../../../../components/layout/MainBox";
 import { Image } from "@mui/icons-material";
 import AddVariantAppBar from "./AddVariantAppBar";
 import { useEffect, useState } from "react";
 import {
+    initialProductResponse,
+    initialVariantRequest,
     ProductResponse,
     VariantRequest,
 } from "../../../../models/ProductInterface";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { storage } from "../../../../../firebaseConfig";
 import NumericFormatCustom from "../../../../utils/NumericFormatCustom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { createVariant, getProductById } from "../../../../services/productAPI";
 
@@ -19,34 +28,44 @@ type Props = {};
 
 export default function AddVariant({}: Props) {
     const { id } = useParams();
-    const [product, setProduct] = useState<ProductResponse>({});
-    const [newVariant, setNewVariant] = useState<VariantRequest>({});
+    const [product, setProduct] = useState<ProductResponse>(
+        initialProductResponse
+    );
+    const [newVariant, setNewVariant] = useState<VariantRequest>(
+        initialVariantRequest
+    );
+    const [loading, setLoading] = useState<boolean>(true);
+    const navigate = useNavigate();
     // const [image,setImage] =useState<string>("");
 
     useEffect(() => {
-        getProductById(id).then((res) => {
-            setProduct(res);
-            setNewVariant({
-                name: res.name,
-                sku: "",
-                size: "",
-                color: "",
-                material: "",
-                imagePath: "",
-                initialPrice: 0,
-                priceForSale: 0,
-            });
-        });
+        getProductById(id)
+            .then((res) => {
+                setProduct(res);
+                setNewVariant({
+                    name: res.name,
+                    sku: "",
+                    size: "",
+                    color: "",
+                    material: "",
+                    imagePath: "",
+                    initialPrice: 0,
+                    priceForSale: 0,
+                });
+            })
+            .finally(() => setLoading(false));
     }, []);
 
-    function handleVariantChange(e) {
+    function handleVariantChange(e: any) {
         setNewVariant({ ...newVariant, [e.target.name]: e.target.value });
     }
 
     function handleAddNewVariant() {
         createVariant(id, newVariant)
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Tạo phiên bản mới thành công");
+                navigate(`/products/${_res.productId}/edit`);
+                
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -65,7 +84,7 @@ export default function AddVariant({}: Props) {
                 "state_changed",
                 (snapshot) => {
                     //Clearing snapshot cannot upload images
-                    const progressPercent =
+                    const _progressPercent =
                         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 },
                 (error) => {
@@ -79,7 +98,25 @@ export default function AddVariant({}: Props) {
             );
         }
     }
-
+    console.log(newVariant);
+    if (loading) {
+        return (
+            <Box>
+                <AddVariantAppBar />
+                <MainBox>
+                    <Box
+                        sx={{
+                            padding: "20px 24px",
+                            display: "flex",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <CircularProgress />
+                    </Box>
+                </MainBox>
+            </Box>
+        );
+    }
     return (
         <Box>
             <AddVariantAppBar id={id} submit={handleAddNewVariant} />
@@ -113,12 +150,59 @@ export default function AddVariant({}: Props) {
                                     borderBottom: "1px solid #d9d9d9",
                                 }}
                             >
-                                <Typography sx={{ fontSize: "20px" }}>
+                                <Typography sx={{ fontSize: "18px" }}>
                                     Phiên bản
                                 </Typography>
                             </Box>
-                            {product?.variants?.length > 0 ? (
-                                product.variants.map((variant) => (
+                            {product?.size?.length == 0 &&
+                            product?.color?.length == 0 &&
+                            product?.material?.length == 0 ? (
+                                <Box sx={{ padding: "3px" }}>
+                                    <Box
+                                        sx={{
+                                            padding: "16px",
+                                            height: "40px",
+                                            display: "flex",
+                                            gap: "10px",
+                                            borderRadius: "3px",
+                                        }}
+                                    >
+                                        {newVariant?.imagePath?.length > 0 ? (
+                                            <CardMedia
+                                                component="img"
+                                                sx={{
+                                                    padding: "0 10px",
+                                                    width: 40,
+                                                    height: 40,
+                                                }}
+                                                image={newVariant.imagePath}
+                                                alt="Paella dish"
+                                            />
+                                        ) : (
+                                            <Image
+                                                color="disabled"
+                                                sx={{
+                                                    padding: "0 10px",
+                                                    width: 40,
+                                                    height: 40,
+                                                }}
+                                            />
+                                        )}
+                                        <Box>
+                                            <Typography fontSize={"0.9rem"}>
+                                                {[
+                                                    newVariant.size,
+                                                    newVariant.color,
+                                                    newVariant.material,
+                                                ]
+                                                    .filter(Boolean)
+                                                    .join(" - ")}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            ) : (
+                                product?.variants?.map((variant) => (
                                     <Box
                                         sx={{ padding: "3px" }}
                                         key={variant.id}
@@ -180,8 +264,6 @@ export default function AddVariant({}: Props) {
                                         </Box>
                                     </Box>
                                 ))
-                            ) : (
-                                <></>
                             )}
                         </Box>
                         <Box sx={{ flexGrow: 1 }}>
@@ -198,7 +280,7 @@ export default function AddVariant({}: Props) {
                                         borderBottom: "1px solid #d9d9d9",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Thông tin chi tiết phiên bản
                                     </Typography>
                                 </Box>
@@ -212,25 +294,43 @@ export default function AddVariant({}: Props) {
                                             gap: "10px",
                                         }}
                                     >
-                                        <TextField
-                                            required
-                                            label="Tên phiên bản"
-                                            name="name"
-                                            value={newVariant.name || ""}
-                                            onChange={handleVariantChange}
-                                            fullWidth
-                                            size="small"
-                                            margin="normal"
-                                        />
-                                        <TextField
-                                            label="Mã SKU"
-                                            sx={{ width: "50%" }}
-                                            value={newVariant.sku}
-                                            name="sku"
-                                            onChange={handleVariantChange}
-                                            size="small"
-                                            margin="normal"
-                                        />
+                                        <Box>
+                                            <Typography
+                                                sx={{
+                                                    fontSize: "0.9rem",
+                                                }}
+                                            >
+                                                Tên phiên bản
+                                                <span
+                                                    style={{ color: "#FF4D4D" }}
+                                                >
+                                                    *
+                                                </span>
+                                            </Typography>
+                                            <TextField
+                                                name="name"
+                                                value={newVariant.name || ""}
+                                                onChange={handleVariantChange}
+                                                fullWidth
+                                                size="small"
+                                            />
+                                        </Box>
+                                        <Box sx={{ mt: "15px" }}>
+                                            <Typography
+                                                sx={{
+                                                    fontSize: "0.9rem",
+                                                }}
+                                            >
+                                                Mã SKU
+                                            </Typography>
+                                            <TextField
+                                                sx={{ width: "50%" }}
+                                                value={newVariant.sku}
+                                                name="sku"
+                                                onChange={handleVariantChange}
+                                                size="small"
+                                            />
+                                        </Box>
                                     </Box>
                                     <Box
                                         sx={{
@@ -313,7 +413,7 @@ export default function AddVariant({}: Props) {
                                         borderBottom: "1px solid #d9d9d9",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Thuộc tính
                                     </Typography>
                                 </Box>
@@ -326,47 +426,83 @@ export default function AddVariant({}: Props) {
                                         justifyContent: "space-between",
                                     }}
                                 >
-                                    <TextField
-                                        label="Kích cỡ"
-                                        required={
-                                            product?.size?.length > 0
-                                                ? true
-                                                : false
-                                        }
-                                        name="size"
-                                        size="small"
-                                        value={newVariant.size}
-                                        onChange={handleVariantChange}
-                                        sx={{ width: "48.5%" }}
-                                    />
+                                    <Box sx={{ width: "48.5%" }}>
+                                        <Typography
+                                            sx={{
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Kích cỡ
+                                            {product?.size?.length > 0 ? (
+                                                <span
+                                                    style={{ color: "#FF4D4D" }}
+                                                >
+                                                    *
+                                                </span>
+                                            ) : (
+                                                <></>
+                                            )}
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            name="size"
+                                            size="small"
+                                            value={newVariant.size}
+                                            onChange={handleVariantChange}
+                                        />
+                                    </Box>
 
-                                    <TextField
-                                        label="Màu sắc"
-                                        required={
-                                            product?.color?.length > 0
-                                                ? true
-                                                : false
-                                        }
-                                        name="color"
-                                        value={newVariant.color}
-                                        onChange={handleVariantChange}
-                                        size="small"
-                                        sx={{ width: "48.5%" }}
-                                    />
+                                    <Box sx={{ width: "48.5%" }}>
+                                        <Typography
+                                            sx={{
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Màu sắc
+                                            {product?.color?.length > 0 ? (
+                                                <span
+                                                    style={{ color: "#FF4D4D" }}
+                                                >
+                                                    *
+                                                </span>
+                                            ) : (
+                                                <></>
+                                            )}
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            name="color"
+                                            size="small"
+                                            value={newVariant.color}
+                                            onChange={handleVariantChange}
+                                        />
+                                    </Box>
 
-                                    <TextField
-                                        label="Chất liệu"
-                                        required={
-                                            product?.material?.length > 0
-                                                ? true
-                                                : false
-                                        }
-                                        name="material"
-                                        value={newVariant.material}
-                                        onChange={handleVariantChange}
-                                        size="small"
-                                        sx={{ width: "48.5%" }}
-                                    />
+                                    <Box sx={{ width: "48.5%" }}>
+                                        <Typography
+                                            sx={{
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Chất liệu
+                                            {product?.material?.length > 0 ? (
+                                                <span
+                                                    style={{ color: "#FF4D4D" }}
+                                                >
+                                                    *
+                                                </span>
+                                            ) : (
+                                                <></>
+                                            )}
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            name="material"
+                                            size="small"
+                                            value={newVariant.material}
+                                            onChange={handleVariantChange}
+                                        />
+                                    </Box>
                                 </Box>
                             </Box>
                             <Box
@@ -383,7 +519,7 @@ export default function AddVariant({}: Props) {
                                         borderBottom: "1px solid #d9d9d9",
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: "20px" }}>
+                                    <Typography sx={{ fontSize: "18px" }}>
                                         Giá sản phẩm
                                     </Typography>
                                 </Box>
@@ -394,43 +530,56 @@ export default function AddVariant({}: Props) {
                                         gap: "20px",
                                     }}
                                 >
-                                    <TextField
-                                        label="Giá bán"
-                                        required
-                                        size="small"
-                                        value={newVariant.priceForSale}
-                                        name="priceForSale"
-                                        onChange={handleVariantChange}
-                                        sx={{ width: "50%" }}
-                                        slotProps={{
-                                            input: {
-                                                inputComponent:
-                                                    NumericFormatCustom as any,
-                                            },
-                                        }}
-                                    />
-                                    <TextField
-                                        label="Giá nhập"
-                                        required
-                                        onChange={handleVariantChange}
-                                        size="small"
-                                        value={newVariant.initialPrice}
-                                        name="initialPrice"
-                                        slotProps={{
-                                            input: {
-                                                inputComponent:
-                                                    NumericFormatCustom as any,
-                                            },
-                                        }}
-                                        sx={{ width: "50%" }}
-                                    />
+                                    <Box sx={{ width: "50%" }}>
+                                        <Typography
+                                            sx={{
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Giá bán
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            value={newVariant.priceForSale}
+                                            name="priceForSale"
+                                            onChange={handleVariantChange}
+                                            slotProps={{
+                                                input: {
+                                                    inputComponent:
+                                                        NumericFormatCustom as any,
+                                                },
+                                            }}
+                                        />
+                                    </Box>
+                                    <Box sx={{ width: "50%" }}>
+                                        <Typography
+                                            sx={{
+                                                fontSize: "0.9rem",
+                                            }}
+                                        >
+                                            Giá nhập
+                                        </Typography>
+                                        <TextField
+                                            fullWidth
+                                            onChange={handleVariantChange}
+                                            size="small"
+                                            value={newVariant.initialPrice}
+                                            name="initialPrice"
+                                            slotProps={{
+                                                input: {
+                                                    inputComponent:
+                                                        NumericFormatCustom as any,
+                                                },
+                                            }}
+                                        />
+                                    </Box>
                                 </Box>
                             </Box>
                         </Box>
                     </Box>
                 </Box>
             </MainBox>
-            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }

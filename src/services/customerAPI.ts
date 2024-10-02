@@ -1,13 +1,14 @@
 import axios from 'axios';
 import Customer from '../models/Customer';
+import apiClient from './api-clients';
 
-const BASE_URL = 'http://localhost:8080/customers';
+const BASE_URL = 'http://localhost:8000/v1/customers';
 
 const INFINITY = 1000000000;
 
 const getCustomersByKeyword = async (keyword: string): Promise<Customer[]> => {
     try {
-        const response = await axios.get(BASE_URL, {
+        const response = await apiClient.get(BASE_URL, {
             params: {
                 pageNum: 0,
                 pageSize: INFINITY, // Lấy tất cả khách hàng
@@ -32,9 +33,6 @@ const fetchCustomers = async (pageNum: number, pageSize: number, keyword: string
             }
         });
 
-        if (response.status === 404) {
-            throw new Error('Không tồn tại khách hàng.');
-        }
 
         return response.data;
     } catch (error) {

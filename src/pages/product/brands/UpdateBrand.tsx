@@ -3,61 +3,32 @@ import { Close } from "@mui/icons-material";
 import { useState } from "react";
 import { BrandRequest, BrandResponse } from "../../../models/ProductInterface";
 import "react-toastify/dist/ReactToastify.css";
-import {
-    createBrand,
-    deleteBrand,
-    updateBrand,
-} from "../../../services/brandAPI";
-import { ToastContainer, toast } from "react-toastify";
+import { deleteBrand, updateBrand } from "../../../services/brandAPI";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 type Props = {
-    isUpdate: number;
-    setIsUpdate: React.Dispatch<React.SetStateAction<number>>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    selectedBrand: any;
-    setSelectedBrand: React.Dispatch<
-        React.SetStateAction<BrandResponse | null>
-    >;
+    setIsUpdate: React.Dispatch<React.SetStateAction<boolean>>;
+    selectedBrand: BrandResponse;
     onUpdate: () => void;
 };
 
-export default function UpdateOrAddBrand({
-    isUpdate,
+export default function UpdateBrand({
     setIsUpdate,
     selectedBrand,
-    setSelectedBrand,
     onUpdate,
 }: Props) {
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-    const [form, setForm] = useState<BrandRequest>(
-        { ...selectedBrand } || { name: "", code: "", description: "" }
-    );
+    const [form, setForm] = useState<BrandRequest>({ ...selectedBrand });
     function handleFormChange(e: React.ChangeEvent<HTMLInputElement>) {
         setForm({ ...form, [e.target.name]: e.target.value });
     }
     function handleUpdateBrand() {
         updateBrand(form.id, form)
-            .then((res) => {
-                toast.success("Cập nhật nhãn hiệu thành công", {
-                    position: "top-center",
-                });
+            .then((_res) => {
+                toast.success("Cập nhật nhãn hiệu thành công");
                 onUpdate();
-                setSelectedBrand(null);
-                setIsUpdate(0);
-            })
-            .catch((error) => {
-                toast.error(error.response.data.message);
-            });
-    }
-
-    function handleCreateBrand() {
-        createBrand(form)
-            .then((res) => {
-                toast.success("Tạo nhãn hiệu thành công");
-                onUpdate();
-                setSelectedBrand(null);
-                setIsUpdate(0);
+                setIsUpdate(false);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -66,25 +37,21 @@ export default function UpdateOrAddBrand({
 
     function handleDeleteBrand() {
         deleteBrand(form.id)
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Xóa nhãn hiệu thành công");
                 onUpdate();
-                setSelectedBrand(null);
-                setIsUpdate(0);
+                setIsUpdate(false);
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
             });
     }
 
-    function backToListBrands() {
-        setIsUpdate(0);
-        setSelectedBrand(null);
-    }
     return (
         <Box
             sx={{
                 position: "fixed",
+                flexGrow: "2",
                 top: "0",
                 left: "0",
                 width: "100%",
@@ -93,6 +60,7 @@ export default function UpdateOrAddBrand({
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+                zIndex: 10000,
             }}
         >
             {!openConfirmDialog ? (
@@ -104,7 +72,7 @@ export default function UpdateOrAddBrand({
                         padding: "10px 30px 30px 30px",
                         display: "flex",
                         flexDirection: "column",
-                        gap: "10px",
+                        gap: "15px",
                         border: "1px solid black",
                         borderRadius: "5px",
                     }}
@@ -117,15 +85,8 @@ export default function UpdateOrAddBrand({
                             borderBottom: "1px solid #d9d9d9",
                         }}
                     >
-                        {isUpdate === 2 ? (
-                            <Typography variant="h5">
-                                Thêm mới nhãn hiệu
-                            </Typography>
-                        ) : (
-                            <Typography variant="h5">
-                                Cập nhật nhãn hiệu
-                            </Typography>
-                        )}
+                        <Typography variant="h5">Cập nhật nhãn hiệu</Typography>
+
                         <Close color="disabled" />
                     </Box>
                     <Box
@@ -134,36 +95,51 @@ export default function UpdateOrAddBrand({
                             gap: "20px",
                         }}
                     >
+                        <Box sx={{ width: "50%" }}>
+                            <Typography
+                                sx={{ color: "#000", fontSize: "0.9rem" }}
+                            >
+                                Tên nhãn hiệu
+                                <span style={{ color: "#FF4D4D" }}>*</span>
+                            </Typography>
+                            <TextField
+                                fullWidth
+                                value={form.name}
+                                required={true}
+                                name="name"
+                                size="small"
+                                onChange={handleFormChange}
+                            />
+                        </Box>
+                        <Box sx={{ width: "50%" }}>
+                            <Typography
+                                sx={{ color: "#000", fontSize: "0.9rem" }}
+                            >
+                                Mã nhãn hiệu
+                            </Typography>
+                            <TextField
+                                fullWidth
+                                name="code"
+                                value={form.code}
+                                size="small"
+                                onChange={handleFormChange}
+                            />
+                        </Box>
+                    </Box>
+                    <Box>
+                        <Typography sx={{ color: "#000", fontSize: "0.9rem" }}>
+                            Ghi chú
+                        </Typography>
                         <TextField
-                            sx={{ width: "50%" }}
-                            value={form.name}
-                            required={true}
-                            name="name"
-                            size="small"
-                            label="Tên nhãn hiệu"
+                            fullWidth
+                            multiline
+                            name="description"
+                            value={form.description}
+                            rows={4}
                             onChange={handleFormChange}
-                            margin="normal"
-                        />
-                        <TextField
-                            sx={{ width: "50%" }}
-                            label="Mã nhãn hiệu"
-                            name="code"
-                            value={form.code}
-                            size="small"
-                            onChange={handleFormChange}
-                            margin="normal"
                         />
                     </Box>
-                    <TextField
-                        fullWidth
-                        multiline
-                        name="description"
-                        value={form.description}
-                        rows={4}
-                        label="Ghi chú"
-                        onChange={handleFormChange}
-                        margin="normal"
-                    />
+
                     <Box
                         sx={{
                             display: "flex",
@@ -171,39 +147,24 @@ export default function UpdateOrAddBrand({
                             gap: "25px",
                         }}
                     >
-                        {isUpdate === 1 ? (
-                            <Button
-                                variant="outlined"
-                                color="error"
-                                onClick={() => setOpenConfirmDialog(true)}
-                            >
-                                Xóa
-                            </Button>
-                        ) : (
-                            <></>
-                        )}
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => setOpenConfirmDialog(true)}
+                        >
+                            Xóa
+                        </Button>
+
                         <Button
                             variant="outlined"
                             color="primary"
-                            onClick={backToListBrands}
+                            onClick={() => setIsUpdate(false)}
                         >
                             Thoát
                         </Button>
-                        {isUpdate === 1 ? (
-                            <Button
-                                variant="contained"
-                                onClick={handleUpdateBrand}
-                            >
-                                Lưu
-                            </Button>
-                        ) : (
-                            <Button
-                                variant="contained"
-                                onClick={handleCreateBrand}
-                            >
-                                Thêm
-                            </Button>
-                        )}
+                        <Button variant="contained" onClick={handleUpdateBrand}>
+                            Lưu
+                        </Button>
                     </Box>
                 </Box>
             ) : (
@@ -245,7 +206,7 @@ export default function UpdateOrAddBrand({
                         <Button
                             variant="outlined"
                             color="error"
-                            onClick={backToListBrands}
+                            onClick={() => setIsUpdate(false)}
                         >
                             Thoát
                         </Button>
@@ -259,7 +220,6 @@ export default function UpdateOrAddBrand({
                     </Box>
                 </Box>
             )}
-            <ToastContainer hideProgressBar autoClose={3000} />
         </Box>
     );
 }

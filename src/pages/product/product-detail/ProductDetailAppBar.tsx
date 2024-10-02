@@ -1,20 +1,23 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import MainAppBar from "../../../components/layout/MainAppBar";
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
 import { useNavigate } from "react-router-dom";
 import { deleteProduct } from "../../../services/productAPI";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Close } from "@mui/icons-material";
+import { useState } from "react";
 
 type Props = {
-    id: string | undefined;
+    id?: string | undefined;
 };
 
 export default function ProductDetailAppBar({ id }: Props) {
     const navigate = useNavigate();
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     function handleDeleteProduct() {
         deleteProduct(id)
-            .then((res) => {
+            .then((_res) => {
                 toast.success("Xoá sản phẩm thành công");
             })
             .catch((error) => {
@@ -26,7 +29,7 @@ export default function ProductDetailAppBar({ id }: Props) {
             <Box
                 sx={{
                     display: "flex",
-                    flexGrow: "1",
+                    flexGrow: 1,
                     justifyContent: "space-between",
                 }}
             >
@@ -51,7 +54,7 @@ export default function ProductDetailAppBar({ id }: Props) {
                     <Button
                         variant="outlined"
                         color="error"
-                        onClick={handleDeleteProduct}
+                        onClick={() => setOpenDeleteDialog(true)}
                     >
                         Xóa
                     </Button>
@@ -63,8 +66,80 @@ export default function ProductDetailAppBar({ id }: Props) {
                         Sửa sản phẩm
                     </Button>
                 </Box>
+                {openDeleteDialog ? (
+                    <Box
+                        sx={{
+                            position: "fixed",
+                            flexGrow: 2,
+                            top: "0",
+                            left: "0",
+                            width: "100%",
+                            height: "100%",
+                            backgroundColor: "rgba(0, 0, 0, 0.5)",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            zIndex: 10000,
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                backgroundColor: "white",
+                                width: "600px",
+                                height: "auto",
+                                padding: "10px 30px 30px 30px",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "10px",
+                                border: "1px solid black",
+                                borderRadius: "5px",
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    padding: "10px 0",
+                                    borderBottom: "1px solid #d9d9d9",
+                                }}
+                            >
+                                <Typography variant="h5">
+                                    Xóa sản phẩm
+                                </Typography>
+                                <Close color="disabled" />
+                            </Box>
+                            <Typography>
+                                Thao tác này sẽ xóa sản phẩm bạn đã chọn. Thao
+                                tác này không thể khôi phục.
+                            </Typography>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "flex-end",
+                                    gap: "25px",
+                                }}
+                            >
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    onClick={() => setOpenDeleteDialog(false)}
+                                >
+                                    Thoát
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    onClick={handleDeleteProduct}
+                                >
+                                    Xóa
+                                </Button>
+                            </Box>
+                        </Box>
+                    </Box>
+                ) : (
+                    <></>
+                )}
             </Box>
-            <ToastContainer hideProgressBar autoClose={3000} />
         </MainAppBar>
     );
 }

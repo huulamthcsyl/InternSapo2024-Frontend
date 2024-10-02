@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import MainBox from "../../../components/layout/MainBox";
 import { Image } from "@mui/icons-material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import SearchField from "../SearchField";
 import {
     getListOfVariants,
-    getNumberOfProducts,
+    getNumberOfVariants,
 } from "../../../services/productAPI";
 import { VariantResponse } from "../../../models/ProductInterface";
 
@@ -18,6 +18,7 @@ export default function VariantPage({}: Props) {
     const [data, setData] = useState<VariantResponse[]>([]);
     const [numberOfVariants, setNumberOfVariants] = useState<number>(0);
     const [query, setQuery] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(true);
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 10,
@@ -26,7 +27,15 @@ export default function VariantPage({}: Props) {
     const customLocaleText = {
         MuiTablePagination: {
             labelRowsPerPage: "Số hàng mỗi trang:",
-            labelDisplayedRows: ({ from, to, count }) =>
+            labelDisplayedRows: ({
+                from,
+                to,
+                count,
+            }: {
+                from: number;
+                to: number;
+                count: number;
+            }) =>
                 `${from}-${to} trên tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
         },
     };
@@ -71,7 +80,7 @@ export default function VariantPage({}: Props) {
         },
 
         {
-            field: "totalQuantity",
+            field: "quantity",
             headerName: "Tồn kho",
             width: 160,
             valueGetter: (value) => {
@@ -103,6 +112,17 @@ export default function VariantPage({}: Props) {
     ];
 
     useEffect(() => {
+        getNumberOfVariants(query).then((res) => {
+            setNumberOfVariants(res);
+        });
+        getListOfVariants(paginationModel.page, paginationModel.pageSize, query)
+            .then((res) => {
+                setData(res);
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
+    useEffect(() => {
         getListOfVariants(
             paginationModel.page,
             paginationModel.pageSize,
@@ -113,7 +133,7 @@ export default function VariantPage({}: Props) {
     }, [paginationModel.pageSize, paginationModel.page]);
 
     useEffect(() => {
-        getNumberOfProducts(query).then((res) => {
+        getNumberOfVariants(query).then((res) => {
             setNumberOfVariants(res);
         });
         getListOfVariants(
@@ -124,6 +144,25 @@ export default function VariantPage({}: Props) {
             setData(res);
         });
     }, [query]);
+
+    if (loading) {
+        return (
+            <Box>
+                <VariantPageAppBar />
+                <MainBox>
+                    <Box
+                        sx={{
+                            padding: "20px 24px",
+                            display: "flex",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <CircularProgress style={{ zIndex: 10000 }} />
+                    </Box>
+                </MainBox>
+            </Box>
+        );
+    }
 
     return (
         <Box>
@@ -146,7 +185,7 @@ export default function VariantPage({}: Props) {
                             pageSizeOptions={[10, 20, 30]}
                             localeText={customLocaleText}
                             onRowClick={(params) =>
-                                navigate(`/products/${params.row.id}`)
+                                navigate(`/products/${params.row.productId}`)
                             }
                             // checkboxSelection
                             sx={{

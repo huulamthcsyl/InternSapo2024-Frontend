@@ -4,8 +4,8 @@ import NavigateBefore from "@mui/icons-material/NavigateBefore";
 import { useNavigate } from "react-router-dom";
 
 type Props = {
-    id: string | undefined;
-    submit: () => void;
+    id?: string | undefined;
+    submit?: () => void;
 };
 
 export default function ProductEditAppBar({ id, submit }: Props) {

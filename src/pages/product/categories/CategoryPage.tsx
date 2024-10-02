@@ -4,13 +4,14 @@ import { Add } from "@mui/icons-material";
 import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
 import CategoryPageAppBar from "./CategoryPageAppBar";
 import { useEffect, useState } from "react";
-import UpdateOrAdd from "./UpdateOrAdd";
-import { CategoryResponse } from "../../../models/ProductInterface";
+import { CategoryResponse, initialCategoryOrBrandResponse } from "../../../models/ProductInterface";
 import SearchField from "../SearchField";
 import {
     getListOfCategories,
     getNumberOfCategories,
 } from "../../../services/categoryAPI";
+import AddCategory from "./AddCategory";
+import UpdateCategory from "./UpdateCategory";
 
 type Props = {};
 
@@ -22,14 +23,23 @@ export default function CategoryPage({}: Props) {
         page: 0,
         pageSize: 5,
     });
-    const [isUpdate, setIsUpdate] = useState(0);
+    const [isUpdate, setIsUpdate] = useState<boolean>(false);
+    const [isAdd, setIsAdd] = useState<boolean>(false);
     const [selectedCategory, setSelectedCategory] =
-        useState<CategoryResponse | null>({});
+        useState<CategoryResponse>(initialCategoryOrBrandResponse);
     const customLocaleText = {
         MuiTablePagination: {
             labelRowsPerPage: "Số hàng mỗi trang:",
-            labelDisplayedRows: ({ from, to, count }) =>
-                `${from}-${to} trên tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
+            labelDisplayedRows: ({
+                from,
+                to,
+                count,
+            }: {
+                from: number;
+                to: number;
+                count: number;
+            }) =>
+                `${from}-${to} trong tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
         },
     };
     const columns: GridColDef[] = [
@@ -81,7 +91,7 @@ export default function CategoryPage({}: Props) {
         });
     }
     function handleRowClick(params: GridRowParams<CategoryResponse>) {
-        setIsUpdate(1);
+        setIsUpdate(true);
         setSelectedCategory(params.row);
     }
 
@@ -107,7 +117,6 @@ export default function CategoryPage({}: Props) {
             setData(res);
         });
     }, [query]);
-    console.log(data);
     return (
         <Box>
             <CategoryPageAppBar />
@@ -129,7 +138,7 @@ export default function CategoryPage({}: Props) {
                             variant="contained"
                             startIcon={<Add />}
                             sx={{ textTransform: "none" }}
-                            onClick={() => setIsUpdate(2)}
+                            onClick={() => setIsAdd(true)}
                         >
                             Thêm loại sản phẩm
                         </Button>
@@ -157,12 +166,18 @@ export default function CategoryPage({}: Props) {
                     </Box>
                 </Box>
             </MainBox>
-            {isUpdate != 0 ? (
-                <UpdateOrAdd
-                    isUpdate={isUpdate}
+            {isUpdate ? (
+                <UpdateCategory
                     selectedCategory={selectedCategory}
-                    setSelectedCategory={setSelectedCategory}
                     setIsUpdate={setIsUpdate}
+                    onUpdate={updateListOfProducts}
+                />
+            ) : (
+                <></>
+            )}
+            {isAdd ? (
+                <AddCategory
+                    setIsAdd={setIsAdd}
                     onUpdate={updateListOfProducts}
                 />
             ) : (
