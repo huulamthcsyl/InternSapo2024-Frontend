@@ -1,14 +1,29 @@
-import { Box, Button, Typography } from "@mui/material";
+import {
+    Box,
+    Button,
+    Typography,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TablePagination,
+    TableRow,
+    Paper,
+} from "@mui/material";
 import MainBox from "../../../components/layout/MainBox";
 import { Add } from "@mui/icons-material";
-import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
 import BrandPageAppBar from "./BrandPageAppBar";
 import { useEffect, useState } from "react";
-import { BrandResponse, initialCategoryOrBrandResponse } from "../../../models/ProductInterface";
+import {
+    BrandResponse,
+    initialCategoryOrBrandResponse,
+} from "../../../models/ProductInterface";
 import SearchField from "../SearchField";
 import { getListOfBrands, getNumberOfBrands } from "../../../services/brandAPI";
 import UpdateBrand from "./UpdateBrand";
 import AddBrand from "./AddBrand";
+import { formatDate } from "../../../utils/formatDate";
 
 type Props = {};
 
@@ -18,62 +33,27 @@ export default function BrandPage({}: Props) {
     const [query, setQuery] = useState("");
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
-        pageSize: 5,
+        pageSize: 10,
     });
     const [isUpdate, setIsUpdate] = useState(false);
     const [isAdd, setIsAdd] = useState(false);
-    const [selectedBrand, setSelectedBrand] = useState<BrandResponse>(initialCategoryOrBrandResponse);
-    const customLocaleText = {
-        MuiTablePagination: {
-            labelRowsPerPage: "Số hàng mỗi trang:",
-            labelDisplayedRows: ({
-                from,
-                to,
-                count,
-            }: {
-                from: number;
-                to: number;
-                count: number;
-            }) =>
-                `${from}-${to} trong tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
-        },
-    };
-    const columns: GridColDef[] = [
-        {
-            field: "name",
-            headerName: "Tên nhãn hiệu",
-            width: 280,
-        },
-        {
-            field: "code",
-            headerName: "Mã nhãn hiệu",
-            width: 220,
-        },
-        {
-            field: "description",
-            headerName: "Ghi chú",
-            width: 280,
-        },
-        {
-            field: "createdOn",
-            headerName: "Ngày tạo",
-            type: "date",
-            valueGetter: (value) => {
-                return value ? new Date(value) : "";
-            },
-            width: 230,
-        },
-        {
-            field: "updatedOn",
-            headerName: "Ngày cập nhật cuối",
-            type: "date",
-            valueGetter: (value) => {
-                // Assuming the value is a string or timestamp and needs to be transformed into a Date object
-                return value ? new Date(value) : "";
-            },
-            width: 230,
-        },
-    ];
+    const [loading, setLoading] = useState(true);
+    const [selectedBrand, setSelectedBrand] = useState<BrandResponse>(
+        initialCategoryOrBrandResponse
+    );
+    function handlePaginationChange(
+        _e: React.MouseEvent<HTMLButtonElement> | null,
+        newPage: number
+    ) {
+        setPaginationModel((prev) => ({ ...prev, page: newPage }));
+    }
+
+    function handlePageSizeChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setPaginationModel((prev) => ({
+            ...prev,
+            pageSize: parseInt(e.target.value, 10),
+        }));
+    }
 
     function updateListOfBrands() {
         getNumberOfBrands(query).then((res) => {
@@ -87,9 +67,9 @@ export default function BrandPage({}: Props) {
             setData(res);
         });
     }
-    function handleRowClick(params: GridRowParams<BrandResponse>) {
+    function handleRowClick(row: BrandResponse) {
         setIsUpdate(true);
-        setSelectedBrand(params.row);
+        setSelectedBrand(row);
     }
 
     useEffect(() => {
@@ -106,13 +86,11 @@ export default function BrandPage({}: Props) {
         getNumberOfBrands(query).then((res) => {
             setNumberOfBrands(res);
         });
-        getListOfBrands(
-            paginationModel.page,
-            paginationModel.pageSize,
-            query
-        ).then((res) => {
-            setData(res);
-        });
+        getListOfBrands(paginationModel.page, paginationModel.pageSize, query)
+            .then((res) => {
+                setData(res);
+            })
+            .finally(() => setLoading(false));
     }, [query]);
     return (
         <Box>
@@ -140,26 +118,85 @@ export default function BrandPage({}: Props) {
                             Thêm nhãn hiệu
                         </Button>
                     </Box>
-                    <Box sx={{ backgroundColor: "white" }}>
+                    <Box sx={{ backgroundColor: "white", padding: "16px" }}>
                         <SearchField
                             onKeyPress={setQuery}
                             placeHolder="Tìm kiếm nhãn hiệu theo tên ..."
                         />
-                        <DataGrid
-                            rows={data}
-                            columns={columns}
-                            rowCount={numberOfBrands}
-                            onRowClick={handleRowClick}
-                            {...data}
-                            paginationMode="server"
-                            paginationModel={paginationModel}
-                            onPaginationModelChange={setPaginationModel}
-                            pageSizeOptions={[5, 10, 15]}
-                            localeText={customLocaleText}
-                            sx={{
-                                border: 0,
-                            }}
-                        />
+                        <TableContainer component={Paper} sx={{ mt: "16px" }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Mã loại</TableCell>
+                                        <TableCell>Tên nhãn hiệu</TableCell>
+                                        <TableCell>Ghi chú</TableCell>
+                                        <TableCell>Ngày khởi tạo</TableCell>
+                                        <TableCell>
+                                            Ngày cập nhật cuối
+                                        </TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={6}
+                                                align="center"
+                                            >
+                                                Đang tải dữ liệu...
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        data.map((row) => (
+                                            <TableRow
+                                                hover
+                                                key={row.id}
+                                                style={{ cursor: "pointer" }}
+                                                onClick={() =>
+                                                    handleRowClick(row)
+                                                }
+                                            >
+                                                <TableCell
+                                                    style={{ color: "#08f" }}
+                                                >
+                                                    {row.code}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {row.name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {row.description}
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    {formatDate(
+                                                        row.createdOn.toString()
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatDate(
+                                                        row.updatedOn.toString()
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                            <TablePagination
+                                component="div"
+                                count={numberOfBrands}
+                                page={paginationModel.page}
+                                onPageChange={handlePaginationChange}
+                                rowsPerPage={paginationModel.pageSize}
+                                onRowsPerPageChange={handlePageSizeChange}
+                                rowsPerPageOptions={[10, 20, 30]}
+                                labelRowsPerPage="Số hàng trên mỗi trang"
+                                labelDisplayedRows={({ from, to, count }) =>
+                                    `${from}-${to} trong tổng số ${count}`
+                                }
+                            />
+                        </TableContainer>
                     </Box>
                 </Box>
             </MainBox>

@@ -7,7 +7,7 @@ import {
 } from "../models/ProductInterface";
 import apiClient from "./api-clients";
 
-const BASE_URL = "http://13.211.146.23:8080/v1/products";
+const BASE_URL = "http://localhost:8080/v1/products";
 
 const LIMIT = 10;
 
