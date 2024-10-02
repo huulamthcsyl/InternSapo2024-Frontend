@@ -2,6 +2,7 @@ import { Box, Button } from "@mui/material";
 import MainAppBar from "../../../components/layout/MainAppBar";
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
 import { useNavigate } from "react-router-dom";
+import AccountSection from "../AccountSection";
 
 type Props = {};
 
@@ -9,7 +10,7 @@ export default function CategoryPageAppBar({}: Props) {
     const navigate = useNavigate();
     return (
         <MainAppBar>
-            <Box sx={{ display: "flex", gap: "20px" }}>
+            <Box sx={{ display: "flex",width: "100%",justifyContent:'space-between'}}>
                 <Button
                     onClick={() => navigate("/products")}
                     variant="text"
@@ -27,6 +28,7 @@ export default function CategoryPageAppBar({}: Props) {
                 >
                     Quay lại danh sách sản phẩm
                 </Button>
+                <AccountSection/>
             </Box>
         </MainAppBar>
     );
