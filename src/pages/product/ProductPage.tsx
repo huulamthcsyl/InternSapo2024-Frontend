@@ -1,14 +1,18 @@
 import {
     Box,
     Button,
-    ButtonGroup,
-    CircularProgress,
-    Divider,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TablePagination,
+    TableRow,
 } from "@mui/material";
 import MainBox from "../../components/layout/MainBox";
 import ProductPageAppBar from "./ProductPageAppBar";
 import { Add, Image } from "@mui/icons-material";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import SearchField from "./SearchField";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +21,7 @@ import {
     getNumberOfProducts,
 } from "../../services/productAPI";
 import { ProductResponse } from "../../models/ProductInterface";
+import { formatDate } from "../../utils/formatDate";
 
 type Props = {};
 
@@ -30,86 +35,21 @@ export default function ProductPage({}: Props) {
         pageSize: 10,
     });
     const navigate = useNavigate();
-    const customLocaleText = {
-        MuiTablePagination: {
-            labelRowsPerPage: "Số hàng mỗi trang:",
-            labelDisplayedRows: ({
-                from,
-                to,
-                count,
-            }: {
-                from: number;
-                to: number;
-                count: number;
-            }) =>
-                `${from}-${to} trên tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
-        },
-    };
-    const columns: GridColDef[] = [
-        {
-            field: "imagePath",
-            headerName: "Ảnh",
-            renderCell: (params) => {
-                const firstImageUrl =
-                    params.value && params.value.length > 0
-                        ? params.value[0]
-                        : "";
-                return (
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            height: "100%",
-                        }}
-                    >
-                        {firstImageUrl ? (
-                            <img
-                                src={firstImageUrl}
-                                alt="Product"
-                                style={{ width: 30, height: 30 }}
-                            />
-                        ) : (
-                            <Image color="disabled" />
-                        )}
-                    </div>
-                );
-            },
-            width: 100,
-        },
-        {
-            field: "name",
-            headerName: "Tên sản phẩm",
-            width: 300,
-        },
-        {
-            field: "categoryName",
-            headerName: "Loại",
-            width: 200,
-        },
-        {
-            field: "brandName",
-            headerName: "Nhãn hiệu",
-            width: 200,
-        },
-        {
-            field: "totalQuantity",
-            headerName: "Tồn kho",
-            width: 160,
-            valueGetter: (value) => {
-                return value ? value : 0;
-            },
-        },
-        {
-            field: "createdOn",
-            headerName: "Ngày khởi tạo",
-            type: "date",
-            valueGetter: (value) => {
-                return value ? new Date(value) : "";
-            },
-            width: 160,
-        },
-    ];
+
+    function handlePaginationChange(
+        _e: React.MouseEvent<HTMLButtonElement> | null,
+        newPage: number
+    ) {
+        setLoading(true);
+        setPaginationModel((prev) => ({ ...prev, page: newPage }));
+    }
+
+    function handlePageSizeChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setPaginationModel((prev) => ({
+            ...prev,
+            pageSize: parseInt(e.target.value, 10),
+        }));
+    }
 
     useEffect(() => {
         getNumberOfProducts(query).then((res) => {
@@ -123,13 +63,11 @@ export default function ProductPage({}: Props) {
     }, []);
 
     useEffect(() => {
-        getListOfProducts(
-            paginationModel.page,
-            paginationModel.pageSize,
-            query
-        ).then((res) => {
-            setData(res);
-        });
+        getListOfProducts(paginationModel.page, paginationModel.pageSize, query)
+            .then((res) => {
+                setData(res);
+            })
+            .finally(() => setLoading(false));
     }, [paginationModel.pageSize, paginationModel.page]);
 
     useEffect(() => {
@@ -145,24 +83,6 @@ export default function ProductPage({}: Props) {
         });
     }, [query]);
 
-    if (loading) {
-        return (
-            <Box>
-                <ProductPageAppBar />
-                <MainBox>
-                    <Box
-                        sx={{
-                            padding: "20px 24px",
-                            display: "flex",
-                            justifyContent: "center",
-                        }}
-                    >
-                        <CircularProgress />
-                    </Box>
-                </MainBox>
-            </Box>
-        );
-    }
     return (
         <Box>
             <ProductPageAppBar />
@@ -174,40 +94,9 @@ export default function ProductPage({}: Props) {
                             display: "flex",
                             padding: "11px 0",
                             height: "38px",
-                            justifyContent: "space-between",
+                            justifyContent: "right",
                         }}
                     >
-                        <ButtonGroup>
-                            <Button
-                                variant="text"
-                                size="large"
-                                sx={{
-                                    color: "black",
-                                    textTransform: "none",
-                                    fontSize: "18px",
-                                }}
-                                onClick={() => navigate("/products/categories")}
-                            >
-                                Loại sản phẩm
-                            </Button>
-                            <Divider
-                                orientation="vertical"
-                                variant="middle"
-                                flexItem
-                            />
-                            <Button
-                                variant="text"
-                                size="large"
-                                sx={{
-                                    color: "black",
-                                    textTransform: "none",
-                                    fontSize: "18px",
-                                }}
-                                onClick={() => navigate("/products/brands")}
-                            >
-                                Nhãn hiệu
-                            </Button>
-                        </ButtonGroup>
                         <Button
                             variant="contained"
                             startIcon={<Add />}
@@ -217,29 +106,128 @@ export default function ProductPage({}: Props) {
                             Thêm sản phẩm
                         </Button>
                     </Box>
-                    <Box sx={{ backgroundColor: "white" }}>
+                    <Box sx={{ backgroundColor: "white", padding: "16px" }}>
                         <SearchField
                             onKeyPress={setQuery}
                             placeHolder="Tìm kiếm sản phẩm theo tên ..."
                         />
-                        <DataGrid
-                            rows={data}
-                            columns={columns}
-                            rowCount={numberOfProducts}
-                            {...data}
-                            paginationMode="server"
-                            paginationModel={paginationModel}
-                            onPaginationModelChange={setPaginationModel}
-                            pageSizeOptions={[10, 20, 30]}
-                            localeText={customLocaleText}
-                            onRowClick={(params) =>
-                                navigate(`/products/${params.row.id}`)
-                            }
-                            // checkboxSelection
-                            sx={{
-                                border: 0,
-                            }}
-                        />
+                        <TableContainer component={Paper} sx={{ mt: "16px" }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell style={{ width: "8%" }}>
+                                            Ảnh
+                                        </TableCell>
+                                        <TableCell style={{ width: "32%" }}>
+                                            Tên sản phẩm
+                                        </TableCell>
+                                        <TableCell style={{ width: "15%" }}>
+                                            Loại
+                                        </TableCell>
+                                        <TableCell style={{ width: "15%" }}>
+                                            Nhãn hiệu
+                                        </TableCell>
+                                        <TableCell style={{ width: "15%" }}>
+                                            Tồn kho
+                                        </TableCell>
+                                        <TableCell style={{ width: "15%" }}>
+                                            Ngày khởi tạo
+                                        </TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={6}
+                                                align="center"
+                                            >
+                                                Đang tải dữ liệu...
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        data.map((row) => (
+                                            <TableRow
+                                                key={row.id}
+                                                hover
+                                                style={{ cursor: "pointer" }}
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/products/${row.id}`
+                                                    )
+                                                }
+                                            >
+                                                <TableCell>
+                                                    <div
+                                                        style={{
+                                                            display: "flex",
+                                                            justifyContent:
+                                                                "center",
+                                                            alignItems:
+                                                                "center",
+                                                            height: "100%",
+                                                        }}
+                                                    >
+                                                        {row.imagePath.length >
+                                                        0 ? (
+                                                            <img
+                                                                src={
+                                                                    row
+                                                                        .imagePath[0]
+                                                                }
+                                                                alt="Product"
+                                                                style={{
+                                                                    width: 30,
+                                                                    height: 30,
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <Image
+                                                                color="disabled"
+                                                                style={{
+                                                                    width: 30,
+                                                                    height: 30,
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {row.name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {row.categoryName}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {row.brandName}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {row.totalQuantity}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatDate(
+                                                        row.createdOn.toString()
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                            <TablePagination
+                                component="div"
+                                count={numberOfProducts}
+                                page={paginationModel.page}
+                                onPageChange={handlePaginationChange}
+                                rowsPerPage={paginationModel.pageSize}
+                                onRowsPerPageChange={handlePageSizeChange}
+                                rowsPerPageOptions={[10, 20, 30]}
+                                labelRowsPerPage="Số hàng trên mỗi trang"
+                                labelDisplayedRows={({ from, to, count }) =>
+                                    `${from}-${to} trong tổng số ${count}`
+                                }
+                            />
+                        </TableContainer>
                     </Box>
                 </Box>
             </MainBox>

@@ -1,7 +1,16 @@
-import { Box, CircularProgress } from "@mui/material";
+import {
+    Box,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TablePagination,
+    TableRow,
+} from "@mui/material";
 import MainBox from "../../../components/layout/MainBox";
 import { Image } from "@mui/icons-material";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import VariantPageAppBar from "./VariantPageAppBar";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +20,8 @@ import {
     getNumberOfVariants,
 } from "../../../services/productAPI";
 import { VariantResponse } from "../../../models/ProductInterface";
+import { formatCurrency } from "../../../utils/formatCurrency";
+import { formatDate } from "../../../utils/formatDate";
 
 type Props = {};
 
@@ -24,92 +35,21 @@ export default function VariantPage({}: Props) {
         pageSize: 10,
     });
     const navigate = useNavigate();
-    const customLocaleText = {
-        MuiTablePagination: {
-            labelRowsPerPage: "Số hàng mỗi trang:",
-            labelDisplayedRows: ({
-                from,
-                to,
-                count,
-            }: {
-                from: number;
-                to: number;
-                count: number;
-            }) =>
-                `${from}-${to} trên tổng số ${count !== -1 ? count : `nhiều hơn ${to}`}`,
-        },
-    };
-    const columns: GridColDef[] = [
-        {
-            field: "imagePath",
-            headerName: "Ảnh",
-            renderCell: (params) => {
-                const firstImageUrl = params.value;
-                return (
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            height: "100%",
-                        }}
-                    >
-                        {firstImageUrl ? (
-                            <img
-                                src={firstImageUrl}
-                                alt="Variant"
-                                style={{ width: 30, height: 30 }}
-                            />
-                        ) : (
-                            <Image color="disabled" />
-                        )}
-                    </div>
-                );
-            },
-            width: 100,
-        },
-        {
-            field: "name",
-            headerName: "Tên phiên bản",
-            width: 300,
-        },
-        {
-            field: "sku",
-            headerName: "Mã SKU",
-            width: 180,
-        },
 
-        {
-            field: "quantity",
-            headerName: "Tồn kho",
-            width: 160,
-            valueGetter: (value) => {
-                return value ? value : 0;
-            },
-        },
-        {
-            field: "createdOn",
-            headerName: "Ngày khởi tạo",
-            type: "date",
-            valueGetter: (value) => {
-                // Assuming the value is a string or timestamp and needs to be transformed into a Date object
-                return value ? new Date(value) : "";
-            },
-            width: 160,
-        },
-        {
-            field: "priceForSale",
-            headerName: "Giá bán",
-            width: 150,
-            align: "right",
-        },
-        {
-            field: "initialPrice",
-            headerName: "Giá nhập",
-            width: 150,
-            align: "right",
-        },
-    ];
+    function handlePaginationChange(
+        _e: React.MouseEvent<HTMLButtonElement> | null,
+        newPage: number
+    ) {
+        setLoading(true);
+        setPaginationModel((prev) => ({ ...prev, page: newPage }));
+    }
+
+    function handlePageSizeChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setPaginationModel((prev) => ({
+            ...prev,
+            pageSize: parseInt(e.target.value, 10),
+        }));
+    }
 
     useEffect(() => {
         getNumberOfVariants(query).then((res) => {
@@ -123,13 +63,11 @@ export default function VariantPage({}: Props) {
     }, []);
 
     useEffect(() => {
-        getListOfVariants(
-            paginationModel.page,
-            paginationModel.pageSize,
-            query
-        ).then((res) => {
-            setData(res);
-        });
+        getListOfVariants(paginationModel.page, paginationModel.pageSize, query)
+            .then((res) => {
+                setData(res);
+            })
+            .finally(() => setLoading(false));
     }, [paginationModel.pageSize, paginationModel.page]);
 
     useEffect(() => {
@@ -145,53 +83,150 @@ export default function VariantPage({}: Props) {
         });
     }, [query]);
 
-    if (loading) {
-        return (
-            <Box>
-                <VariantPageAppBar />
-                <MainBox>
-                    <Box
-                        sx={{
-                            padding: "20px 24px",
-                            display: "flex",
-                            justifyContent: "center",
-                        }}
-                    >
-                        <CircularProgress style={{ zIndex: 10000 }} />
-                    </Box>
-                </MainBox>
-            </Box>
-        );
-    }
-
     return (
         <Box>
             <VariantPageAppBar />
             <MainBox>
                 <Box sx={{ padding: "20px 24px", backgroundColor: "#F0F1F1" }}>
-                    <Box sx={{ backgroundColor: "white" }}>
+                    <Box sx={{ backgroundColor: "white", padding: "16px" }}>
                         <SearchField
                             onKeyPress={setQuery}
                             placeHolder="Tìm kiếm phiên bản theo tên, mã SKU ..."
                         />
-                        <DataGrid
-                            rows={data}
-                            columns={columns}
-                            rowCount={numberOfVariants}
-                            {...data}
-                            paginationMode="server"
-                            paginationModel={paginationModel}
-                            onPaginationModelChange={setPaginationModel}
-                            pageSizeOptions={[10, 20, 30]}
-                            localeText={customLocaleText}
-                            onRowClick={(params) =>
-                                navigate(`/products/${params.row.productId}`)
-                            }
-                            // checkboxSelection
-                            sx={{
-                                border: 0,
-                            }}
-                        />
+                        <TableContainer component={Paper} sx={{ mt: "16px" }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell style={{ width: "8%" }}>
+                                            Ảnh
+                                        </TableCell>
+                                        <TableCell style={{ width: "10%" }}>
+                                            Mã SKU
+                                        </TableCell>
+                                        <TableCell style={{ width: "25%" }}>
+                                            Tên phiên bản
+                                        </TableCell>
+                                        <TableCell style={{ width: "10%" }}>
+                                            Tồn kho
+                                        </TableCell>
+                                        <TableCell style={{ width: "15%" }}>
+                                            Ngày khởi tạo
+                                        </TableCell>
+                                        <TableCell
+                                            style={{ width: "15%" }}
+                                            align="right"
+                                        >
+                                            Giá bán
+                                        </TableCell>
+                                        <TableCell
+                                            style={{ width: "15%" }}
+                                            align="right"
+                                        >
+                                            Giá nhập
+                                        </TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={6}
+                                                align="center"
+                                            >
+                                                Đang tải dữ liệu...
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        data.map((row) => (
+                                            <TableRow
+                                                key={row.id}
+                                                hover
+                                                style={{ cursor: "pointer" }}
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/products/${row.productId}`
+                                                    )
+                                                }
+                                            >
+                                                <TableCell>
+                                                    <div
+                                                        style={{
+                                                            display: "flex",
+                                                            justifyContent:
+                                                                "center",
+                                                            alignItems:
+                                                                "center",
+                                                            height: "100%",
+                                                        }}
+                                                    >
+                                                        {row.imagePath.length >
+                                                        0 ? (
+                                                            <img
+                                                                src={
+                                                                    row.imagePath
+                                                                }
+                                                                alt="Product"
+                                                                style={{
+                                                                    width: 30,
+                                                                    height: 30,
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <Image
+                                                                color="disabled"
+                                                                style={{
+                                                                    width: 30,
+                                                                    height: 30,
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell
+                                                    style={{ color: "#08f" }}
+                                                >
+                                                    {row.sku}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {row.name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {row.quantity}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatDate(
+                                                        row.createdOn.toString()
+                                                    )}
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    {formatCurrency(
+                                                        row.priceForSale
+                                                    )}
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    {formatCurrency(
+                                                        row.initialPrice
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                            <TablePagination
+                                component="div"
+                                count={numberOfVariants}
+                                page={paginationModel.page}
+                                onPageChange={handlePaginationChange}
+                                rowsPerPage={paginationModel.pageSize}
+                                onRowsPerPageChange={handlePageSizeChange}
+                                rowsPerPageOptions={[10, 20, 30]}
+                                labelRowsPerPage="Số hàng trên mỗi trang"
+                                labelDisplayedRows={({ from, to, count }) =>
+                                    `${from}-${to} trong tổng số ${count}`
+                                }
+                            />
+                        </TableContainer>
                     </Box>
                 </Box>
             </MainBox>

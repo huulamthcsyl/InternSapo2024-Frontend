@@ -2,7 +2,6 @@ import {
     Box,
     CardMedia,
     CircularProgress,
-    TextField,
     Typography,
 } from "@mui/material";
 import ProductDetailAppBar from "./ProductDetailAppBar";
@@ -19,6 +18,7 @@ import {
 import { Image } from "@mui/icons-material";
 import { formatCurrency } from "../../../utils/formatCurrency";
 import { getProductById } from "../../../services/productAPI";
+import { formatDate } from "../../../utils/formatDate";
 
 type Props = {};
 
@@ -108,9 +108,9 @@ export default function ProductDetail({}: Props) {
                                     />
                                     <LabelInfo
                                         label="Ngày khởi tạo"
-                                        info={new Date(
-                                            data?.createdOn
-                                        ).toLocaleString()}
+                                        info={formatDate(
+                                            data?.createdOn?.toString() || ""
+                                        )}
                                     />
                                     <LabelInfo
                                         label="Nhãn hiệu"
@@ -118,26 +118,29 @@ export default function ProductDetail({}: Props) {
                                     />
                                     <LabelInfo
                                         label="Ngày cập nhật cuối"
-                                        info={new Date(
-                                            data?.updatedOn
-                                        ).toLocaleString()}
+                                        info={formatDate(
+                                            data?.updatedOn?.toString() || ""
+                                        )}
                                     />
-                                    <Box sx={{ width: "100%" }}>
+                                    <Box
+                                        sx={{ width: "100%", display: "flex" }}
+                                    >
                                         <Typography
-                                            sx={{
-                                                color: "#000",
-                                                fontSize: "0.9rem",
-                                            }}
+                                            variant="body1"
+                                            fontSize={"0.9rem"}
+                                            width={"149px"}
                                         >
                                             Mô tả sản phẩm
                                         </Typography>
-                                        <TextField
-                                            disabled
-                                            fullWidth
-                                            multiline
-                                            rows={4}
-                                            value={data?.description}
-                                        />
+                                        <Typography fontSize={"0.9rem"}>
+                                            :&nbsp;
+                                        </Typography>
+                                        <Typography
+                                            variant="body1"
+                                            fontSize={"0.9rem"}
+                                        >
+                                            {data?.description}
+                                        </Typography>
                                     </Box>
                                 </Box>
                                 <Box
@@ -204,13 +207,13 @@ export default function ProductDetail({}: Props) {
                                 <LabelInfo
                                     label="Giá bán"
                                     info={formatCurrency(
-                                        data.variants[0].priceForSale
+                                        data?.variants[0]?.priceForSale
                                     )}
                                 />
                                 <LabelInfo
                                     label="Giá nhập"
                                     info={formatCurrency(
-                                        data.variants[0].initialPrice
+                                        data?.variants[0]?.initialPrice
                                     )}
                                 />
                             </Box>

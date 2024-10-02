@@ -21,7 +21,7 @@ export default function SearchField({ onKeyPress, placeHolder }: Props) {
     }
 
     return (
-        <Box sx={{ padding: "16px" }}>
+        <Box>
             <Box
                 sx={{
                     border: "1px solid #d9d9d9",
