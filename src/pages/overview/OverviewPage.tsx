@@ -33,14 +33,14 @@ export default function OverviewPage() {
     useEffect(() => {
         fetchTodayOrders();
     }, [pageNum,pageSize]);
-    const handleChangePage = (event, newPage) => {
+    const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
         setPageNum(newPage);
     };
-    const handleChangeRowsPerPage = (event) => {
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPageSize(parseInt(event.target.value, 10)); // Cập nhật số hàng trên mỗi trang
         setPageNum(0); // Reset về trang đầu khi thay đổi số hàng
     };
-    const handleDetailsClick = (orderId) => {
+    const handleDetailsClick = (orderId: number) => {
         navigate(`/order/${orderId}`); // Chuyển hướng tới trang chi tiết của khách hàng
     };
     return (
