@@ -7,7 +7,7 @@ import {
 } from "../models/ProductInterface";
 import apiClient from "./api-clients";
 
-const BASE_URL = "http://localhost:8080/v1/products";
+const BASE_URL = "https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/products";
 
 const LIMIT = 10;
 

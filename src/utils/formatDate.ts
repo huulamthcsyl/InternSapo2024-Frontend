@@ -1,4 +1,7 @@
-export const formatDate = (dateString: string) => {
+export const formatDate = (dateString: string | undefined) => {
+    if (!dateString) {
+        return 'N/A'; // Trả về 'N/A' nếu dateString là null hoặc rỗng
+    }
     const date = new Date(dateString);
 
     // Lấy ngày, tháng và năm
@@ -10,5 +13,6 @@ export const formatDate = (dateString: string) => {
     const minutes = String(date.getMinutes()).padStart(2, '0');
 
     // Trả về định dạng "dd-mm-yyyy"
-    return `${day}-${month}-${year} ${hours}:${minutes}`;
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+
 };

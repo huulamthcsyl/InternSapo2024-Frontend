@@ -6,13 +6,13 @@ import {
     TableCell,
     TableHead, TablePagination,
     TableRow,
-    TextField,
+    TextField, Tooltip,
     Typography
 } from "@mui/material"
 import CustomerPageAppBar from "./CustomerPageAppBar.tsx"
 import MainBox from "../../components/layout/MainBox"
 import SearchIcon from '@mui/icons-material/Search';
-import React, {useEffect, useState} from "react";
+import React, {ChangeEvent, useEffect, useState} from "react";
 import Customer from "../../models/Customer.ts";
 import {fetchCustomers, submitNewCustomer} from "../../services/customerAPI.ts";
 
@@ -41,7 +41,7 @@ export default function CustomerPage() {
     const [totalCustomers, setTotalCustomers] = useState<number>(0);
     const navigate = useNavigate();
 
-
+    const [phoneError, setPhoneError] = useState<boolean>(false); // Trạng thái để lưu lỗi số điện thoại
 
 
     const [openModal, setOpenModal] = useState<boolean>(false);  // State để quản lý việc mở/đóng modal
@@ -59,7 +59,10 @@ export default function CustomerPage() {
     const loadCustomers = async () => {
         try {
             const fetchedCustomers = await fetchCustomers(pageNum, pageSize, keyword);
-            setCustomers(fetchedCustomers.content);
+            const sortedCustomers = fetchedCustomers.content.sort(
+                (a: Customer, b: Customer) => new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime()
+            );
+            setCustomers(sortedCustomers);
 
             setTotalCustomers(fetchedCustomers.totalElements);
 
@@ -87,7 +90,7 @@ export default function CustomerPage() {
     };
 
     // Hàm xử lý khi người dùng nhấn phím
-    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLDivElement>) => {
         if (event.key === 'Enter') {
             setKeyword(searchTerm); // Cập nhật từ khóa và gọi API tìm kiếm
             setPageNum(0); // Reset lại trang đầu tiên
@@ -105,6 +108,7 @@ export default function CustomerPage() {
     // Xử lý đóng modal
     const handleCloseModal = () => {
         setOpenModal(false);  // Đóng modal
+        setPhoneError(false);
         // Reset lại thông tin khách hàng
         setNewCustomer({
             name: '',
@@ -141,28 +145,34 @@ export default function CustomerPage() {
                 email: '',
                 address: ''
             });
+            setPhoneError(false);
             setOpenModal(false);  // Đóng modal sau khi tạo thành công
             loadCustomers(); // Gọi lại API để cập nhật danh sách khách hàng
             toast.success("Tạo khách hàng thành công!");
+            setOpenModal(false);
         } catch (error: any) {
             console.error("Lỗi khi tạo khách hàng:", error.message);
             // setErrorMessage(error.message); // Cập nhật thông báo lỗi
-            toast.error(error.message);
-            setNewCustomer({
-                name: '',
-                phoneNumber: '',
-                totalExpense: 0,
-                numberOfOrder: 0,
-                gender: false,
-                birthday: null,
-                email: '',
-                address: ''
-            });
+            if (error.message === 'Số điện thoại đã tồn tại') {
+                setPhoneError(true); // Cập nhật trạng thái lỗi số điện thoại
+            }else{
+                toast.error(error.message);
+            }
+            // setNewCustomer({
+            //     name: '',
+            //     phoneNumber: '',
+            //     totalExpense: 0,
+            //     numberOfOrder: 0,
+            //     gender: false,
+            //     birthday: null,
+            //     email: '',
+            //     address: ''
+            // });
         }
-        setOpenModal(false);  // Đóng modal sau khi submit
+
     };
     // Cập nhật state khi nhập dữ liệu vào form
-    const handleChangeNewCustomer = (e: any) => {
+    const handleChangeNewCustomer = (e: React.ChangeEvent<HTMLInputElement>) => {
         setNewCustomer({
             ...newCustomer,
             [e.target.name]: e.target.value
@@ -180,6 +190,7 @@ export default function CustomerPage() {
         <Box>
             <CustomerPageAppBar />
             <MainBox>
+
                 <Box
                     sx={{ padding: '24px' }}
                     display="flex"
@@ -207,7 +218,7 @@ export default function CustomerPage() {
                         <TextField
                             variant="outlined"
                             placeholder="Tìm kiếm khách hàng theo tên hoặc SĐT"
-                            onChange={(e) => setSearchTerm(e.target.value)}  // Cập nhật giá trị tìm kiếm
+                            onChange={(e:  ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => setSearchTerm(e.target.value)}  // Cập nhật giá trị tìm kiếm
                             onKeyPress={handleKeyPress}  // Gắn sự kiện khi nhấn phím
                             InputProps={{
                                 startAdornment: (
@@ -283,10 +294,15 @@ export default function CustomerPage() {
                         <Grid container spacing={2}>
                             {/* Tên khách hàng */}
                             <Grid item xs={6}>
+                                <Typography variant="subtitle1">
+                                    Tên khách hàng
+                                    <Tooltip title="Bắt buộc" placement="top" arrow>
+                                        <span style={{ color: 'red', marginLeft: 4 }}>*</span>
+                                    </Tooltip>
+                                </Typography>
                                 <TextField
 
                                     margin="dense"
-                                    label="Tên khách hàng"
                                     name="name"
                                     fullWidth
                                     value={newCustomer.name}
@@ -296,21 +312,40 @@ export default function CustomerPage() {
 
                             {/* Số điện thoại */}
                             <Grid item xs={6}>
+                                <Typography variant="subtitle1">
+                                    Số điện thoại
+                                    <Tooltip title="Bắt buộc" placement="top" arrow>
+                                        <span style={{ color: 'red', marginLeft: 4 }}>*</span>
+                                    </Tooltip>
+                                </Typography>
                                 <TextField
                                     margin="dense"
-                                    label="Số điện thoại"
                                     name="phoneNumber"
                                     fullWidth
                                     value={newCustomer.phoneNumber}
-                                    onChange={handleChangeNewCustomer}
+                                    error={phoneError}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        handleChangeNewCustomer(e);
+                                        setPhoneError(false); // Reset lỗi khi người dùng thay đổi giá trị
+                                    }}
+                                    helperText={phoneError ? "Số điện thoại đã tồn tại" : ""}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                                borderColor: phoneError ? 'red' : 'default', // Thay đổi màu viền thành đỏ khi có lỗi
+                                            },
+                                        },
+                                    }}
                                 />
                             </Grid>
 
                             {/* Ngày sinh */}
                             <Grid item xs={6}>
+                                <Typography variant="subtitle1">
+                                    Ngày sinh
+                                </Typography>
                                 <TextField
                                     margin="dense"
-                                    label="Ngày sinh"
                                     name="birthday"
                                     type="date"
                                     fullWidth
@@ -324,9 +359,12 @@ export default function CustomerPage() {
 
                             {/* Email */}
                             <Grid item xs={6}>
+                                <Typography variant="subtitle1">
+                                    Email
+                                </Typography>
                                 <TextField
-                                    margin="dense"
                                     label="Email"
+                                    margin="dense"
                                     name="email"
                                     type="email"
                                     fullWidth
@@ -337,9 +375,11 @@ export default function CustomerPage() {
 
                             {/* Địa chỉ */}
                             <Grid item xs={12}>
+                                <Typography variant="subtitle1">
+                                    Địa chỉ
+                                </Typography>
                                 <TextField
                                     margin="dense"
-                                    label="Địa chỉ"
                                     name="address"
                                     fullWidth
                                     value={newCustomer.address}

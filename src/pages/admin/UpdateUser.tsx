@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Box,
+  CircularProgress,
   Grid,
   TextField,
   Button,
@@ -9,20 +10,21 @@ import {
   Select,
   Card,
   CardContent,
-  InputLabel,
   FormControl,
   SelectChangeEvent,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 
 // Role options that match backend roles
 const roleOptions = [
-  { value: "ROLE_ADMIN", label: "ADMIN" },
-  { value: "ROLE_REPOSITORY", label: "NHÂN VIÊN KHO" },
-  { value: "ROLE_SALE", label: "NHÂN VIÊN BÁN HÀNG" },
-  { value: "ROLE_SUPPORT", label: "NHÂN VIÊN CHĂM SÓC" },
+  { value: "ROLE_ADMIN", label: "ADMIN (Chủ cửa hàng)" },
+  { value: "ROLE_REPOSITORY", label: "NHÂN VIÊN KHO (Quản lý kho)" },
+  { value: "ROLE_SALE", label: "NHÂN VIÊN BÁN HÀNG (Quản lý bán hàng)" },
+  { value: "ROLE_SUPPORT", label: "NHÂN VIÊN CHĂM SÓC (Chăm sóc khách hàng)" },
 ];
 
 const UpdateUser = () => {
@@ -35,16 +37,19 @@ const UpdateUser = () => {
     email: "",
     phoneNumber: "",
     address: "",
+    status: Boolean || null,
   });
-  const [dateOfBirth, setDateOfBirth] = useState<Dayjs | null>(null);
+  const [birthDay, setBirthDay] = useState<Dayjs | null>(null);
   const [role, setRole] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true); // Track loading state
-
+  const [nameError , setNameError] = useState<string>("");
+  const [emailError, setEmailError] = useState<string>("");
+  const [phoneNumberError, setPhoneNumberError] = useState<string>("");
   // Fetch user details on component mount
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const response = await fetch(`http://13.211.146.23:8080/v1/user/${id}`);
+        const response = await fetch(`https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user/${id}`);
         const { data } = await response.json(); // Fetch the data from the response
 
         // Prefill form with user details
@@ -53,10 +58,12 @@ const UpdateUser = () => {
           email: data.email,
           phoneNumber: data.phoneNumber,
           address: data.address,
+          status: data.status,
         });
 
         // Parse createdOn date properly
-        setDateOfBirth(dayjs(data.createdOn, "DD-MM-YYYY"));
+        setBirthDay(dayjs(data.birthDay || null));
+        console.log(data.birthDay);
 
         // Assuming the first role in the array is the one to be shown
         setRole(data.roles?.[0]?.name || "");
@@ -80,7 +87,40 @@ const UpdateUser = () => {
   const handleRoleChange = (event: SelectChangeEvent) => {
     setRole(event.target.value as string);
   };
+
+  const handleDateChange = (value: Dayjs | null) => {
+    setBirthDay(value);
+  };
+
+  // Hàm kiểm tra định dạng email hợp lệ
+  const validateEmailFormat = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSubmit = async () => {
+
+    if(!formData.name.trim()){
+      setNameError("Tên không được để trống .");
+      return;
+    }
+    setNameError("");
+    if (!formData.email.trim()) {
+      setEmailError("Email không được để trống.");
+      return; // Exit if email is empty
+    }
+    // Kiểm tra định dạng email hợp lệ
+    if (!validateEmailFormat(formData.email)) {
+      setEmailError("Định dạng email không hợp lệ.");
+      return;
+    }
+    setEmailError("");
+    if (!formData.phoneNumber.trim()) {
+      setPhoneNumberError("Số điện thoại không được để trống");
+      return;
+    }
+    setPhoneNumberError("");
+
     // Map the selected role to the corresponding role object
     const selectedRole = roleOptions.find((option) => option.value === role);
     const roleToSubmit = selectedRole
@@ -94,7 +134,7 @@ const UpdateUser = () => {
     const updatedData = {
       ...formData,
       roles: roleToSubmit ? [roleToSubmit] : [], // Include roles in the expected format
-      dateOfBirth: dateOfBirth ? dateOfBirth.toISOString() : null,
+      birthDay: birthDay ? birthDay.format("YYYY-MM-DD") : null,
     };
 
     try {
@@ -108,121 +148,164 @@ const UpdateUser = () => {
 
       if (!response.ok) {
         console.error("Failed to update user");
+        alert("Không thể cập nhật thông tin")
         // Handle error case
       } else {
         console.log("User updated successfully");
-        navigate("/admin/user"); // Navigate back to the user list after successful update
+        alert("Cập nhật thông tin thành công")
+        navigate(`/admin/user/${id}`); // Navigate back to the user list after successful update
       }
     } catch (error) {
       console.error("Network error:", error);
     }
   };
 
-  if (loading) {
-    return <Typography>Loading...</Typography>; // Show loading state
-  }
+  // if (loading) {
+  //   return <Typography><CircularProgress/></Typography>; // Show loading state
+  // }
 
   return (
-    <Box sx={{ padding: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-      <Box sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          color="primary"
-          sx={{ textTransform: "none", fontSize: "16px" }}
-          variant="text"
-          onClick={() => navigate(`/admin/user`)}
-        >
-          Quay lại danh sách nhân viên
-        </Button>
+    <Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          marginTop: 1.5,
+          marginBottom: 2,
+          backgroundColor: "#ffffff",
+        }}
+      >
+        <Box display="flex" alignItems="center">
+          <Button
+            variant="text"
+            sx={{ color: "#637381", marginLeft: 2 }}
+            onClick={() => navigate(-1)}
+          >
+            <KeyboardArrowLeft /> Quay lại thông tin nhân viên
+          </Button>
+        </Box>
         <Box sx={{ flexGrow: 1 }} />
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
+        <Button
+          sx={{ marginRight: 5 }}
+          variant="contained"
+          color="primary"
+          onClick={handleSubmit}
+        >
           Lưu
         </Button>
       </Box>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        {loading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100vh", // Full viewport height to vertically center
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
+          <Box
+            sx={{ padding: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}
+          >
+            <Card sx={{ margin: "0 auto", padding: 3, boxShadow: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Thông tin nhân viên
+                </Typography>
 
-      <Card sx={{ maxWidth: 800, margin: "0 auto", padding: 3, boxShadow: 3 }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Thông tin nhân viên
-          </Typography>
+                <Grid container spacing={3}>
+                  <Grid item xs={6}>
+                    <Typography>Tên nhân viên : </Typography>
+                    <TextField
+                      fullWidth
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      error={!!nameError}
+                      helperText={nameError}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography>Vai trò</Typography>
+                    <FormControl fullWidth>
+                      <Select
+                        value={role}
+                        onChange={handleRoleChange}
+                        label="Vai trò"
+                        required
+                      >
+                        {roleOptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-          <Grid container spacing={3}>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Tên nhân viên"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
+                  <Grid item xs={6}>
+                    <Typography>Email :</Typography>
+                    <TextField
+                      fullWidth
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      error={!!emailError}
+                      helperText={emailError}
+                    />
+                  </Grid>
 
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
+                  <Grid item xs={6}>
+                    <Typography>Địa chỉ</Typography>
+                    <TextField
+                      fullWidth
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography>Số điện thoại :</Typography>
+                    <TextField
+                      fullWidth
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={handleInputChange}
+                      required
+                      error={!!phoneNumberError}
+                      helperText={phoneNumberError}
+                    />
+                  </Grid>
 
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Địa chỉ"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-
-            {/* <Grid item xs={6}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DesktopDatePicker
-                  label="Ngày sinh"
-                  inputFormat="DD/MM/YYYY"
-                  value={dateOfBirth}
-                  onChange={handleDateChange}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
-                />
-              </LocalizationProvider>
-            </Grid> */}
-
-            <Grid item xs={6}>
-              <FormControl fullWidth>
-                <InputLabel>Vai trò</InputLabel>
-                <Select
-                  value={role}
-                  onChange={handleRoleChange}
-                  label="Vai trò"
-                  required
-                >
-                  {roleOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Số điện thoại"
-                name="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+                  <Grid item xs={6}>
+                    <Typography>Ngày sinh :</Typography>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        format="DD/MM/YYYY"
+                        value={birthDay}
+                        onChange={handleDateChange}
+                      />
+                    </LocalizationProvider>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 };

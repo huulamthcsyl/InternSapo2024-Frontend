@@ -1,7 +1,7 @@
 import apiClient from "./api-clients";
 import { BrandRequest, BrandResponse } from "../models/ProductInterface";
 
-const BASE_URL = "http://localhost:8080/v1/products/brands";
+const BASE_URL = "https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/products/brands";
 
 const INFINITY = 1000000000;
 

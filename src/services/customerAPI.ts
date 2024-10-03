@@ -1,8 +1,9 @@
 import axios from 'axios';
 import Customer from '../models/Customer';
 import apiClient from './api-clients';
+import CustomerDetail from "../models/CustomerDetail.ts";
 
-const BASE_URL = 'http://13.211.146.23:8080/v1/customers';
+const BASE_URL = 'https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/customers';
 
 const INFINITY = 1000000000;
 
@@ -48,15 +49,21 @@ const submitNewCustomer = async (newCustomer: any) => {
             }
         });
 
-        if (response.status !== 201) {
-            if (response.status === 409) {
-                throw new Error("Số điện thoại đã tồn tại.");
-            }
-            throw new Error("Có lỗi xảy ra khi tạo khách hàng mới.");
-        }
+        // if (response.status !== 201) {
+        //     if (response.status === 409) {
+        //         throw new Error("Số điện thoại đã tồn tại.");
+        //     }
+        //     throw new Error("Có lỗi xảy ra khi tạo khách hàng mới.");
+        // }
 
         return response.data; // Trả về dữ liệu khách hàng vừa tạo
     } catch (error: any) {
+        // throw new Error(error.response?.data?.message || error.message);
+        // Kiểm tra lỗi 409 và trả về thông báo tương ứng
+        if (error.response?.status === 409) {
+            throw new Error('Số điện thoại đã tồn tại');
+        }
+        // Lấy thông báo lỗi từ response nếu có
         throw new Error(error.response?.data?.message || error.message);
     }
 };
@@ -64,6 +71,15 @@ const getCustomerById = async (id: string | undefined): Promise<Customer | null>
     try {
         const response = await axios.get(`${BASE_URL}/${id}`);
         return Customer.fromJson(response.data);
+    } catch (error: any) {
+        return error;
+    }
+}
+
+const getCustomerDetailById = async (id: string | undefined): Promise<CustomerDetail | null> => {
+    try {
+        const response = await axios.get(`${BASE_URL}/${id}`);
+        return CustomerDetail.fromJson(response.data);
     } catch (error: any) {
         return error;
     }
@@ -101,4 +117,4 @@ const updateCustomer = async (customerId: string | undefined, customerData: any)
     }
 };
 
-export { getCustomersByKeyword, getCustomerById, createCustomer, fetchCustomers, submitNewCustomer, deleteCustomer, updateCustomer };
+export { getCustomersByKeyword, getCustomerById, createCustomer, fetchCustomers, submitNewCustomer, deleteCustomer, updateCustomer, getCustomerDetailById };
