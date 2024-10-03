@@ -37,6 +37,7 @@ import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import {toast} from "react-toastify";
 import {formatCurrency} from "../../utils/formatCurrency.ts";
 import CustomerDetail from "../../models/CustomerDetail.ts";
+import NewCustomer from "../../models/NewCustomer.ts";
 
 
 
@@ -46,7 +47,7 @@ export default function CustomerDetailPage() {
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
   const [customer1, setCustomer1] = useState();
 
-
+  const [newCustomer, setNewCustomer] = useState<NewCustomer | null>(null);
 
   const [pageNum, setPageNum] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(5);
@@ -65,6 +66,10 @@ export default function CustomerDetailPage() {
     try{
       const customerById = await getCustomerDetailById(customerId);
       setCustomer(customerById);
+
+      const newCustomerData = NewCustomer.fromCustomer(customerById);
+      setNewCustomer(newCustomerData);
+
       tempCustomerRef.current = customerById;
 
     }catch (error: any) {
@@ -93,12 +98,12 @@ export default function CustomerDetailPage() {
 
   const handleUpdateCustomer = async () => {
     try {
-      const updatedCustomer = await updateCustomer(customerId, customer); // Gọi API để cập nhật
+      const updatedCustomer = await updateCustomer(customerId, newCustomer); // Gọi API để cập nhật
       setCustomer1(updatedCustomer);
       setPhoneError(false);
       setOpenModal(false); // Đóng modal
       toast.success('Khách hàng đã được cập nhật thành công!');
-    } catch (error: any) {
+    } catch (error) {
       if (error.message === 'Số điện thoại đã tồn tại') {
         setPhoneError(true); // Cập nhật trạng thái lỗi số điện thoại
       }else{
@@ -126,6 +131,10 @@ export default function CustomerDetailPage() {
     if (customer) {
       setCustomer({
         ...customer,
+        [e.target.name]: e.target.value
+      });
+      setNewCustomer({
+        ...newCustomer,
         [e.target.name]: e.target.value
       });
     }
@@ -508,6 +517,10 @@ export default function CustomerDetailPage() {
                             ...customer,
                             [e.target.name]: new Date(e.target.value) // Chuyển đổi giá trị ngày thành Date
                           });
+                          setNewCustomer({
+                            ...newCustomer,
+                            [e.target.name]: new Date(e.target.value) // Chuyển đổi giá trị ngày thành Date
+                          });
                         }
                         }}
                     />
@@ -549,7 +562,8 @@ export default function CustomerDetailPage() {
                           value={customer?.gender ? "male" : "female"}  // Hiển thị đúng giới tính theo boolean
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             if(customer){
-                              setCustomer({...customer, gender: e.target.value === "male" })
+                              setCustomer({...customer, gender: e.target.value === "male" });
+                              setNewCustomer({...newCustomer, gender: e.target.value === "male" });
                             }}
                           }
                       >

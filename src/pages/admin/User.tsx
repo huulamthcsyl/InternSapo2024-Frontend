@@ -1,11 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import {
   Box,
   Typography,
   Button,
-  FormControl,
-  InputLabel,
   Menu,
   MenuItem,
   Select,
@@ -19,11 +17,11 @@ import {
   Paper,
   Chip,
   CircularProgress,
-  Pagination,
   TextField, // Thêm TextField
   TableFooter,
   TablePagination,
   TableSortLabel,
+  SelectChangeEvent,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
@@ -106,11 +104,11 @@ export default function User({}: Props) {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const roleFilter = selectedRole ? `&role=${selectedRole}` : "";
       // const searchFilter = searchQuery ? `&search=${searchQuery}` : ""; // Thêm search query
-      const searchFilter = debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : "";
       const response = await fetch(
+
         `https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user?page=${page}&limit=${pageSize}&sort=${sortColumn}&order=${sortOrder}${roleFilter}${searchFilter}`
+
       );
       const data: ApiResponse = await response.json();
       setUsers(data.data.content);
@@ -141,12 +139,6 @@ export default function User({}: Props) {
   ) => {
     setPage(newPage);
   };
-  const handleChangePage = (
-    _event: React.MouseEvent<HTMLButtonElement> | null,
-    newPage: number
-  ) => {
-    setPage(newPage);
-  };
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -158,7 +150,7 @@ export default function User({}: Props) {
     setSortOrder(isAsc ? "desc" : "asc");
     setSortColumn(column);
   };
-  const handleRoleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+  const handleRoleChange = (event: SelectChangeEvent) => {
     setSelectedRole(event.target.value as string); // Update selected role
     setPage(0); // Reset to page 0 when filtering
   };

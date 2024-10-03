@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
   Button,
-  Container,
   Typography,
   Box,
   CircularProgress,
@@ -16,7 +15,6 @@ import {
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 interface Role {
@@ -153,7 +151,7 @@ const UserProfile: React.FC = () => {
           >
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h6">Thông tin cá nhân</Typography>
-              <Typography variant="h8">
+              <Typography variant="h6">
                 Các thông tin cơ bản của nhân viên
               </Typography>
             </Box>

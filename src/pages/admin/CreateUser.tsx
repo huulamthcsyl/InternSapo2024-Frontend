@@ -9,14 +9,11 @@ import {
   Typography,
   MenuItem,
   Select,
-  InputLabel,
   FormControl,
   Grid,
-  IconButton,
   SelectChangeEvent,
 } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import { LocalizationProvider, DesktopDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -41,7 +38,6 @@ const roleOptions = [
 ];
 
 export default function CreateUser({}: Props) {
-  const { id } = useParams<{ id: string }>("");
   const [role, setRole] = useState<string>("");
   const [birthDay, setBirthDay] = useState<Dayjs | null>(null);
   const [formData, setFormData] = useState({
@@ -214,7 +210,7 @@ export default function CreateUser({}: Props) {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/v1/auth/register", {
+      const response = await fetch("https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -285,7 +281,6 @@ export default function CreateUser({}: Props) {
                     value={role}
                     onChange={handleRoleChange}
                     error={!!roleError}
-                    helperText={roleError}
                   >
                     {roleOptions.map((roleOption) => (
                       <MenuItem key={roleOption.value} value={roleOption.value}>

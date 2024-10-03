@@ -7,8 +7,6 @@ import {
   CardContent,
   TextField,
   Typography,
-  Container,
-  Paper,
   Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -103,7 +101,6 @@ const ChangePassword: React.FC = () => {
             fontSize: "16px", // Kích thước chữ
             padding: "10px 20px", // Kích thước nút
           }}
-          variant="contained"
         >
           {user}
         </Typography>

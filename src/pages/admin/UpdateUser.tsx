@@ -10,17 +10,14 @@ import {
   Select,
   Card,
   CardContent,
-  InputLabel,
   FormControl,
   SelectChangeEvent,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
-import { LocalizationProvider, DesktopDatePicker } from "@mui/x-date-pickers";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
-import { TextFieldProps } from "@mui/material";
 
 // Role options that match backend roles
 const roleOptions = [
@@ -141,7 +138,7 @@ const UpdateUser = () => {
     };
 
     try {
-      const response = await fetch(`http://localhost:8080/v1/user/${id}`, {
+      const response = await fetch(`https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -296,13 +293,10 @@ const UpdateUser = () => {
                   <Grid item xs={6}>
                     <Typography>Ngày sinh :</Typography>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DesktopDatePicker
-                        inputFormat="DD/MM/YYYY"
+                      <DatePicker
+                        format="DD/MM/YYYY"
                         value={birthDay}
                         onChange={handleDateChange}
-                        renderInput={(params : TextFieldProps) => (
-                          <TextField {...params} fullWidth />
-                        )}
                       />
                     </LocalizationProvider>
                   </Grid>
