@@ -12,6 +12,7 @@ type Props = {
     fixedBadges?: string[];
     prop?: string;
     id?: string | undefined;
+    onUpdate?:()=>void;
 };
 
 export default function Property({
@@ -20,6 +21,7 @@ export default function Property({
     fixedBadges,
     prop,
     id,
+    onUpdate,
 }: Props) {
     const [inputValue, setInputValue] = useState("");
     const [selectedValue, setSelectedValue] = useState("");
@@ -70,7 +72,9 @@ export default function Property({
             .then((_res) => {
                 toast.success("Xóa phiên bản thành công");
                 setSelectedValue("");
-               
+                if (onUpdate) {
+                    onUpdate(); 
+                }
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -89,7 +93,6 @@ export default function Property({
             }}
             onSubmit={(e) => e.preventDefault()}
         >
-            
             {fixedBadges !== undefined && fixedBadges[0] !== "" ? (
                 fixedBadges.map((badge, index) => (
                     <Chip
