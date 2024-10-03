@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import HomeLayout from "../layouts/HomeLayout";
 import LoginPage from "../pages/login/LoginPage";
-import AdminLayout from "../layouts/AdminLayout";
 import OrderListPage from "../pages/order/order-list/OrderListPage";
 import CreateOrderPage from "../pages/order/create-order/CreateOrderPage";
 import DetailOrderPage from "../pages/order/detail-order/DetailOrderPage";
@@ -26,6 +25,7 @@ import PrivateRoute from "../components/router/PrivateRoute";
 import OrderRoute from "../components/router/OrderRoute";
 import CustomerRoute from "../components/router/CustomerRoute";
 import ProductRoute from "../components/router/ProductRoute";
+import AdminRoute from "../components/router/AdminRoute";
 
 export const router = createBrowserRouter([
   {
@@ -122,34 +122,33 @@ export const router = createBrowserRouter([
             path: "account/change-password/:id",
             element: <ChangePassword />,
           },
+          {
+            path: "/admin",
+            element: <AdminRoute />,
+            children: [
+              {
+                path: "user",
+                element: <User />,
+              },
+              {
+                path: "user/create",
+                element: <CreateUser />,
+              },
+              {
+                path: "user/:id",
+                element: (
+                  <DetailUser/>
+                ),
+              },
+              {
+                path: "user/update/:id",
+                element: <UpdateUser />,
+              },
+            ]
+          }
         ],
       }
     ]
-  },
-  {
-    path: "/admin",
-    element: <AdminLayout />,
-    children: [
-      {
-        path: "user",
-        element: <User />,
-      },
-      {
-        path: "user/create",
-        element: <CreateUser />,
-      },
-      {
-        path: "user/:id",
-        element: (
-          <DetailUser/>
-        ),
-      },
-      {
-        path: "user/update/:id",
-        element: <UpdateUser />,
-      },
-    ]
   }
-    
 ]);
 
