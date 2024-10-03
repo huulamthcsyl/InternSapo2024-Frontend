@@ -10,5 +10,5 @@ export const formatDate = (dateString: string) => {
     const minutes = String(date.getMinutes()).padStart(2, '0');
 
     // Trả về định dạng "dd-mm-yyyy"
-    return `${day}-${month}-${year} ${hours}:${minutes}`;
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
 };

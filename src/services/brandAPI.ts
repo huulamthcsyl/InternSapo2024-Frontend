@@ -1,7 +1,7 @@
 import apiClient from "./api-clients";
 import { BrandRequest, BrandResponse } from "../models/ProductInterface";
 
-const BASE_URL = "http://13.211.146.23:8080/v1/products/brands";
+const BASE_URL = "http://localhost:8080/v1/products/brands";
 
 const INFINITY = 1000000000;
 
