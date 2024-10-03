@@ -47,7 +47,7 @@ export default function CustomerDetailPage() {
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
   const [customer1, setCustomer1] = useState();
 
-  const [newCustomer, setNewCustomer] = useState<NewCustomer>(null);
+  const [newCustomer, setNewCustomer] = useState<NewCustomer | null>(null);
 
   const [pageNum, setPageNum] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(5);

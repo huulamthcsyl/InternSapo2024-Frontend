@@ -44,7 +44,7 @@ class NewCustomer {
         );
     }
 
-    static fromCustomer(customer: CustomerDetail | null): NewCustomer {
+    static fromCustomer(customer: CustomerDetail | null ): NewCustomer | null {
         if(customer) {
             return new NewCustomer(
                 customer.name,
@@ -57,6 +57,7 @@ class NewCustomer {
                 customer.address
             );
         }
+        return null;
     }
 }
 
