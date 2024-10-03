@@ -65,7 +65,6 @@ export default function AddVariant({}: Props) {
             .then((_res) => {
                 toast.success("Tạo phiên bản mới thành công");
                 navigate(`/products/${_res.productId}/edit`);
-                
             })
             .catch((error) => {
                 toast.error(error.response.data.message);
@@ -82,10 +81,8 @@ export default function AddVariant({}: Props) {
 
             uploadTask.on(
                 "state_changed",
-                (snapshot) => {
+                (_snapshot) => {
                     //Clearing snapshot cannot upload images
-                    const _progressPercent =
-                        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 },
                 (error) => {
                     console.error("Upload failed:", error);
@@ -478,7 +475,7 @@ export default function AddVariant({}: Props) {
                                         />
                                     </Box>
 
-                                    <Box sx={{ width: "48.5%" }}>
+                                    <Box sx={{ width: "48.5%", mt: "15px" }}>
                                         <Typography
                                             sx={{
                                                 fontSize: "0.9rem",

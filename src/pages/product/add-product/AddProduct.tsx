@@ -159,10 +159,8 @@ export default function AddProduct({}: Props) {
             // Monitor the upload progress
             uploadTask.on(
                 "state_changed",
-                (snapshot) => {
+                (_snapshot) => {
                     //Clearing snapshot cannot upload images
-                    const _progressPercent =
-                        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 },
                 (error) => {
                     console.error("Upload failed:", error);
@@ -269,6 +267,7 @@ export default function AddProduct({}: Props) {
                     >
                         <Typography sx={{ fontSize: "20px" }}>
                             Thêm sản phẩm
+                            <span style={{ color: "#FF4D4D" }}>*</span>
                         </Typography>
                     </Box>
                     <Box sx={{ display: "flex", gap: "24px" }}>

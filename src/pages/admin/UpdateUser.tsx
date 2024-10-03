@@ -44,7 +44,7 @@ const UpdateUser = () => {
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/v1/user/${id}`);
+        const response = await fetch(`http://13.211.146.23:8080/v1/user/${id}`);
         const { data } = await response.json(); // Fetch the data from the response
 
         // Prefill form with user details

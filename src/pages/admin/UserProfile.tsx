@@ -37,7 +37,7 @@ const UserProfile: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/v1/user/${id}`);
+        const response = await axios.get(`http://13.211.146.23:8080/v1/user/${id}`);
         if (response.data.status === "OK") {
           setUser(response.data.data);
         }

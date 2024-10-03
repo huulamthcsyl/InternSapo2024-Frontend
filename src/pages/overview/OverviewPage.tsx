@@ -5,10 +5,11 @@ import React, {useEffect, useState} from "react";
 import {getTodayOrders} from "../../services/orderAPI.ts";
 import {formatCurrency} from "../../utils/formatCurrency.ts";
 import {useNavigate} from "react-router-dom";
+import {formatDate} from "../../utils/formatDate.ts";
 
-type Props = {}
 
-export default function OverviewPage({}: Props) {
+
+export default function OverviewPage() {
     const [pageNum, setPageNum] = useState<number>(0);
     const [pageSize, setPageSize] = useState<number>(5);
     const [orders, setOrders] = useState([]);
@@ -58,7 +59,7 @@ export default function OverviewPage({}: Props) {
             </MainAppBar>
             <MainBox>
                 <Box>
-                    <Box sx={{ display: 'flex', padding: '20px 30px' }}>
+                    <Box sx={{ display: 'flex', padding: '24px 30px' }}>
                         <Box sx={{ display: 'flex', flexBasis: '40%', marginRight: '20px',backgroundColor: 'white',borderRadius: '5px',  // Bo góc
                             background: '#FFF',   // Màu nền trắng
                             boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)'  }}>
@@ -75,11 +76,11 @@ export default function OverviewPage({}: Props) {
                                     fontStyle: 'normal', // Kiểu chữ
                                     fontWeight: 600, // Độ đậm của chữ
                                     lineHeight: 'normal'}} // Chiều cao dòng
-                                    >
+                                >
                                     Doanh thu hôm nay
                                 </Typography>
                                 <Typography variant="h6" component="div" sx={{ height: '50%' }}>
-                                    ${totalRevenue}
+                                    {formatCurrency(totalRevenue)}
                                 </Typography>
                             </Box>
                         </Box>
@@ -104,7 +105,7 @@ export default function OverviewPage({}: Props) {
                                     Đơn hàng hôm nay
                                 </Typography>
                                 <Typography variant="h6" component="div" sx={{ height: '50%' }}>
-                                    ${totalOrders}
+                                    {totalOrders}
                                 </Typography>
                             </Box>
                         </Box>
@@ -124,15 +125,14 @@ export default function OverviewPage({}: Props) {
 
                         </Box>
                         <Box>
-                            <Table sx={{ minWidth: 650, border: '1px solid #ccc' }}>
+                            <Table sx={{ minWidth: 650, border: '1px solid #ccc', background: '#FFFFFF' }}>
                                 <TableHead>
-                                    <TableRow sx={{ backgroundColor: '#e0f7fa' }}>
+                                    <TableRow sx={{  }}>
                                         <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Mã đơn hàng</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Tên khách hàng</TableCell>
                                         <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Ngày tạo đơn</TableCell>
                                         <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số lượng sản phẩm</TableCell>
                                         <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số tiền thanh toán</TableCell>
-                                        {/*<TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Nhân viên xử lý đơn</TableCell>*/}
+                                        <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Phương thức thanh toán</TableCell>
 
                                     </TableRow>
                                 </TableHead>
@@ -148,11 +148,11 @@ export default function OverviewPage({}: Props) {
                                                 }}
                                                 onClick={() => handleDetailsClick(order.id)}
                                             >
-                                                <TableCell>{order.id}</TableCell>
-                                                <TableCell>{order.customer.name}</TableCell>
-                                                <TableCell>{order.createdOn}</TableCell>
-                                                <TableCell>{order.totalQuantity}</TableCell>
+                                                <TableCell>{order.code}</TableCell>
+                                                <TableCell>{formatDate(order.createdOn)}</TableCell>
+                                                <TableCell sx={{ paddingLeft: '5%' }}>{order.totalQuantity}</TableCell>
                                                 <TableCell>{formatCurrency(order.totalPayment)}</TableCell>
+                                                <TableCell>{order.paymentType}</TableCell>
 
                                             </TableRow>
                                         ))
