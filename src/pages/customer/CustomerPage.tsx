@@ -12,12 +12,12 @@ import {
 import CustomerPageAppBar from "./CustomerPageAppBar.tsx"
 import MainBox from "../../components/layout/MainBox"
 import SearchIcon from '@mui/icons-material/Search';
-import React, {useEffect, useState} from "react";
+import React, {ChangeEvent, useEffect, useState} from "react";
 import Customer from "../../models/Customer.ts";
 import {fetchCustomers, submitNewCustomer} from "../../services/customerAPI.ts";
 
 import {formatCurrency} from "../../utils/formatCurrency.ts";
-import {toast, ToastContainer} from "react-toastify";
+import {toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
 
 
@@ -41,7 +41,7 @@ export default function CustomerPage() {
     const [totalCustomers, setTotalCustomers] = useState<number>(0);
     const navigate = useNavigate();
 
-    const [phoneError, setPhoneError] = useState(false); // Trạng thái để lưu lỗi số điện thoại
+    const [phoneError, setPhoneError] = useState<boolean>(false); // Trạng thái để lưu lỗi số điện thoại
 
 
     const [openModal, setOpenModal] = useState<boolean>(false);  // State để quản lý việc mở/đóng modal
@@ -81,16 +81,16 @@ export default function CustomerPage() {
     useEffect(() => {
         loadCustomers();
     }, [pageNum, pageSize, keyword]);
-    const handleChangePage = (event, newPage) => {
+    const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
         setPageNum(newPage);
     };
-    const handleChangeRowsPerPage = (event) => {
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPageSize(parseInt(event.target.value, 10)); // Cập nhật số hàng trên mỗi trang
         setPageNum(0); // Reset về trang đầu khi thay đổi số hàng
     };
 
     // Hàm xử lý khi người dùng nhấn phím
-    const handleKeyPress = (event) => {
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLDivElement>) => {
         if (event.key === 'Enter') {
             setKeyword(searchTerm); // Cập nhật từ khóa và gọi API tìm kiếm
             setPageNum(0); // Reset lại trang đầu tiên
@@ -172,14 +172,14 @@ export default function CustomerPage() {
 
     };
     // Cập nhật state khi nhập dữ liệu vào form
-    const handleChangeNewCustomer = (e) => {
+    const handleChangeNewCustomer = (e: React.ChangeEvent<HTMLInputElement>) => {
         setNewCustomer({
             ...newCustomer,
             [e.target.name]: e.target.value
         });
     };
 
-    const handleDetailsClick = (customerId) => {
+    const handleDetailsClick = (customerId: number) => {
         navigate(`/customers/${customerId}`); // Chuyển hướng tới trang chi tiết của khách hàng
     };
 
@@ -218,7 +218,7 @@ export default function CustomerPage() {
                         <TextField
                             variant="outlined"
                             placeholder="Tìm kiếm khách hàng theo tên hoặc SĐT"
-                            onChange={(e) => setSearchTerm(e.target.value)}  // Cập nhật giá trị tìm kiếm
+                            onChange={(e:  ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => setSearchTerm(e.target.value)}  // Cập nhật giá trị tìm kiếm
                             onKeyPress={handleKeyPress}  // Gắn sự kiện khi nhấn phím
                             InputProps={{
                                 startAdornment: (
@@ -324,7 +324,7 @@ export default function CustomerPage() {
                                     fullWidth
                                     value={newCustomer.phoneNumber}
                                     error={phoneError}
-                                    onChange={(e) => {
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                         handleChangeNewCustomer(e);
                                         setPhoneError(false); // Reset lỗi khi người dùng thay đổi giá trị
                                     }}
