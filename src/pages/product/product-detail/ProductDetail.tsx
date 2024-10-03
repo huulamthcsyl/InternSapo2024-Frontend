@@ -168,7 +168,8 @@ export default function ProductDetail({}: Props) {
                                     ) : (
                                         <Image
                                             color="disabled"
-                                            sx={{ width: 140, height: 140 }}
+                                            sx={{ width: 100,
+                                                height: 100,}}
                                         />
                                     )}
                                 </Box>
