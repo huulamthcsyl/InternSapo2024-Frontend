@@ -67,7 +67,7 @@ export default function CustomerDetailPage() {
       setCustomer(customerById);
       tempCustomerRef.current = customerById;
 
-    }catch (error) {
+    }catch (error: any) {
       setCustomer(null);
       toast.error(error.message);
     }
@@ -98,7 +98,7 @@ export default function CustomerDetailPage() {
       setPhoneError(false);
       setOpenModal(false); // Đóng modal
       toast.success('Khách hàng đã được cập nhật thành công!');
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === 'Số điện thoại đã tồn tại') {
         setPhoneError(true); // Cập nhật trạng thái lỗi số điện thoại
       }else{
@@ -108,7 +108,7 @@ export default function CustomerDetailPage() {
     }
   };
 
-  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+  const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPageNum(newPage);
   };
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {

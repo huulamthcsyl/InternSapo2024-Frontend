@@ -3,7 +3,7 @@ import Customer from '../models/Customer';
 import apiClient from './api-clients';
 import CustomerDetail from "../models/CustomerDetail.ts";
 
-const BASE_URL = 'http://13.211.146.23:8080/v1/customers';
+const BASE_URL = 'https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/customers';
 
 const INFINITY = 1000000000;
 
@@ -57,7 +57,7 @@ const submitNewCustomer = async (newCustomer: any) => {
         // }
 
         return response.data; // Trả về dữ liệu khách hàng vừa tạo
-    } catch (error) {
+    } catch (error: any) {
         // throw new Error(error.response?.data?.message || error.message);
         // Kiểm tra lỗi 409 và trả về thông báo tương ứng
         if (error.response?.status === 409) {
@@ -80,7 +80,7 @@ const getCustomerDetailById = async (id: string | undefined): Promise<CustomerDe
     try {
         const response = await axios.get(`${BASE_URL}/${id}`);
         return CustomerDetail.fromJson(response.data);
-    } catch (error) {
+    } catch (error: any) {
         return error;
     }
 }
@@ -89,11 +89,11 @@ const createCustomer = async (customer: any): Promise<any> => {
     return await axios.post(`${BASE_URL}/create`, customer);
 }
 
-const deleteCustomer = async (customerId) => {
+const deleteCustomer = async (customerId: number) => {
     try {
         const response = await axios.delete(`${BASE_URL}/delete/${customerId}`);
         return response.data; // Trả về dữ liệu nhận được từ server
-    } catch (error) {
+    } catch (error: any) {
         // Lấy thông báo lỗi từ response nếu có
         throw new Error('Lỗi khi xóa khách hàng: ' + (error.response?.data?.message || error.message));
     }
