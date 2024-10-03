@@ -110,7 +110,7 @@ export default function User({}: Props) {
       // const searchFilter = searchQuery ? `&search=${searchQuery}` : ""; // Thêm search query
       const searchFilter = debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : "";
       const response = await fetch(
-        `https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user?page=${page - 1}&limit=10`
+        `https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user?page=${page}&limit=${pageSize}&sort=${sortColumn}&order=${sortOrder}${roleFilter}${searchFilter}`
       );
       const data: ApiResponse = await response.json();
       setUsers(data.data.content);
