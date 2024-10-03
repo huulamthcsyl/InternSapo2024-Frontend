@@ -19,6 +19,7 @@ export default function ProductDetailAppBar({ id }: Props) {
         deleteProduct(id)
             .then((_res) => {
                 toast.success("Xoá sản phẩm thành công");
+                navigate('/products');
             })
             .catch((error) => {
                 toast.error(error.response.data.message);

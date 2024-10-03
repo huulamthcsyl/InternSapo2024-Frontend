@@ -267,6 +267,7 @@ export default function AddProduct({}: Props) {
                     >
                         <Typography sx={{ fontSize: "20px" }}>
                             Thêm sản phẩm
+                            <span style={{ color: "#FF4D4D" }}>*</span>
                         </Typography>
                     </Box>
                     <Box sx={{ display: "flex", gap: "24px" }}>

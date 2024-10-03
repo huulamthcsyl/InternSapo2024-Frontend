@@ -99,7 +99,7 @@ export default function ProductDetail({}: Props) {
                                         width: "60%",
                                         display: "flex",
                                         flexWrap: "wrap",
-                                        rowGap: "10px",
+                                        // rowGap: "10px",
                                     }}
                                 >
                                     <LabelInfo
