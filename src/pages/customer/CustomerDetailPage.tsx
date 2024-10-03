@@ -55,7 +55,7 @@ export default function CustomerDetailPage() {
   const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false); // Modal xác nhận xóa
   // Khai báo ref cho giá trị tạm thời
   const tempCustomerRef = useRef<CustomerDetail | null >(null);
-  const [phoneError, setPhoneError] = useState(false); // Trạng thái để lưu lỗi số điện thoại
+  const [phoneError, setPhoneError] = useState<boolean>(false); // Trạng thái để lưu lỗi số điện thoại
 
 
 
@@ -108,10 +108,10 @@ export default function CustomerDetailPage() {
     }
   };
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPageNum(newPage);
   };
-  const handleChangeRowsPerPage = (event) => {
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPageSize(parseInt(event.target.value, 10)); // Cập nhật số hàng trên mỗi trang
     setPageNum(0); // Reset về trang đầu khi thay đổi số hàng
   };
@@ -122,7 +122,7 @@ export default function CustomerDetailPage() {
 
 
   };
-  const handleChangeCustomer = (e) => {
+  const handleChangeCustomer = (e:  React.ChangeEvent<HTMLInputElement>) => {
     if (customer) {
       setCustomer({
         ...customer,
@@ -139,7 +139,7 @@ export default function CustomerDetailPage() {
 
 
 
-  const handleDeleteCustomer = async (customerId) => {
+  const handleDeleteCustomer = async (customerId: number) => {
     try {
       const data = await deleteCustomer(customerId);
       setOpenDeleteModal(false); // Đóng modal sau khi xóa
@@ -157,7 +157,7 @@ export default function CustomerDetailPage() {
 
   };
 
-  const handleDetailsClick = (orderId) => {
+  const handleDetailsClick = (orderId: number) => {
     navigate(`/order/${orderId}`); // Chuyển hướng tới trang chi tiết của khách hàng
   };
 
@@ -265,7 +265,7 @@ export default function CustomerDetailPage() {
 
                       <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px 10px 12px 16px'  }}>
                         <Typography variant="subtitle1" sx={{ flex: 1.2 }}>Ngày tạo</Typography>
-                        <Typography variant="body1" sx={{ flex: 2 }}>: {customer ? formatDate(tempCustomerRef.current?.createdOn.toISOString()) : 'N/A'}</Typography> {/* Giá trị trường */}
+                        <Typography variant="body1" sx={{ flex: 2 }}>: {formatDate(tempCustomerRef.current?.createdOn.toISOString())}</Typography> {/* Giá trị trường */}
                       </Grid>
 
                       <Grid item xs={6} display="flex" alignItems="center" sx={{ padding: '16px 10px 12px 16px'  }}>
@@ -476,7 +476,7 @@ export default function CustomerDetailPage() {
                         fullWidth
                         value={customer?.phoneNumber}
                         error={phoneError}
-                        onChange={(e) => {
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                           handleChangeCustomer(e);
                           setPhoneError(false); // Reset lỗi khi người dùng thay đổi giá trị
                         }}
@@ -503,7 +503,7 @@ export default function CustomerDetailPage() {
                           shrink: true,
                         }}
                         value={customer?.birthday ? new Date(customer.birthday).toISOString().split('T')[0] : ''}
-                        onChange={(e) => {if (customer) {
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {if (customer) {
                           setCustomer({
                             ...customer,
                             [e.target.name]: new Date(e.target.value) // Chuyển đổi giá trị ngày thành Date
@@ -547,7 +547,7 @@ export default function CustomerDetailPage() {
                           aria-label="gender"
                           name="gender"
                           value={customer?.gender ? "male" : "female"}  // Hiển thị đúng giới tính theo boolean
-                          onChange={(e) => {
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             if(customer){
                               setCustomer({...customer, gender: e.target.value === "male" })
                             }}
@@ -675,7 +675,11 @@ export default function CustomerDetailPage() {
                 </Button>
                 <Button
                     onClick={() => {
-                      handleDeleteCustomer(customer?.id);  // Hàm xử lý xóa khách hàng
+
+                      if (customer) {
+                        handleDeleteCustomer(customer.id);
+                      }
+                      // Hàm xử lý xóa khách hàng
 
                     }}
                     color="error"
