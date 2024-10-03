@@ -86,16 +86,29 @@ export default function User({}: Props) {
   const [selectedRole, setSelectedRole] = useState<string | "">("");
   const [anchorEl, setAnchorEl] = useState<any | HTMLElement>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [searchQuery, setSearchQuery] = useState<string>(""); // Thêm searchQuery
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>(""); // Thêm searchQuery
 
  
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery); // Update the debounced search query
+    }, 1000); // 500ms delay
+
+    // Cleanup timeout if user types again before the delay finishes
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const roleFilter = selectedRole ? `&role=${selectedRole}` : "";
-      const searchFilter = searchQuery ? `&search=${searchQuery}` : ""; // Thêm search query
+      // const searchFilter = searchQuery ? `&search=${searchQuery}` : ""; // Thêm search query
+      const searchFilter = debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : "";
       const response = await fetch(
         `http://localhost:8080/v1/user?page=${page}&limit=${pageSize}&sort=${sortColumn}&order=${sortOrder}${roleFilter}${searchFilter}`
       );
@@ -117,7 +130,10 @@ export default function User({}: Props) {
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
-  }, [page, pageSize, sortColumn, sortOrder, selectedRole, searchQuery]);
+  }, [page, pageSize, sortColumn, sortOrder, selectedRole
+     
+    //, searchQuery 
+    , debouncedSearchQuery]);
 
   const handlePageChange = (
     _event: React.MouseEvent<HTMLButtonElement> | null,
@@ -319,7 +335,7 @@ export default function User({}: Props) {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                height: "100vh", // Full viewport height to vertically center
+                height: "50vh", // Full viewport height to vertically center
               }}
             >
               <CircularProgress />

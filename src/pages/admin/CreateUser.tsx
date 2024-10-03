@@ -41,7 +41,7 @@ const roleOptions = [
 ];
 
 export default function CreateUser({}: Props) {
-  const {id} = useParams<{id : string}>("");
+  const { id } = useParams<{ id: string }>("");
   const [role, setRole] = useState<string>("");
   const [birthDay, setBirthDay] = useState<Dayjs | null>(null);
   const [formData, setFormData] = useState({
@@ -52,18 +52,15 @@ export default function CreateUser({}: Props) {
     confirmPassword: "",
     address: "",
   });
-  const [nameError , setNameError] = useState<string>("");
-
+  const [nameError, setNameError] = useState<string>("");
   const [passwordError, setPasswordError] = useState<string>("");
   const [emailError, setEmailError] = useState<string>("");
   const [phoneNumberError, setPhoneNumberError] = useState<string>("");
+  const [roleError, setRoleError] = useState<string>("");
   const navigate = useNavigate();
 
   // Update form data
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-
-
-
     setFormData({
       ...formData,
       [event.target.name]: event.target.value,
@@ -99,8 +96,10 @@ export default function CreateUser({}: Props) {
         // Email exists, show error message
         setEmailError("Email đã tồn tại");
         return false;
-      } else if ( result.status === "INTERNAL_SERVER_ERROR" || result.message === "Email không được tìm thấy")  
-      {
+      } else if (
+        result.status === "INTERNAL_SERVER_ERROR" ||
+        result.message === "Email không được tìm thấy"
+      ) {
         // Email not found, reset error
         setEmailError("");
         return true;
@@ -117,11 +116,11 @@ export default function CreateUser({}: Props) {
   };
 
   // Function to validate email format
-const validateEmailFormat = (email: string): boolean => {
-  // Regex for validating email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
+  const validateEmailFormat = (email: string): boolean => {
+    // Regex for validating email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   // const checkPhoneNumber = async () => {
   //   try {
@@ -159,40 +158,44 @@ const validateEmailFormat = (email: string): boolean => {
 
   // Submit form to the API
   const handleSubmit = async () => {
-
-    if(!formData.name.trim()){
-      setNameError("Tên không được để trống .")
+    if (!formData.name.trim()) {
+      setNameError("Tên không được để trống .");
       return;
     }
 
-    if (!formData.email.trim()) {  
-      setEmailError("Email không được để trống.");  
-      return; // Exit if email is empty  
+    if (!formData.email.trim()) {
+      setEmailError("Email không được để trống.");
+      return; // Exit if email is empty
     }
 
     // Validate email format
-  if (!validateEmailFormat(formData.email)) {
-    setEmailError("Định dạng email không hợp lệ.");
-    return;
-  }
-
-    if (!formData.phoneNumber.trim()) {  
-      setPhoneNumberError("Số điện thoại không được để trống.");  
-      return; // Exit if phone number is empty  
+    if (!validateEmailFormat(formData.email)) {
+      setEmailError("Định dạng email không hợp lệ.");
+      return;
+    }
+    if (!role) {
+      setRoleError("Vai trò không được để trống.");
+      return;
     }
 
-    if(!formData.password.trim()){
-      setPasswordError("Mật khẩu không được để trống .")
-      return
+    if (!formData.phoneNumber.trim()) {
+      setPhoneNumberError("Số điện thoại không được để trống.");
+      return; // Exit if phone number is empty
+    }
+
+    if (!formData.password.trim()) {
+      setPasswordError("Mật khẩu không được để trống .");
+      return;
     }
 
     // Check if passwords match
-    if (formData.password !== formData.confirmPassword ) {
+    if (formData.password !== formData.confirmPassword) {
       setPasswordError("Mật khẩu và xác nhận mật khẩu không trùng khớp");
       return;
     }
 
     // Reset password error
+    setRoleError("");
     setPasswordError("");
     setNameError("");
     setEmailError("");
@@ -232,7 +235,6 @@ const validateEmailFormat = (email: string): boolean => {
     }
   };
 
-  
   return (
     <Box>
       <Box
@@ -279,7 +281,12 @@ const validateEmailFormat = (email: string): boolean => {
               <Grid item xs={6}>
                 <FormControl fullWidth required>
                   <Typography>Vai trò</Typography>
-                  <Select value={role} onChange={handleRoleChange}>
+                  <Select
+                    value={role}
+                    onChange={handleRoleChange}
+                    error={!!roleError}
+                    helperText={roleError}
+                  >
                     {roleOptions.map((roleOption) => (
                       <MenuItem key={roleOption.value} value={roleOption.value}>
                         {roleOption.label}

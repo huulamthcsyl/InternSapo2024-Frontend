@@ -62,6 +62,7 @@ const ChangePassword: React.FC = () => {
 
       if (response.ok && data.status === "OK") {
         setSuccessMessage("Mật khẩu đã thay đổi thành công.");
+
       } else {
         setErrorMessage(data.message || "Đổi mật khẩu thất bại.");
       }
@@ -140,7 +141,7 @@ const ChangePassword: React.FC = () => {
               type="password"
               variant="outlined"
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={(e : React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
               required
               
             />
@@ -153,7 +154,7 @@ const ChangePassword: React.FC = () => {
               type="password"
               variant="outlined"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e :  React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
               required
             />
           </Box>

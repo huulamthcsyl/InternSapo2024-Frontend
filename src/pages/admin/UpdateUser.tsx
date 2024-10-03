@@ -20,6 +20,7 @@ import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import { LocalizationProvider, DesktopDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
+import { TextFieldProps } from "@mui/material";
 
 // Role options that match backend roles
 const roleOptions = [
@@ -44,8 +45,9 @@ const UpdateUser = () => {
   const [birthDay, setBirthDay] = useState<Dayjs | null>(null);
   const [role, setRole] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true); // Track loading state
+  const [nameError , setNameError] = useState<string>("");
   const [emailError, setEmailError] = useState<string>("");
-  const [phoneNumberError , setPhoneNumberError] = useState<string>("");
+  const [phoneNumberError, setPhoneNumberError] = useState<string>("");
   // Fetch user details on component mount
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -93,16 +95,35 @@ const UpdateUser = () => {
     setBirthDay(value);
   };
 
-  const handleSubmit = async () => {
-    if (!formData.email.trim()) {  
-      setEmailError("Email không được để trống.");  
-      return; // Exit if email is empty  
-    }
+  // Hàm kiểm tra định dạng email hợp lệ
+  const validateEmailFormat = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
-    if(!formData.phoneNumber.trim()) {
-      setPhoneNumberError("Số điện thoại không được để trống");
-      return ;
+  const handleSubmit = async () => {
+
+    if(!formData.name.trim()){
+      setNameError("Tên không được để trống .");
+      return;
     }
+    setNameError("");
+    if (!formData.email.trim()) {
+      setEmailError("Email không được để trống.");
+      return; // Exit if email is empty
+    }
+    // Kiểm tra định dạng email hợp lệ
+    if (!validateEmailFormat(formData.email)) {
+      setEmailError("Định dạng email không hợp lệ.");
+      return;
+    }
+    setEmailError("");
+    if (!formData.phoneNumber.trim()) {
+      setPhoneNumberError("Số điện thoại không được để trống");
+      return;
+    }
+    setPhoneNumberError("");
+
     // Map the selected role to the corresponding role object
     const selectedRole = roleOptions.find((option) => option.value === role);
     const roleToSubmit = selectedRole
@@ -130,9 +151,11 @@ const UpdateUser = () => {
 
       if (!response.ok) {
         console.error("Failed to update user");
+        alert("Không thể cập nhật thông tin")
         // Handle error case
       } else {
         console.log("User updated successfully");
+        alert("Cập nhật thông tin thành công")
         navigate(`/admin/user/${id}`); // Navigate back to the user list after successful update
       }
     } catch (error) {
@@ -208,17 +231,17 @@ const UpdateUser = () => {
                     <Typography>Tên nhân viên : </Typography>
                     <TextField
                       fullWidth
-                      
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
                       required
+                      error={!!nameError}
+                      helperText={nameError}
                     />
                   </Grid>
                   <Grid item xs={6}>
                     <Typography>Vai trò</Typography>
                     <FormControl fullWidth>
-                      
                       <Select
                         value={role}
                         onChange={handleRoleChange}
@@ -238,7 +261,6 @@ const UpdateUser = () => {
                     <Typography>Email :</Typography>
                     <TextField
                       fullWidth
-                      
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
@@ -252,7 +274,6 @@ const UpdateUser = () => {
                     <Typography>Địa chỉ</Typography>
                     <TextField
                       fullWidth
-                      
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
@@ -263,35 +284,28 @@ const UpdateUser = () => {
                     <Typography>Số điện thoại :</Typography>
                     <TextField
                       fullWidth
-                      
                       name="phoneNumber"
                       value={formData.phoneNumber}
                       onChange={handleInputChange}
                       required
                       error={!!phoneNumberError}
                       helperText={phoneNumberError}
-                      
                     />
                   </Grid>
 
                   <Grid item xs={6}>
                     <Typography>Ngày sinh :</Typography>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                     <DesktopDatePicker
-                        
+                      <DesktopDatePicker
                         inputFormat="DD/MM/YYYY"
                         value={birthDay}
                         onChange={handleDateChange}
-                        renderInput={(params) => (
+                        renderInput={(params : TextFieldProps) => (
                           <TextField {...params} fullWidth />
                         )}
                       />
                     </LocalizationProvider>
                   </Grid>
-
-                  
-
-                 
                 </Grid>
               </CardContent>
             </Card>

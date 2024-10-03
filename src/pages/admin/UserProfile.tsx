@@ -71,10 +71,6 @@ const UserProfile: React.FC = () => {
   }, [id]);
   console.log(user);
 
-  if (loading) {
-    return <CircularProgress />;
-  }
-
   if (error) {
     return <Alert severity="error">{error}</Alert>;
   }
@@ -138,6 +134,18 @@ const UserProfile: React.FC = () => {
           <Button onClick={() => navigate("/login")}>Đăng nhập</Button>
         )}
       </Box>
+      {loading ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "50vh", // Ensures the loader is centered in a minimum height area
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      ) : user ? (
       <Box sx={{ padding: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
         <Card>
           <CardContent
@@ -268,6 +276,9 @@ const UserProfile: React.FC = () => {
           </CardContent>
         </Card>
       </Box>
+      ) : (
+        <Typography>No user found</Typography>
+      )}
     </Box>
   );
 };

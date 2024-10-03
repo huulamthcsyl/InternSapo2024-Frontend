@@ -7,8 +7,13 @@ import {
   Typography,
   Box,
   Alert,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import EmailIcon from "@mui/icons-material/Email";
 import { useNavigate } from "react-router-dom";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import BackgroundImage from "../../../public/background.jpg";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState<string>("");
@@ -16,6 +21,7 @@ const LoginPage: React.FC = () => {
   const [message, setMessage] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
   const [emailError, setEmailError] = useState<boolean>(false); // State for email validation
+  const [showPassword, setShowPassword] = useState<boolean>(false); // State for password visibility
   const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
@@ -77,17 +83,23 @@ const LoginPage: React.FC = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "linear-gradient(135deg, #ece9e6, #ffffff)", // Elegant gradient background
+        backgroundImage: `url(${BackgroundImage})`,
+        backgroundSize: "cover", // Make sure the background covers the entire page
+        backgroundPosition: "center", // Center the background image
+        backgroundRepeat: "no-repeat", // Prevent the image from repeating
+        // background: "linear-gradient(135deg, #ece9e6, #ffffff)", // Elegant gradient background
       }}
     >
-      <Container maxWidth="xs" sx={{ marginTop:-12 }}>
+      <Container maxWidth="xs" sx={{ marginTop: -12 }}>
         <Box
           sx={{
             mt: 8,
             p: 4, // Padding inside the box
             border: "1px solid #ccc", // Border style
             borderRadius: "8px", // Rounded corners
-            backgroundColor: "#f9f9f9", // Background color for the form
+            // backgroundColor: "#f9f9f9", // Background color for the form
+            // boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Optional shadow effect
+            backgroundColor: "rgba(255, 255, 255, 0.8)", // Slight transparency for the form
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Optional shadow effect
           }}
         >
@@ -109,6 +121,24 @@ const LoginPage: React.FC = () => {
                 error={emailError} // Apply error styling
                 helperText={emailError ? "Email không hợp lệ" : ""} // Show error message
                 required
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        edge="end"
+                        sx={{
+                          opacity: 0.6,
+                          backgroundColor: "transparent", // Sync background to match input field
+                          "&:hover": {
+                            backgroundColor: "rgba(0, 0, 0, 0.04)", // Optional hover effect
+                          },
+                        }}
+                      >
+                        <EmailIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
             </Box>
             <Box>
@@ -116,13 +146,33 @@ const LoginPage: React.FC = () => {
                 Password
               </Typography>
               <TextField
-                type="password"
+                type={showPassword ? "text" : "password"}
                 variant="outlined"
                 fullWidth
                 margin="normal"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        aria-label="toggle password visibility"
+                        sx={{
+                          opacity: 0.6,
+                          backgroundColor: "transparent", // Sync background to match input field
+                          "&:hover": {
+                            backgroundColor: "rgba(0, 0, 0, 0.04)", // Optional hover effect
+                          },
+                        }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
             </Box>
             <Button
