@@ -31,7 +31,7 @@ export default function DetailOrderPage({ }: Props) {
 
   return (
     <MainBox>
-      <DetailOrderAppBar />
+      <DetailOrderAppBar order={order}/>
       <Box sx={{ backgroundColor: '#F0F1F1', padding: '25px 30px' }} flex={1} display='flex' flexDirection='column'>
         <Box display="flex">
           <Box flex={2} bgcolor="#fff" p={2} mb={2} marginRight="20px">
