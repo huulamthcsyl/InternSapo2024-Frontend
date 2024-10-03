@@ -16,11 +16,8 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
-import MainBox from "../../components/layout/MainBox";
-import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 interface Role {
@@ -192,7 +189,7 @@ export default function DetailUser() {
           </Button>
         </Box>
         <Box sx={{ flexGrow: 1 }} />
-        <Button
+        {user && <Button
           sx={{ marginRight: 5 }}
           variant="contained"
           color="primary"
@@ -201,7 +198,7 @@ export default function DetailUser() {
           }
         >
           Sửa thông tin
-        </Button>
+        </Button>}
       </Box>
       {loading ? (
         <Box
