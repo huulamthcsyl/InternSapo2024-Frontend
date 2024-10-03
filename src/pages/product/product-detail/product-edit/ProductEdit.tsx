@@ -141,6 +141,20 @@ export default function ProductDetail({}: Props) {
                 toast.error(error.response.data.message);
             });
     }
+
+    function updateAfterDeleteProperty(){
+        setLoading(true)
+        getProductById(id)
+            .then((res) => {
+                
+                setSizes(res.size);
+                setColors(res.color);
+                setMaterials(res.material);
+                setVariants([...res.variants]);
+               
+            })
+            .finally(() => setLoading(false));
+    }
     useEffect(() => {
         getProductById(id)
             .then((res) => {
@@ -150,14 +164,6 @@ export default function ProductDetail({}: Props) {
                 setMaterials(res.material);
                 setVariants([...res.variants]);
                 setImages([...res.imagePath]);
-                // if (
-                //     res.size.length == 0 &&
-                //     res.color.length == 0 &&
-                //     res.material.length == 0
-                // ) {
-                //     setPriceForSale(res.variants[0].priceForSale);
-                //     setInitialPrice(res.variants[0].initialPrice);
-                // }
             })
             .finally(() => setLoading(false));
         getAllCategories("").then((res) => {
@@ -570,6 +576,7 @@ export default function ProductDetail({}: Props) {
                                                 setBadges={setAdditionalSizes}
                                                 prop="size"
                                                 id={id}
+                                                onUpdate={updateAfterDeleteProperty}
                                             />
                                         </Box>
                                         <Box
@@ -590,6 +597,7 @@ export default function ProductDetail({}: Props) {
                                                 setBadges={setAdditionalColors}
                                                 prop="color"
                                                 id={id}
+                                                onUpdate={updateAfterDeleteProperty}
                                             />
                                         </Box>
                                         <Box
@@ -612,6 +620,7 @@ export default function ProductDetail({}: Props) {
                                                 }
                                                 prop="material"
                                                 id={id}
+                                                onUpdate={updateAfterDeleteProperty}
                                             />
                                         </Box>
                                     </Box>
