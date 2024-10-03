@@ -16,11 +16,8 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
-import MainBox from "../../components/layout/MainBox";
-import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 interface Role {
@@ -131,7 +128,7 @@ export default function DetailUser() {
     const updatedStatus = !user.status; // Toggle the current status
 
     try {
-      const response = await fetch(`http://localhost:8080/v1/user/${user.id}`, {
+      const response = await fetch(`https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user/${user.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -192,7 +189,7 @@ export default function DetailUser() {
           </Button>
         </Box>
         <Box sx={{ flexGrow: 1 }} />
-        <Button
+        {user && <Button
           sx={{ marginRight: 5 }}
           variant="contained"
           color="primary"
@@ -201,7 +198,7 @@ export default function DetailUser() {
           }
         >
           Sửa thông tin
-        </Button>
+        </Button>}
       </Box>
       {loading ? (
         <Box
