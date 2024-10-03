@@ -53,7 +53,7 @@ export default function DetailUser() {
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const response = await fetch(`http://13.211.146.23:8080/v1/user/${id}`);
+        const response = await fetch(`https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user/${id}`);
         const jsonResponse = await response.json();
         if (response.ok) {
           setUser(jsonResponse.data);
