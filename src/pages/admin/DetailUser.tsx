@@ -20,8 +20,8 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import MainBox from "../../components/layout/MainBox";
-import { toast, ToastContainer } from "react-toastify"
-import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Role {
   id: number;
@@ -42,7 +42,7 @@ interface UserDetail {
   phoneNumber: string;
   address: string;
   status: boolean;
-  birthDay: string ;
+  birthDay: string;
   roles: Role[];
   createdOn: string;
   updateOn: string | null;
@@ -105,9 +105,10 @@ export default function DetailUser() {
       // }
       if (response.ok) {
         console.log("Password reset successfully");
-        toast.success("Password đã được khôi phục thành công");
+        alert("Mật khẩu đã được khôi phục")
       } else {
         const jsonResponse = await response.json();
+        alert("Mật khẩu không thể khôi phục")
         console.error("Không thể khôi phục password", jsonResponse.message);
       }
     } catch (error) {
@@ -151,11 +152,8 @@ export default function DetailUser() {
           //   status: updatedUser.data.status ?? updatedStatus, // Use updated status if returned, otherwise use the toggled status
           // }));
           setUser(updatedUser.data);
-          toast.success("Thay đổi trạng thái tài khoản thành công", {   
-            position: toast.POSITION.BOTTOM_RIGHT,  
-            autoClose: 5000 ,  
-            style: { backgroundColor: "#4caf50", color: "#ffffff" }  
-          });
+          alert("Thay đổi trạng thái tài khoản thành công")
+
         }
       } else {
         console.error("Failed to update user status");
@@ -165,13 +163,13 @@ export default function DetailUser() {
     }
   };
 
-  if (loading) {
-    return <CircularProgress />;
-  }
+  // if (loading) {
+  //   return <CircularProgress />;
+  // }
 
-  if (!user) {
-    return <Typography>No user found</Typography>;
-  }
+  // if (!user) {
+  //   return <Typography>No user found</Typography>;
+  // }
 
   return (
     <Box>
@@ -205,6 +203,19 @@ export default function DetailUser() {
           Sửa thông tin
         </Button>
       </Box>
+      {loading ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "50vh", // Ensures the loader is centered in a minimum height area
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      ) : user ? (
+
       <Box sx={{ padding: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
         <Card
           sx={{ maxWidth: 800, margin: "0 auto", padding: 3, boxShadow: 3 }}
@@ -276,7 +287,7 @@ export default function DetailUser() {
                 </Typography>
                 <Typography>
                   <Typography sx={{ fontWeight: "bold" }}>Địa chỉ :</Typography>
-                  <Typography variant="body1" sx={{ marginBottom: 1 }}> 
+                  <Typography variant="body1" sx={{ marginBottom: 1 }}>
                     {user.address}
                   </Typography>
                 </Typography>
@@ -332,6 +343,9 @@ export default function DetailUser() {
           </DialogActions>
         </Dialog>
       </Box>
+      ) : (
+        <Typography>No user found</Typography>
+      )}
     </Box>
   );
 }

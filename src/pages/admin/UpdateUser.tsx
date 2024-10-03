@@ -19,7 +19,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import { LocalizationProvider, DesktopDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs , { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 // Role options that match backend roles
 const roleOptions = [
@@ -39,11 +39,13 @@ const UpdateUser = () => {
     email: "",
     phoneNumber: "",
     address: "",
+    status: Boolean || null,
   });
   const [birthDay, setBirthDay] = useState<Dayjs | null>(null);
   const [role, setRole] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true); // Track loading state
-
+  const [emailError, setEmailError] = useState<string>("");
+  const [phoneNumberError , setPhoneNumberError] = useState<string>("");
   // Fetch user details on component mount
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -57,7 +59,7 @@ const UpdateUser = () => {
           email: data.email,
           phoneNumber: data.phoneNumber,
           address: data.address,
-          
+          status: data.status,
         });
 
         // Parse createdOn date properly
@@ -87,12 +89,20 @@ const UpdateUser = () => {
     setRole(event.target.value as string);
   };
 
-  const handleDateChange = (value: Dayjs | null) => {  
-    setBirthDay(value);  
-  };  
-
+  const handleDateChange = (value: Dayjs | null) => {
+    setBirthDay(value);
+  };
 
   const handleSubmit = async () => {
+    if (!formData.email.trim()) {  
+      setEmailError("Email không được để trống.");  
+      return; // Exit if email is empty  
+    }
+
+    if(!formData.phoneNumber.trim()) {
+      setPhoneNumberError("Số điện thoại không được để trống");
+      return ;
+    }
     // Map the selected role to the corresponding role object
     const selectedRole = roleOptions.find((option) => option.value === role);
     const roleToSubmit = selectedRole
@@ -130,9 +140,9 @@ const UpdateUser = () => {
     }
   };
 
-  if (loading) {
-    return <Typography><CircularProgress/></Typography>; // Show loading state
-  }
+  // if (loading) {
+  //   return <Typography><CircularProgress/></Typography>; // Show loading state
+  // }
 
   return (
     <Box>
@@ -153,108 +163,140 @@ const UpdateUser = () => {
           >
             <KeyboardArrowLeft /> Quay lại thông tin nhân viên
           </Button>
-
-          
-
-          
         </Box>
         <Box sx={{ flexGrow: 1 }} />
         <Button
-            sx={{ marginRight: 5 }}
-            variant="contained"
-            color="primary"
-            onClick={handleSubmit}
-          >
-            Lưu
-          </Button>
-      </Box>
-
-      <Box sx={{ padding: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-        <Card
-          sx={{  margin: "0 auto", padding: 3, boxShadow: 3 }}
+          sx={{ marginRight: 5 }}
+          variant="contained"
+          color="primary"
+          onClick={handleSubmit}
         >
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Thông tin nhân viên
-            </Typography>
+          Lưu
+        </Button>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        {loading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100vh", // Full viewport height to vertically center
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
+          <Box
+            sx={{ padding: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}
+          >
+            <Card sx={{ margin: "0 auto", padding: 3, boxShadow: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Thông tin nhân viên
+                </Typography>
 
-            <Grid container spacing={3}>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Tên nhân viên"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
+                <Grid container spacing={3}>
+                  <Grid item xs={6}>
+                    <Typography>Tên nhân viên : </Typography>
+                    <TextField
+                      fullWidth
+                      
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography>Vai trò</Typography>
+                    <FormControl fullWidth>
+                      
+                      <Select
+                        value={role}
+                        onChange={handleRoleChange}
+                        label="Vai trò"
+                        required
+                      >
+                        {roleOptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
+                  <Grid item xs={6}>
+                    <Typography>Email :</Typography>
+                    <TextField
+                      fullWidth
+                      
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      error={!!emailError}
+                      helperText={emailError}
+                    />
+                  </Grid>
 
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Địa chỉ"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
+                  <Grid item xs={6}>
+                    <Typography>Địa chỉ</Typography>
+                    <TextField
+                      fullWidth
+                      
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography>Số điện thoại :</Typography>
+                    <TextField
+                      fullWidth
+                      
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={handleInputChange}
+                      required
+                      error={!!phoneNumberError}
+                      helperText={phoneNumberError}
+                      
+                    />
+                  </Grid>
 
-              <Grid item xs={6}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DesktopDatePicker
-                  label="Ngày sinh"
-                  inputFormat="DD/MM/YYYY"
-                  value={birthDay}
-                  onChange={handleDateChange}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
-                />
-              </LocalizationProvider>
-            </Grid>
+                  <Grid item xs={6}>
+                    <Typography>Ngày sinh :</Typography>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                     <DesktopDatePicker
+                        
+                        inputFormat="DD/MM/YYYY"
+                        value={birthDay}
+                        onChange={handleDateChange}
+                        renderInput={(params) => (
+                          <TextField {...params} fullWidth />
+                        )}
+                      />
+                    </LocalizationProvider>
+                  </Grid>
 
-              <Grid item xs={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Vai trò</InputLabel>
-                  <Select
-                    value={role}
-                    onChange={handleRoleChange}
-                    label="Vai trò"
-                    required
-                  >
-                    {roleOptions.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+                  
 
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Số điện thoại"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+                 
+                </Grid>
+              </CardContent>
+            </Card>
+          </Box>
+        )}
       </Box>
     </Box>
   );

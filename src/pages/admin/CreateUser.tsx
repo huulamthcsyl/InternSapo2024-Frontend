@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import {
   Box,
   Button,
@@ -15,7 +16,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
-import { Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import { LocalizationProvider, DesktopDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -40,6 +41,7 @@ const roleOptions = [
 ];
 
 export default function CreateUser({}: Props) {
+  const {id} = useParams<{id : string}>("");
   const [role, setRole] = useState<string>("");
   const [birthDay, setBirthDay] = useState<Dayjs | null>(null);
   const [formData, setFormData] = useState({
@@ -50,13 +52,18 @@ export default function CreateUser({}: Props) {
     confirmPassword: "",
     address: "",
   });
+  const [nameError , setNameError] = useState<string>("");
+
   const [passwordError, setPasswordError] = useState<string>("");
   const [emailError, setEmailError] = useState<string>("");
-  const [phoneError, setPhoneError] = useState<string>("");
+  const [phoneNumberError, setPhoneNumberError] = useState<string>("");
   const navigate = useNavigate();
 
   // Update form data
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+
+
+
     setFormData({
       ...formData,
       [event.target.name]: event.target.value,
@@ -92,10 +99,8 @@ export default function CreateUser({}: Props) {
         // Email exists, show error message
         setEmailError("Email đã tồn tại");
         return false;
-      } else if (
-        result.status === "INTERNAL_SERVER_ERROR" &&
-        result.message === "Email không được tìm thấy"
-      ) {
+      } else if ( result.status === "INTERNAL_SERVER_ERROR" || result.message === "Email không được tìm thấy")  
+      {
         // Email not found, reset error
         setEmailError("");
         return true;
@@ -110,6 +115,13 @@ export default function CreateUser({}: Props) {
       return false;
     }
   };
+
+  // Function to validate email format
+const validateEmailFormat = (email: string): boolean => {
+  // Regex for validating email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
 
   // const checkPhoneNumber = async () => {
   //   try {
@@ -147,14 +159,44 @@ export default function CreateUser({}: Props) {
 
   // Submit form to the API
   const handleSubmit = async () => {
+
+    if(!formData.name.trim()){
+      setNameError("Tên không được để trống .")
+      return;
+    }
+
+    if (!formData.email.trim()) {  
+      setEmailError("Email không được để trống.");  
+      return; // Exit if email is empty  
+    }
+
+    // Validate email format
+  if (!validateEmailFormat(formData.email)) {
+    setEmailError("Định dạng email không hợp lệ.");
+    return;
+  }
+
+    if (!formData.phoneNumber.trim()) {  
+      setPhoneNumberError("Số điện thoại không được để trống.");  
+      return; // Exit if phone number is empty  
+    }
+
+    if(!formData.password.trim()){
+      setPasswordError("Mật khẩu không được để trống .")
+      return
+    }
+
     // Check if passwords match
-    if (formData.password !== formData.confirmPassword) {
+    if (formData.password !== formData.confirmPassword ) {
       setPasswordError("Mật khẩu và xác nhận mật khẩu không trùng khớp");
       return;
     }
 
     // Reset password error
     setPasswordError("");
+    setNameError("");
+    setEmailError("");
+    setPhoneNumberError("");
 
     // Check if email and phone number are unique
     const isUnique = await checkEmail();
@@ -180,7 +222,7 @@ export default function CreateUser({}: Props) {
       const result = await response.json();
       if (response.ok) {
         alert("Tạo tài khoản thành công!");
-        navigate("/admin/user");
+        navigate(`/admin/user/${result.id}`);
         console.log("User created successfully:", result);
       } else {
         console.error("Lỗi khi tạo tài khoản:", result);
@@ -189,6 +231,8 @@ export default function CreateUser({}: Props) {
       console.error("Lỗi:", error);
     }
   };
+
+  
   return (
     <Box>
       <Box
@@ -227,6 +271,8 @@ export default function CreateUser({}: Props) {
                   onChange={handleChange}
                   fullWidth
                   required
+                  error={!!nameError}
+                  helperText={nameError}
                 />
               </Grid>
 
@@ -292,8 +338,8 @@ export default function CreateUser({}: Props) {
                   value={formData.phoneNumber}
                   onChange={handleChange}
                   fullWidth
-                  error={!!phoneError}
-                  helperText={phoneError}
+                  error={!!phoneNumberError}
+                  helperText={phoneNumberError}
                 />
               </Grid>
 

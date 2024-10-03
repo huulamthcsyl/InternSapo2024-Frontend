@@ -41,11 +41,7 @@ const ChangePassword: React.FC = () => {
       setErrorMessage("Mật khẩu mới và mật khẩu xác nhận không khớp.");
       return;
     }
-    // const token = localStorage.getItem('token'); // Retrieve token from localStorage
-    // if (!token) {
-    //   setErrorMessage('Không tìm thấy token xác thực.');
-    //   return;
-    // }
+
 
     try {
       const response = await fetch(
@@ -137,20 +133,23 @@ const ChangePassword: React.FC = () => {
 
         <Box onSubmit={handleSubmit}>
           <Box mb={2}>
+            <Typography>Mật khẩu mới :</Typography>
             <TextField
               fullWidth
-              label="Mật khẩu mới"
+              
               type="password"
               variant="outlined"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
+              
             />
           </Box>
           <Box mb={2}>
+            <Typography>Nhập lại mật khẩu :</Typography>
             <TextField
               fullWidth
-              label="Nhập lại mật khẩu mới"
+              
               type="password"
               variant="outlined"
               value={confirmPassword}
@@ -163,7 +162,7 @@ const ChangePassword: React.FC = () => {
             đặc biệt.
           </Typography>
           <Box>
-            <Button variant="contained" color="primary" type="submit">
+            <Button variant="contained" color="primary" type="submit" onClick={handleSubmit}>
               Lưu
             </Button>
             <Button

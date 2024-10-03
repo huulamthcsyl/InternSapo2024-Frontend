@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import {
   Box,
@@ -6,7 +6,6 @@ import {
   Button,
   FormControl,
   InputLabel,
-
   Menu,
   MenuItem,
   Select,
@@ -29,6 +28,8 @@ import {
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
+import SearchIcon from "@mui/icons-material/Search";
+import InputAdornment from "@mui/material/InputAdornment";
 interface Role {
   id: number;
   name: string;
@@ -86,6 +87,8 @@ export default function User({}: Props) {
   const [anchorEl, setAnchorEl] = useState<any | HTMLElement>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState<string>(""); // Thêm searchQuery
+
+ 
   const navigate = useNavigate();
 
   const fetchUsers = async () => {
@@ -114,7 +117,7 @@ export default function User({}: Props) {
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
-  }, [page, pageSize, sortColumn, sortOrder, selectedRole , searchQuery]);
+  }, [page, pageSize, sortColumn, sortOrder, selectedRole, searchQuery]);
 
   const handlePageChange = (
     _event: React.MouseEvent<HTMLButtonElement> | null,
@@ -146,7 +149,11 @@ export default function User({}: Props) {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value); // Cập nhật giá trị search query
     setPage(0); // Reset về trang đầu khi tìm kiếm
+
   };
+  
+  
+  
 
   function TablePaginationActions({
     count,
@@ -237,109 +244,149 @@ export default function User({}: Props) {
       </Box>
 
       <Box sx={{ padding: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-
-
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <TextField
-          label="Tìm kiếm theo tên hoặc số điện thoại"
-          variant="outlined"
-          value={searchQuery}
-          onChange={handleSearchChange} // Sử dụng hàm này để cập nhật khi người dùng nhập
-          sx={{ width: "40%" , backgroundColor: "white",  }}
-          InputProps={{
-            style: { backgroundColor: "white" }, // This ensures the input field background is white
-          }}
-          
-        />
+          <TextField
+            label="Tìm kiếm theo tên hoặc số điện thoại"
+            variant="outlined"
+            value={searchQuery}
+            onChange={handleSearchChange}
+           
+            sx={{
+              width: "30%",
+              borderRadius: 1,
+              backgroundColor: "white",
+              boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+              style: { backgroundColor: "white" }, // This ensures the input field background is white
+            }}
+          />
+
+          <Select
+            displayEmpty
+            sx={{
+              minWidth: "20%",
+              colorText: "",
+
+              backgroundColor: "white",
+              borderRadius: 1,
+              boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
+            }}
+            value={selectedRole}
+            onChange={handleRoleChange}
+          >
+            <MenuItem value="">Tất cả vai trò</MenuItem>
+            <MenuItem value="ROLE_ADMIN">ADMIN</MenuItem>
+            <MenuItem value="ROLE_REPOSITORY">NHÂN VIÊN KHO</MenuItem>
+            <MenuItem value="ROLE_SALE">NHÂN VIÊN BÁN HÀNG</MenuItem>
+            <MenuItem value="ROLE_SUPPORT">NHÂN VIÊN CHĂM SÓC</MenuItem>
+          </Select>
+
           <Button
             variant="contained"
             color="primary"
             onClick={() => navigate(`/admin/user/create`)}
+            sx={{
+              ml: 2, // Space between Select and Button
+              py: 1.2, // Slight padding for button height
+              px: 3, // Padding for width
+              backgroundColor: "#1976d2", // Primary color
+              boxShadow: "0px 4px 10px rgba(25, 118, 210, 0.2)", // Blue shadow for effect
+              "&:hover": {
+                backgroundColor: "#1565c0", // Darker shade on hover
+              },
+            }}
           >
             Thêm nhân viên
           </Button>
         </Box>
-
-        {loading ? (
-          <CircularProgress />
-        ) : (
-          <>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>
-                      <TableSortLabel
-                        active={sortColumn === "id"}
-                        direction={sortColumn === "id" ? sortOrder : "asc"}
-                        onClick={() => handleSort("id")}
-                      >
-                        Mã nhân viên
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell>
-                      <TableSortLabel
-                        active={sortColumn === "name"}
-                        direction={sortColumn === "name" ? sortOrder : "asc"}
-                        onClick={() => handleSort("name")}
-                      >
-                        Tên nhân viên
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell>
-                      <TableSortLabel
-                        active={sortColumn === "phoneNumber"}
-                        direction={
-                          sortColumn === "phoneNumber" ? sortOrder : "asc"
-                        }
-                        onClick={() => handleSort("phoneNumber")}
-                      >
-                        Số điện thoại
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell>
-                    
-                      <TableSortLabel>Vai trò</TableSortLabel>
-                      <Select value={selectedRole} onChange={handleRoleChange}>
-                        <MenuItem value="">Tất cả</MenuItem>
-                        <MenuItem value="ROLE_ADMIN">ADMIN</MenuItem>
-                        <MenuItem value="ROLE_REPOSITORY">
-                          NHÂN VIÊN KHO
-                        </MenuItem>
-                        <MenuItem value="ROLE_SALE">
-                          NHÂN VIÊN BÁN HÀNG
-                        </MenuItem>
-                        <MenuItem value="ROLE_SUPPORT">
-                          NHÂN VIÊN CHĂM SÓC
-                        </MenuItem>
-                      </Select>
-                      
-                    </TableCell>
-                    <TableCell>Trạng thái</TableCell>
-                    <TableCell></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow
-                      key={user.id}
-                      onClick={() => navigate(`/admin/user/${user.id}`)}
-                    >
-                      <TableCell>{user.id}</TableCell>
-                      <TableCell>{user.name}</TableCell>
-                      <TableCell>{user.phoneNumber}</TableCell>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "400px",
+          }}
+        >
+          {loading ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100vh", // Full viewport height to vertically center
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
                       <TableCell>
-                        {user.roles
-                          .map((role) => roleMap[role.name] || role.name) // Map role names
-                          .join(", ")}
+                        <TableSortLabel
+                          active={sortColumn === "id"}
+                          direction={sortColumn === "id" ? sortOrder : "asc"}
+                          onClick={() => handleSort("id")}
+                        >
+                          Mã nhân viên
+                        </TableSortLabel>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={user.status ? "Hoạt động" : "Khoá"}
-                          color={user.status ? "success" : "error"}
-                        />
+                        <TableSortLabel
+                          active={sortColumn === "name"}
+                          direction={sortColumn === "name" ? sortOrder : "asc"}
+                          onClick={() => handleSort("name")}
+                        >
+                          Tên nhân viên
+                        </TableSortLabel>
                       </TableCell>
-                      {/* <TableCell>
+                      <TableCell>
+                        <TableSortLabel
+                          active={sortColumn === "phoneNumber"}
+                          direction={
+                            sortColumn === "phoneNumber" ? sortOrder : "asc"
+                          }
+                          onClick={() => handleSort("phoneNumber")}
+                        >
+                          Số điện thoại
+                        </TableSortLabel>
+                      </TableCell>
+                      <TableCell>
+                        <TableSortLabel>Vai trò</TableSortLabel>
+                      </TableCell>
+                      <TableCell>Trạng thái</TableCell>
+                      <TableCell></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow
+                        key={user.id}
+                        onClick={() => navigate(`/admin/user/${user.id}`)}
+                      >
+                        <TableCell>{user.id}</TableCell>
+                        <TableCell>{user.name}</TableCell>
+                        <TableCell>{user.phoneNumber}</TableCell>
+                        <TableCell>
+                          {user.roles
+                            .map((role) => roleMap[role.name] || role.name) // Map role names
+                            .join(", ")}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={user.status ? "Hoạt động" : "Khoá"}
+                            color={user.status ? "success" : "error"}
+                          />
+                        </TableCell>
+                        {/* <TableCell>
                         <Button
                           color="primary"
                           onClick={() => navigate(`/admin/user/${user.id}`)}
@@ -347,28 +394,29 @@ export default function User({}: Props) {
                           Chi tiết
                         </Button>
                       </TableCell> */}
-                    </TableRow>
-                  ))}
-                </TableBody>
-                <TableFooter>
-                  <TablePagination
-                    rowsPerPageOptions={[10, 25, 50]}
-                    count={totalElements}
-                    rowsPerPage={pageSize}
-                    page={page}
-                    onPageChange={handlePageChange}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    ActionsComponent={TablePaginationActions}
-                    labelRowsPerPage="Số hàng trên mỗi trang"
-                    labelDisplayedRows={({ from, to, count }) =>
-                      `${from}-${to} trong tổng số ${count}`
-                    }
-                  />
-                </TableFooter>
-              </Table>
-            </TableContainer>
-          </>
-        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                  <TableFooter>
+                    <TablePagination
+                      rowsPerPageOptions={[10, 25, 50]}
+                      count={totalElements}
+                      rowsPerPage={pageSize}
+                      page={page}
+                      onPageChange={handlePageChange}
+                      onRowsPerPageChange={handleChangeRowsPerPage}
+                      ActionsComponent={TablePaginationActions}
+                      labelRowsPerPage="Số hàng trên mỗi trang"
+                      labelDisplayedRows={({ from, to, count }) =>
+                        `${from}-${to} trong tổng số ${count}`
+                      }
+                    />
+                  </TableFooter>
+                </Table>
+              </TableContainer>
+            </>
+          )}
+        </Box>
       </Box>
     </Box>
   );
