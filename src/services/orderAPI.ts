@@ -1,7 +1,7 @@
 import axios from 'axios';
 import apiClient from './api-clients';
 
-const BASE_URL = 'http://13.211.146.23:8080/v1/orders';
+const BASE_URL = 'https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/orders';
 
 const getAllOrders = async (page: number, limit: number, query: string, startDate: string, endDate: string): Promise<any> => {
     try {

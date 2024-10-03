@@ -1,5 +1,3 @@
-import Order from "./Order.ts";
-
 export default class Customer {
     id: number;
     code: string;

@@ -33,7 +33,7 @@ export default function OverviewPage() {
     useEffect(() => {
         fetchTodayOrders();
     }, [pageNum,pageSize]);
-    const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+    const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
         setPageNum(newPage);
     };
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,7 +138,7 @@ export default function OverviewPage() {
                                 </TableHead>
                                 <TableBody>
                                     {totalOrders > 0 ? (
-                                        orders.map((order) => (
+                                        orders.map((order: any) => (
                                             <TableRow
                                                 key={order.id}
                                                 sx={{

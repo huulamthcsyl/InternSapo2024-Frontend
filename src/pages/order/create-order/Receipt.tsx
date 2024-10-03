@@ -12,7 +12,7 @@ export const ReceiptToPrint = React.forwardRef<HTMLDivElement, ReceiptProps>((_p
   const { order } = _props;
 
   return (
-    <div ref={ref}>
+    <div ref={ref} style={{ padding: '10px' }}>
       <Typography variant="h6" sx={{ textAlign: 'center' }}>HÓA ĐƠN BÁN HÀNG</Typography>
       <Box mt={2}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -44,6 +44,10 @@ export const ReceiptToPrint = React.forwardRef<HTMLDivElement, ReceiptProps>((_p
             </TableBody>
           </Table>
         </TableContainer>
+      </Box>
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="h6" sx={{ mt: 2 }}>Ghi chú</Typography>
+        <Typography variant="body1">{order.note.length === 0 ? "Không có" : order.note}</Typography>
       </Box>
       <Box sx={{ mt: 2 }}>
         <Box display="flex" justifyContent="space-between">

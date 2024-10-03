@@ -81,7 +81,7 @@ export default function CustomerPage() {
     useEffect(() => {
         loadCustomers();
     }, [pageNum, pageSize, keyword]);
-    const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+    const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
         setPageNum(newPage);
     };
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
