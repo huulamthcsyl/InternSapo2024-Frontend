@@ -7,6 +7,8 @@ import HomeIcon from '@mui/icons-material/Home';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import PersonIcon from '@mui/icons-material/Person';
 import { useNavigate } from "react-router-dom";
+import logo from '../../assets/logo.webp';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 type Props = {}
 
@@ -33,7 +35,9 @@ export default function HomeDrawer({ }: Props) {
       variant="permanent"
       anchor="left"
     >
-      <Toolbar />
+      <Toolbar>
+        <img src={logo} alt="logo" width="80%" />
+      </Toolbar>
       <Divider />
       <List sx={{ p: 0 }}>
         <DrawerItem name="Tổng quan" icon={<HomeIcon />} link="/" />
@@ -46,13 +50,13 @@ export default function HomeDrawer({ }: Props) {
         </ListItemButton>
         <Collapse in={openOrder} timeout="auto" unmountOnExit>
           <List disablePadding>
-            <ListItemButton sx={{ pl: 4, color: '#fff' }} onClick={() => navigate('/order/create')}>
+            <ListItemButton sx={{ pl: 4, color: '#fff' }} onClick={() => navigate('/orders/create')}>
               <ListItemText primary="Tạo đơn hàng" />
             </ListItemButton>
           </List>
           <List disablePadding>
             <ListItemButton sx={{ pl: 4, color: '#fff' }}>
-              <ListItemText primary="Danh sách đơn hàng" onClick={() => navigate('/order')}/>
+              <ListItemText primary="Danh sách đơn hàng" onClick={() => navigate('/orders')}/>
             </ListItemButton>
           </List>
         </Collapse>
@@ -66,16 +70,27 @@ export default function HomeDrawer({ }: Props) {
         <Collapse in={openProduct} timeout="auto" unmountOnExit>
           <List disablePadding>
             <ListItemButton sx={{ pl: 4, color: '#fff' }}>
-              <ListItemText primary="Danh sách sản phẩm" />
+              <ListItemText primary="Danh sách sản phẩm" onClick={() => navigate('/products')}/>
             </ListItemButton>
           </List>
           <List disablePadding>
             <ListItemButton sx={{ pl: 4, color: '#fff' }}>
-              <ListItemText primary="Quản lý kho" />
+              <ListItemText primary="Quản lý danh mục" onClick={() => navigate('/products/categories')}/>
+            </ListItemButton>
+          </List>
+          <List disablePadding>
+            <ListItemButton sx={{ pl: 4, color: '#fff' }}>
+              <ListItemText primary="Quản lý nhãn hiệu" onClick={() => navigate('/products/brands')}/>
+            </ListItemButton>
+          </List>
+          <List disablePadding>
+            <ListItemButton sx={{ pl: 4, color: '#fff' }}>
+              <ListItemText primary="Quản lý phiên bản" onClick={() => navigate('/products/variants')}/>
             </ListItemButton>
           </List>
         </Collapse>
-        <DrawerItem name="Khách hàng" icon={<PersonIcon style={{ color: '#fff' }} />} link="/"/>
+        <DrawerItem name="Khách hàng" icon={<PersonIcon style={{ color: '#fff' }} />} link="/customers"/>
+        <DrawerItem name="Nhân viên" icon={<ManageAccountsIcon style={{ color: '#fff' }} />} link="/admin/user"/>
       </List>
     </Drawer>
   )

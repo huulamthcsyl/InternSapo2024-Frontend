@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import MainBox from "../../../components/layout/MainBox"
 import OrderListAppBar from "./OrderListAppBar"
-import { Box, Button, Paper, TableBody, TableContainer, Table, TableHead, TableRow, TableCell, TableFooter, TablePagination, TextField, Typography } from '@mui/material'
+import { Box, Button, Paper, TableBody, TableContainer, Table, TableHead, TableRow, TableCell, TableFooter, TablePagination, Typography, InputBase } from '@mui/material'
 import { getAllOrders, getNumberOfOrders } from "../../../services/orderAPI"
 import { formatDate } from "../../../utils/formatDate"
 import { formatCurrency } from "../../../utils/formatCurrency"
@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom"
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import dayjs, { Dayjs } from "dayjs"
+import Search from '@mui/icons-material/Search'
 
 type TablePaginationActionsProps = {
   count: number;
@@ -22,7 +23,7 @@ type TablePaginationActionsProps = {
   ) => void;
 }
 
-function TablePaginationActions({ count, page, rowsPerPage, onPageChange } : TablePaginationActionsProps) {
+function TablePaginationActions({ count, page, rowsPerPage, onPageChange }: TablePaginationActionsProps) {
   const handleBackButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     onPageChange(event, page - 1);
   }
@@ -45,7 +46,7 @@ function TablePaginationActions({ count, page, rowsPerPage, onPageChange } : Tab
 
 type Props = {}
 
-export default function OrderListPage({}: Props) {
+export default function OrderListPage({ }: Props) {
 
   const [orderData, setOrderData] = useState([]);
   const [page, setPage] = useState(0);
@@ -54,6 +55,7 @@ export default function OrderListPage({}: Props) {
   const [search, setSearch] = useState('');
   const [startDate, setStartDate] = useState<Dayjs | null>(dayjs().subtract(10, 'day'));
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs());
+  const [isLoading, setIsLoading] = useState(true);
 
   const navigate = useNavigate();
 
@@ -67,23 +69,33 @@ export default function OrderListPage({}: Props) {
   }
 
   const handleSearch = () => {
+    setIsLoading(true);
     getAllOrders(page, pageSize, search, startDate?.format('DD/MM/YYYY') || '', endDate?.format('DD/MM/YYYY') || '').then((res) => {
       setOrderData(res.data);
     })
     getNumberOfOrders(search, startDate?.format('DD/MM/YYYY') || '', endDate?.format('DD/MM/YYYY') || '').then((res) => {
       setTotalPage(res.data);
+      setIsLoading(false);
     })
   }
 
   useEffect(() => {
-    getAllOrders(page, pageSize, '', '20/09/2024', '30/09/2024').then((res) => {
+    setIsLoading(true);
+    const startDateStr = startDate?.format('DD/MM/YYYY') || dayjs().format('DD/MM/YYYY');
+    const endDateStr = endDate?.format('DD/MM/YYYY') || dayjs().format('DD/MM/YYYY');
+    getAllOrders(page, pageSize, '', startDateStr, endDateStr).then((res) => {
       setOrderData(res.data);
+      setIsLoading(false);
     })
   }, [page, pageSize])
 
   useEffect(() => {
-    getNumberOfOrders('', '20/09/2024', '30/09/2024').then((res) => {
+    setIsLoading(true);
+    const startDateStr = startDate?.format('DD/MM/YYYY') || dayjs().subtract(10, 'day').format('DD/MM/YYYY');
+    const endDateStr = endDate?.format('DD/MM/YYYY') || dayjs().format('DD/MM/YYYY');
+    getNumberOfOrders('', startDateStr, endDateStr).then((res) => {
       setTotalPage(res.data);
+      setIsLoading(false);
     })
   }, [])
 
@@ -94,12 +106,43 @@ export default function OrderListPage({}: Props) {
         <Button sx={{ alignSelf: 'end', mb: 2 }} variant="contained" onClick={() => navigate('create')}>Tạo đơn hàng</Button>
         <Box bgcolor="#fff" p={2}>
           <Box display="flex" mb={2} alignItems="center">
-            <TextField sx={{ marginRight: '20px', width: '40%' }} label="Tìm kiếm theo mã đơn hàng" variant="outlined" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Box flex={1}>
+              <Box
+                sx={{
+                  border: "1px solid #d9d9d9",
+                  alignItems: "center",
+                  display: "flex",
+                  borderRadius: "5px",
+                  padding: "10px 15px",
+                  gap: "30px",
+                  marginRight: '20px'
+                }}
+              >
+                <Search
+                  sx={{
+                    color: "#d9d9d9",
+                    height: "32px",
+                    width: "32px",
+                  }}
+                />
+                <InputBase
+                  value={search}
+                  sx={{ width: "100%" }}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Tìm kiếm đơn hàng"
+                />
+              </Box>
+            </Box>
             <Typography sx={{ marginRight: '20px' }}>Từ ngày</Typography>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
                 value={startDate}
-                onChange={(newValue) => setStartDate(newValue)}
+                onChange={(newValue) => {
+                  if (newValue && endDate && newValue.isAfter(endDate)) {
+                    setEndDate(newValue)
+                  }
+                  setStartDate(newValue)
+                }}
                 format="DD/MM/YYYY"
               />
             </LocalizationProvider>
@@ -107,7 +150,12 @@ export default function OrderListPage({}: Props) {
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
                 value={endDate}
-                onChange={(newValue) => setEndDate(newValue)}
+                onChange={(newValue) => {
+                  if (newValue && startDate && newValue.isBefore(startDate)) {
+                    setStartDate(newValue)
+                  }
+                  setEndDate(newValue)
+                }}
                 format="DD/MM/YYYY"
               />
             </LocalizationProvider>
@@ -122,27 +170,26 @@ export default function OrderListPage({}: Props) {
                   <TableCell>Khách hàng</TableCell>
                   <TableCell>Số sản phẩm</TableCell>
                   <TableCell>Số tiền thanh toán</TableCell>
-                  <TableCell></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {
-                  orderData.map((order: any) => (
-                    <TableRow key={order.code}>
-                      <TableCell>{order.code}</TableCell>
+                  !isLoading ? orderData && orderData.map((order: any) => (
+                    <TableRow sx={{ cursor: 'pointer' }} key={order.code} hover onClick={() => navigate(`${order.id}`)}>
+                      <TableCell sx={{ color: '#08F' }}>{order.code}</TableCell>
                       <TableCell>{formatDate(order.createdOn)}</TableCell>
                       <TableCell>{order.customerName}</TableCell>
                       <TableCell>{order.totalQuantity}</TableCell>
                       <TableCell>{formatCurrency(order.totalPayment)}</TableCell>
-                      <TableCell>
-                        <Button variant="contained" onClick={() => navigate(`${order.id}`)}>Xem chi tiết</Button>
-                      </TableCell>
                     </TableRow>
-                  ))
+                  )) :
+                    <TableRow>
+                      <TableCell colSpan={5} align="center">Đang tải dữ liệu...</TableCell>
+                    </TableRow>
                 }
               </TableBody>
               <TableFooter>
-                <TablePagination 
+                <TablePagination
                   rowsPerPageOptions={[1, 10, 25]}
                   count={totalPage}
                   rowsPerPage={pageSize}

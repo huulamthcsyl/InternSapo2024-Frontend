@@ -1,44 +1,51 @@
 import {
     Box,
     Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormControlLabel, FormLabel, Grid,
-    InputAdornment, InputLabel, MenuItem, Pagination, Radio, RadioGroup, Select,
-    Table,
+    InputAdornment, Radio, RadioGroup, Table,
     TableBody,
     TableCell,
     TableHead, TablePagination,
     TableRow,
-    TextField,
+    TextField, Tooltip,
     Typography
 } from "@mui/material"
 import CustomerPageAppBar from "./CustomerPageAppBar.tsx"
 import MainBox from "../../components/layout/MainBox"
 import SearchIcon from '@mui/icons-material/Search';
-import React, {useEffect, useState} from "react";
-import {useLocation, useNavigate} from "react-router-dom";
-import Toolbar from "@mui/material/Toolbar";
-import {Alert} from "@mui/lab";
+import React, {ChangeEvent, useEffect, useState} from "react";
+import Customer from "../../models/Customer.ts";
+import {fetchCustomers, submitNewCustomer} from "../../services/customerAPI.ts";
 
-type Props = {}
+import {formatCurrency} from "../../utils/formatCurrency.ts";
+import {toast} from "react-toastify";
+import {useNavigate} from "react-router-dom";
 
-export default function CustomerPage({}: Props) {
+
+type newCustomer = {
+    name: string;
+    phoneNumber: string;
+    totalExpense: number;
+    numberOfOrder: number;
+    gender: boolean;
+    birthday: Date | null;  // Có thể là null khi chưa có giá trị
+    email: string;
+    address: string;
+};
+export default function CustomerPage() {
     const [searchTerm, setSearchTerm] = useState('');
-    const [customers, setCustomers] = useState([]);
-    const [keyword, setKeyword] = useState("");
-    const [pageNum, setPageNum] = useState(0);
-    const [pageSize, setPageSize] = useState(5); // Số khách hàng mỗi trang
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalCustomers, setTotalCustomers] = useState(0);
-    const [errorMessage, setErrorMessage] = useState(""); // State để lưu thông báo lỗi
-    const navigate = useNavigate();  // Khởi tạo useNavigate để điều hướng
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [keyword, setKeyword] = useState<string>("");
+    const [pageNum, setPageNum] = useState<number>(0);
+    const [pageSize, setPageSize] = useState<number>(5); // Số khách hàng mỗi trang
 
-    const [successMessage, setSuccessMessage] = useState(""); // State để lưu thông báo thành công
+    const [totalCustomers, setTotalCustomers] = useState<number>(0);
+    const navigate = useNavigate();
 
+    const [phoneError, setPhoneError] = useState<boolean>(false); // Trạng thái để lưu lỗi số điện thoại
 
 
-
-
-    const [openModal, setOpenModal] = useState(false);  // State để quản lý việc mở/đóng modal
-    const [newCustomer, setNewCustomer] = useState({
+    const [openModal, setOpenModal] = useState<boolean>(false);  // State để quản lý việc mở/đóng modal
+    const [newCustomer, setNewCustomer] = useState<newCustomer>({
         name: '',
         phoneNumber: '',
         totalExpense: 0,
@@ -49,91 +56,32 @@ export default function CustomerPage({}: Props) {
         address: '' // Added address field
     });
 
+    const loadCustomers = async () => {
+        try {
+            const fetchedCustomers = await fetchCustomers(pageNum, pageSize, keyword);
+            const sortedCustomers = fetchedCustomers.content.sort(
+                (a: Customer, b: Customer) => new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime()
+            );
+            setCustomers(sortedCustomers);
 
+            setTotalCustomers(fetchedCustomers.totalElements);
 
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-
-            setErrorMessage('');
-            setSuccessMessage('');
-        }, 3000); // Thời gian hiển thị 3 giây
-
-        return () => clearTimeout(timeout); // Dọn dẹp timeout khi component unmount hoặc cập nhật
-    }, [ errorMessage, successMessage]);
-
-
-    const fetchCustomers = () => {
-        fetch(`http://localhost:8000/customers?pageNum=${pageNum}&pageSize=${pageSize}&keyword=${keyword || ''}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'  // Đặt loại nội dung nếu cần thiết
+        } catch (error: any) {
+            if (error.response && error.response.status === 404) {
+                setCustomers([]); // Đảm bảo luôn là mảng
+                setTotalCustomers(0);
+                // toast.error("Không tồn tại khách hàng!"); // Hiển thị thông báo lỗi
+            } else {
+                console.error('Lỗi khi lấy danh sách khách hàng:', error);
+                toast.error('Lỗi khi lấy danh sách khách hàng:', error);
+                setCustomers([]); // Đảm bảo customers là mảng rỗng khi có lỗi
             }
-        })
-            .then(response => {
-                if (response.status === 404) {
-                    throw new Error('Không tìm thấy khách hàng với từ khóa đã nhập.');
-                } else if (!response.ok) {
-                    throw new Error('Error: ' + response.statusText);
-                }
-
-                return response.json();  // Chuyển đổi phản hồi thành JSON
-            })
-            .then(data => {
-                setCustomers(data.content);  // Cập nhật danh sách khách hàng
-                setTotalPages(data.totalPages);// Cập nhật số trang
-                setTotalCustomers(data.totalElements);
-                setErrorMessage("");
-            })
-            .catch(error => {
-                if (error.message.includes('Không tìm thấy khách hàng')) {
-                    setCustomers([]); // Đặt danh sách khách hàng thành rỗng
-                    setTotalCustomers(0); // Đặt tổng số khách hàng thành 0
-                    setErrorMessage(error.message); // Đặt thông báo lỗi
-                } else {
-                    console.error('Lỗi khi lấy danh sách khách hàng:', error);
-                }
-            });
+        }
     };
-    const fetchAllCustomers = () => {
-        fetch(`http://localhost:8000/customers?pageNum=${pageNum}&pageSize=${pageSize}&keyword=${keyword || ''}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'  // Đặt loại nội dung nếu cần thiết
-            }
-        })
-            .then(response => {
-                if (response.status === 404) {
-                    throw new Error('Không tồn tại khách hàng nào.');
-                } else if (!response.ok) {
-                    throw new Error('Error: ' + response.statusText);
-                }
-
-                return response.json();  // Chuyển đổi phản hồi thành JSON
-            })
-            .then(data => {
-                setCustomers(data.content);  // Cập nhật danh sách khách hàng
-                setTotalPages(data.totalPages);// Cập nhật số trang
-                setTotalCustomers(data.totalElements);
-                setErrorMessage("");
-            })
-            .catch(error => {
-                if (error.message.includes('Không tồn tại khách hàng nào.')) {
-                    setCustomers([]); // Đặt danh sách khách hàng thành rỗng
-                    setTotalCustomers(0); // Đặt tổng số khách hàng thành 0
-                    setErrorMessage(error.message); // Đặt thông báo lỗi
-                } else {
-                    console.error('Lỗi khi lấy danh sách khách hàng:', error);
-                }
-            });
-    };
-
     useEffect(() => {
-        fetchCustomers();
-    }, [pageNum,pageSize, keyword]);
-    useEffect(() => {
-        fetchAllCustomers();
-    }, []);
-    const handleChangePage = (_event : React.MouseEvent<HTMLButtonElement> | null, newPage : number) => {
+        loadCustomers();
+    }, [pageNum, pageSize, keyword]);
+    const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
         setPageNum(newPage);
     };
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,17 +90,13 @@ export default function CustomerPage({}: Props) {
     };
 
     // Hàm xử lý khi người dùng nhấn phím
-    const handleKeyPress = (event: React.KeyboardEvent) => {
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLDivElement>) => {
         if (event.key === 'Enter') {
             setKeyword(searchTerm); // Cập nhật từ khóa và gọi API tìm kiếm
             setPageNum(0); // Reset lại trang đầu tiên
         }
     };
 
-    // Xử lý khi bấm nút Thêm khách hàng
-    // const handleAddCustomerClick = () => {
-    //     navigate('/customers/create');  // Điều hướng đến trang tạo khách hàng mới
-    // };
 
 
     // Xử lý mở modal
@@ -164,6 +108,7 @@ export default function CustomerPage({}: Props) {
     // Xử lý đóng modal
     const handleCloseModal = () => {
         setOpenModal(false);  // Đóng modal
+        setPhoneError(false);
         // Reset lại thông tin khách hàng
         setNewCustomer({
             name: '',
@@ -177,59 +122,75 @@ export default function CustomerPage({}: Props) {
         });
     };
 
+    const handleSubmitNewCustomer = async () => {
+        if(newCustomer.name === '' || newCustomer.phoneNumber === ''){
+            toast.error("Vui lòng nhập tên và số điện thoại khách hàng");
+            return;
+        }
+        try {
+            console.log("Thông tin khách hàng mới:", newCustomer);
 
-    // Xử lý khi submit form
-    const handleSubmitNewCustomer = () => {
-        console.log("Thông tin khách hàng mới:", newCustomer);
-        // Gọi API để tạo khách hàng mới
-        fetch("http://localhost:8000/customers/create", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(newCustomer)  // Chuyển đối tượng newCustomer thành chuỗi JSON
-        })
-            .then(response => {
-                if (!(response.status === 201)) {
-                    if (response.status === 409) {
-                        throw new Error("Số điện thoại đã tồn tại.");
-                    }
-                    throw new Error("Có lỗi xảy ra khi tạo khách hàng mới.");
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log("Tạo khách hàng thành công:", data);
-                setSuccessMessage("Tạo khách hàng thành công!"); // Thiết lập thông báo thành công
-                setOpenModal(false);  // Đóng modal sau khi tạo thành công
-                fetchCustomers(); // Gọi lại API để cập nhật danh sách khách hàng
-                // Bạn có thể gọi lại API lấy danh sách khách hàng để cập nhật danh sách
-            })
-            .catch(error => {
-                console.error("Lỗi khi tạo khách hàng:", error.message);
-                setErrorMessage(error.message); // Cập nhật thông báo lỗi
-                // Xử lý hiển thị thông báo lỗi cho người dùng nếu cần thiết
+            // Gọi API để tạo khách hàng mới
+            const createdCustomer = await submitNewCustomer(newCustomer);
+            console.log("Tạo khách hàng thành công:", createdCustomer);
+
+            // setSuccessMessage("Tạo khách hàng thành công!"); // Thiết lập thông báo thành công
+            setNewCustomer({
+                name: '',
+                phoneNumber: '',
+                totalExpense: 0,
+                numberOfOrder: 0,
+                gender: false,
+                birthday: null,
+                email: '',
+                address: ''
             });
-        setOpenModal(false);  // Đóng modal sau khi submit
-    };
+            setPhoneError(false);
+            setOpenModal(false);  // Đóng modal sau khi tạo thành công
+            loadCustomers(); // Gọi lại API để cập nhật danh sách khách hàng
+            toast.success("Tạo khách hàng thành công!");
+            setOpenModal(false);
+        } catch (error: any) {
+            console.error("Lỗi khi tạo khách hàng:", error.message);
+            // setErrorMessage(error.message); // Cập nhật thông báo lỗi
+            if (error.message === 'Số điện thoại đã tồn tại') {
+                setPhoneError(true); // Cập nhật trạng thái lỗi số điện thoại
+            }else{
+                toast.error(error.message);
+            }
+            // setNewCustomer({
+            //     name: '',
+            //     phoneNumber: '',
+            //     totalExpense: 0,
+            //     numberOfOrder: 0,
+            //     gender: false,
+            //     birthday: null,
+            //     email: '',
+            //     address: ''
+            // });
+        }
 
+    };
     // Cập nhật state khi nhập dữ liệu vào form
-    const handleChangeNewCustomer = (e: any) => {
+    const handleChangeNewCustomer = (e: React.ChangeEvent<HTMLInputElement>) => {
         setNewCustomer({
             ...newCustomer,
             [e.target.name]: e.target.value
         });
     };
 
-    const handleDetailsClick = (customerId : string) => {
+    const handleDetailsClick = (customerId: number) => {
         navigate(`/customers/${customerId}`); // Chuyển hướng tới trang chi tiết của khách hàng
     };
+
+
 
 
     return (
         <Box>
             <CustomerPageAppBar />
             <MainBox>
+
                 <Box
                     sx={{ padding: '24px' }}
                     display="flex"
@@ -238,7 +199,7 @@ export default function CustomerPage({}: Props) {
                     <Typography variant="h6" sx={{
                         color: '#000', // Màu chữ
                         fontFamily: '"Segoe UI", sans-serif', // Phông chữ
-                        fontSize: '20px', // Kích thước chữ
+                        fontSize: '25px', // Kích thước chữ
                         fontStyle: 'normal', // Kiểu chữ
                         fontWeight: 600, // Độ đậm của chữ
                         lineHeight: 'normal', // Chiều cao dòng
@@ -246,30 +207,18 @@ export default function CustomerPage({}: Props) {
                     <Button sx={{ backgroundColor: 'primary.main', color: 'white',fontFamily: '"Segoe UI", sans-serif', // Phông chữ
                         fontSize: '14px', // Kích thước chữ
                         fontStyle: 'normal', // Kiểu chữ
-                        fontWeight: 400, }} onClick={handleAddCustomerClick}>+ Thêm khách hàng</Button>
-                </Box>
-                <Box sx={{ padding: '16px 14px 16px 14px' }}>
-                    {/* Hiển thị thông báo lỗi nếu có */}
-                    {errorMessage && (
-                        <Alert severity="error" sx={{ marginTop: '16px' }}>
-                            {errorMessage}
-                        </Alert>
-                    )}
-                    {/* Hiển thị thông báo thành công nếu có */}
-                    {successMessage && (
-                        <Alert severity="success" sx={{ marginTop: '16px' }}>
-                            {successMessage}
-                        </Alert>
-                    )}
-
+                        fontWeight: 600, }} onClick={handleAddCustomerClick}>+ Thêm khách hàng</Button>
                 </Box>
 
+
+
+                {/*thanh tìm kiếm và bảng listCustomers*/}
                 <Box sx={{background: '#FFFFFF', margin: '10px 20px'}}>
-                    <Box sx={{   }}>
+                    <Box sx={{ padding: 2  }}>
                         <TextField
                             variant="outlined"
                             placeholder="Tìm kiếm khách hàng theo tên hoặc SĐT"
-                            onChange={(e) => setSearchTerm(e.target.value)}  // Cập nhật giá trị tìm kiếm
+                            onChange={(e:  ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => setSearchTerm(e.target.value)}  // Cập nhật giá trị tìm kiếm
                             onKeyPress={handleKeyPress}  // Gắn sự kiện khi nhấn phím
                             InputProps={{
                                 startAdornment: (
@@ -281,49 +230,43 @@ export default function CustomerPage({}: Props) {
                             sx={{ width: '100%' }}
                         />
                     </Box>
-                    <Box sx={{ padding: 2, backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+                    <Box sx={{ padding: '0 16px 16px 16px', borderRadius: '8px' }}>
                         <Table sx={{ minWidth: 650 }}>
                             <TableHead>
-                                <TableRow sx={{ backgroundColor: '#e0f7fa' }}>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>ID</TableCell>
+                                <TableRow sx={{  }}>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Mã khách hàng</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Tên khách hàng</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Số điện thoại</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Tổng chi tiêu</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: '#333' }}>Tổng số đơn hàng</TableCell>
-                                    <TableCell></TableCell>
+
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {customers.map((customer: any) => (
-                                    <TableRow
-                                        key={customer.id}
-                                        sx={{
-                                            // '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
-                                            // '&:hover': { backgroundColor: '#e0f7fa' },  // Hover effect
-                                        }}
-                                    >
-                                        <TableCell>{customer.id}</TableCell>
-                                        <TableCell>{customer.name}</TableCell>
-                                        <TableCell>{customer.phoneNumber}</TableCell>
-                                        <TableCell>{customer.totalExpense}</TableCell>
-                                        <TableCell>{customer.numberOfOrder}</TableCell>
-                                        <TableCell>
-                                            <Typography
-                                                onClick={() => handleDetailsClick(customer.id)} // Chuyển hướng khi nhấn vào
-                                                sx={{
-                                                    color: 'blue',
-                                                    textDecoration: 'underline',
-                                                    cursor: 'pointer',
-                                                    '&:hover': {
-                                                        color: 'darkblue', // Đổi màu khi hover
-                                                    },
-                                                }}
-                                            >
-                                                Chi tiết
-                                            </Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                {customers.length > 0 ?
+                                    customers.map((customer) => (
+                                        <TableRow
+                                            key={customer.id}
+                                            sx={{
+                                                '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
+                                                '&:hover': { backgroundColor: '#e0f7fa' },  // Hover effect
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={() => handleDetailsClick(customer.id)}
+                                        >
+                                            <TableCell>{customer.code}</TableCell>
+                                            <TableCell>{customer.name}</TableCell>
+                                            <TableCell>{customer.phoneNumber}</TableCell>
+                                            <TableCell>{formatCurrency(customer.totalExpense)}</TableCell>
+                                            <TableCell>{customer.numberOfOrder}</TableCell>
+
+                                        </TableRow>
+                                    )) : (
+                                        <TableRow>
+                                            <TableCell colSpan={5}>Không có khách hàng nào</TableCell>
+                                        </TableRow>
+                                    )}
+
                             </TableBody>
                         </Table>
 
@@ -334,7 +277,9 @@ export default function CustomerPage({}: Props) {
                             onPageChange={handleChangePage}
                             rowsPerPage={pageSize}
                             onRowsPerPageChange={handleChangeRowsPerPage}
-                            rowsPerPageOptions={[5, 10, 20, 50]} // Các tùy chọn số hàng
+                            labelRowsPerPage="Số hàng trên mỗi trang"
+                            labelDisplayedRows={({ from, to, count }) => `${from}-${to} trong tổng số ${count}`}
+                            rowsPerPageOptions={[5, 10]} // Các tùy chọn số hàng
                             sx={{ mt: 2 }} // Margin top
                         />
                     </Box>
@@ -349,10 +294,15 @@ export default function CustomerPage({}: Props) {
                         <Grid container spacing={2}>
                             {/* Tên khách hàng */}
                             <Grid item xs={6}>
+                                <Typography variant="subtitle1">
+                                    Tên khách hàng
+                                    <Tooltip title="Bắt buộc" placement="top" arrow>
+                                        <span style={{ color: 'red', marginLeft: 4 }}>*</span>
+                                    </Tooltip>
+                                </Typography>
                                 <TextField
 
                                     margin="dense"
-                                    label="Tên khách hàng"
                                     name="name"
                                     fullWidth
                                     value={newCustomer.name}
@@ -362,21 +312,40 @@ export default function CustomerPage({}: Props) {
 
                             {/* Số điện thoại */}
                             <Grid item xs={6}>
+                                <Typography variant="subtitle1">
+                                    Số điện thoại
+                                    <Tooltip title="Bắt buộc" placement="top" arrow>
+                                        <span style={{ color: 'red', marginLeft: 4 }}>*</span>
+                                    </Tooltip>
+                                </Typography>
                                 <TextField
                                     margin="dense"
-                                    label="Số điện thoại"
                                     name="phoneNumber"
                                     fullWidth
                                     value={newCustomer.phoneNumber}
-                                    onChange={handleChangeNewCustomer}
+                                    error={phoneError}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        handleChangeNewCustomer(e);
+                                        setPhoneError(false); // Reset lỗi khi người dùng thay đổi giá trị
+                                    }}
+                                    helperText={phoneError ? "Số điện thoại đã tồn tại" : ""}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                                borderColor: phoneError ? 'red' : 'default', // Thay đổi màu viền thành đỏ khi có lỗi
+                                            },
+                                        },
+                                    }}
                                 />
                             </Grid>
 
                             {/* Ngày sinh */}
                             <Grid item xs={6}>
+                                <Typography variant="subtitle1">
+                                    Ngày sinh
+                                </Typography>
                                 <TextField
                                     margin="dense"
-                                    label="Ngày sinh"
                                     name="birthday"
                                     type="date"
                                     fullWidth
@@ -390,9 +359,12 @@ export default function CustomerPage({}: Props) {
 
                             {/* Email */}
                             <Grid item xs={6}>
+                                <Typography variant="subtitle1">
+                                    Email
+                                </Typography>
                                 <TextField
-                                    margin="dense"
                                     label="Email"
+                                    margin="dense"
                                     name="email"
                                     type="email"
                                     fullWidth
@@ -403,9 +375,11 @@ export default function CustomerPage({}: Props) {
 
                             {/* Địa chỉ */}
                             <Grid item xs={12}>
+                                <Typography variant="subtitle1">
+                                    Địa chỉ
+                                </Typography>
                                 <TextField
                                     margin="dense"
-                                    label="Địa chỉ"
                                     name="address"
                                     fullWidth
                                     value={newCustomer.address}
@@ -473,7 +447,6 @@ export default function CustomerPage({}: Props) {
 
 
                 </Dialog>
-
 
             </MainBox>
         </Box>

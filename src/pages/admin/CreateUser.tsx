@@ -81,7 +81,7 @@ export default function CreateUser({}: Props) {
   const checkEmail = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/v1/user/check-email/${formData.email}`,
+        `https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user/check-email/${formData.email}`,
         {
           method: "GET",
           headers: {

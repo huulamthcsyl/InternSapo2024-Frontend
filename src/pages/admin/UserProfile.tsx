@@ -56,7 +56,7 @@ const UserProfile: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/v1/user/${id}`);
+        const response = await axios.get(`https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user/${id}`);
         if (response.data.status === "OK") {
           setUser(response.data.data);
         }

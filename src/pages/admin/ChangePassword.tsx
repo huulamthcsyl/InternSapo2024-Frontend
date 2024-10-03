@@ -45,7 +45,7 @@ const ChangePassword: React.FC = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/v1/user/change_password/${id}`,
+        `https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user/change_password/${id}`,
         {
           method: "PUT",
           headers: {

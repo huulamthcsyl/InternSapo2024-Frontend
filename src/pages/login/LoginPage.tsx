@@ -44,7 +44,7 @@ const LoginPage: React.FC = () => {
     setEmailError(false); // Reset email error if format is valid
 
     try {
-      const response = await axios.post("http://localhost:8080/v1/auth/login", {
+      const response = await axios.post("https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/auth/login", {
         email,
         password,
       });
