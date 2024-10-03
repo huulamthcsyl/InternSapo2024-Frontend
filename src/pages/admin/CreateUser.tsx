@@ -210,7 +210,7 @@ export default function CreateUser({}: Props) {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/v1/auth/register", {
+      const response = await fetch("https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

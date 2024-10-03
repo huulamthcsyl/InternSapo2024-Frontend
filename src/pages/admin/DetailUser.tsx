@@ -128,7 +128,7 @@ export default function DetailUser() {
     const updatedStatus = !user.status; // Toggle the current status
 
     try {
-      const response = await fetch(`http://localhost:8080/v1/user/${user.id}`, {
+      const response = await fetch(`https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user/${user.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
