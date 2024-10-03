@@ -1,21 +1,14 @@
-import { Outlet, useNavigate } from "react-router-dom"
-import { toast } from "react-toastify"
+import { Navigate, Outlet } from "react-router-dom"
 
 type Props = {}
 
 export default function AdminRoute({ }: Props) {
 
-  const navigate = useNavigate()
-
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   if (user.roles[0] === "ROLE_ADMIN") {
     return <Outlet />
   } else {
-    toast.error("Bạn không có quyền truy cập vào trang này")
-    navigate('/')
+    return <Navigate to="/" />
   }
 
-  return (
-    <Outlet />
-  )
 }
