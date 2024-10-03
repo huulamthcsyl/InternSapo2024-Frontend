@@ -8,6 +8,7 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import PersonIcon from '@mui/icons-material/Person';
 import { useNavigate } from "react-router-dom";
 import logo from '../../assets/logo.webp';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 type Props = {}
 
@@ -89,6 +90,7 @@ export default function HomeDrawer({ }: Props) {
           </List>
         </Collapse>
         <DrawerItem name="Khách hàng" icon={<PersonIcon style={{ color: '#fff' }} />} link="/customers"/>
+        <DrawerItem name="Nhân viên" icon={<ManageAccountsIcon style={{ color: '#fff' }} />} link="/admin/user"/>
       </List>
     </Drawer>
   )
