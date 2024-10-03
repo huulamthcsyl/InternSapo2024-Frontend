@@ -196,7 +196,8 @@ export default function CreateOrderPage({ }: Props) {
     orderDetails: [],
     total: 0,
     cashReceive: 0,
-    cashRepay: 0
+    cashRepay: 0,
+    note: ""
   });
   const navigate = useNavigate();
 
