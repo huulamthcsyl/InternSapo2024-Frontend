@@ -579,6 +579,7 @@ export default function AddProduct({}: Props) {
                                         <Property
                                             badges={sizes}
                                             setBadges={setSizes}
+                                            
                                         />
                                     </Box>
                                     <Box
