@@ -60,15 +60,7 @@ const LoginPage: React.FC = () => {
             roles: response.data.data.roles,
           })
         );
-
-        const isAdmin = response.data.data.roles.some(
-          (role: string) => role === "ROLE_ADMIN"
-        );
-        if (isAdmin) {
-          navigate(`/account/${response.data.data.id}`);
-        } else {
-          navigate(`/account/${response.data.data.id}`);
-        }
+        navigate('/');
       }
     } catch (error: any) {
       setError(true);
