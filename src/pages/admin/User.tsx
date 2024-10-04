@@ -93,7 +93,7 @@ export default function User({}: Props) {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery); // Update the debounced search query
-    }, 1000); // 500ms delay
+    }, 1000); // 1000ms delay
 
     // Cleanup timeout if user types again before the delay finishes
     return () => {
@@ -105,8 +105,13 @@ export default function User({}: Props) {
     setLoading(true);
     try {
       // const searchFilter = searchQuery ? `&search=${searchQuery}` : ""; // Thêm search query
+
+      const roleFilter = selectedRole ? `&role=${selectedRole}` : "";
+      const searchFilter = debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : "";
       const response = await fetch(
-        `https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user?page=${page}&limit=10`
+
+        `https://pure-ridge-57258-e82472824bc6.herokuapp.com/v1/user?page=${page}&limit=${pageSize}&sort=${sortColumn}&order=${sortOrder}${roleFilter}${searchFilter}`
+
       );
       const data: ApiResponse = await response.json();
       setUsers(data.data.content);
@@ -126,8 +131,7 @@ export default function User({}: Props) {
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
-  }, [page, pageSize, sortColumn, sortOrder, selectedRole
-     
+  }, [page, pageSize, sortColumn, sortOrder, selectedRole    
     //, searchQuery 
     , debouncedSearchQuery]);
 
