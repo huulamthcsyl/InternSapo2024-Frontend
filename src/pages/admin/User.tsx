@@ -381,6 +381,10 @@ export default function User({}: Props) {
                       <TableRow
                         key={user.id}
                         onClick={() => navigate(`/admin/user/${user.id}`)}
+                        hover
+                        sx={{
+                          cursor: "pointer",
+                        }}
                       >
                         <TableCell>{user.id}</TableCell>
                         <TableCell>{user.name}</TableCell>
