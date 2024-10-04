@@ -118,6 +118,12 @@ export default function CreateUser({}: Props) {
     return emailRegex.test(email);
   };
 
+  // Function to validate phone number format and length
+const validatePhoneNumber = (phoneNumber: string): boolean => {
+  // Check if phone number has exactly 10 digits
+  return phoneNumber.length === 10 && /^[0-9]+$/.test(phoneNumber);
+};
+
   // const checkPhoneNumber = async () => {
   //   try {
   //     const response = await fetch(
@@ -178,6 +184,12 @@ export default function CreateUser({}: Props) {
       setPhoneNumberError("Số điện thoại không được để trống.");
       return; // Exit if phone number is empty
     }
+
+      // Validate phone number format and length
+  if (!validatePhoneNumber(formData.phoneNumber)) {
+    setPhoneNumberError("Số điện thoại có 10 chữ số.");
+    return;
+  }
 
     if (!formData.password.trim()) {
       setPasswordError("Mật khẩu không được để trống .");
@@ -336,7 +348,7 @@ export default function CreateUser({}: Props) {
                 <Typography>Số điện thoại</Typography>
                 <TextField
                   name="phoneNumber"
-                  type="tel"
+                  type="text"
                   value={formData.phoneNumber}
                   onChange={handleChange}
                   fullWidth
