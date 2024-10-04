@@ -133,11 +133,14 @@ export default function CustomerDetailPage() {
         ...customer,
         [e.target.name]: e.target.value
       });
+    }
+    if(newCustomer){
       setNewCustomer({
         ...newCustomer,
         [e.target.name]: e.target.value
       });
     }
+
   };
 
 
@@ -348,34 +351,39 @@ export default function CustomerDetailPage() {
                   </Box>
                 </Box>
                 <Box sx={{padding: '16px'}}>
-                  {customer?.note ?
-                      <Typography variant="body1" sx={{ flex: 1 }}>{customer?.note}</Typography>
-                      : <Typography variant="body1" sx={{ flex: 1 }}>Không có thông tin ghi chú</Typography>}
+                  {/*{customer?.note ?*/}
+                  {/*    <Typography variant="body1" sx={{ flex: 1 }}>{customer?.note}</Typography>*/}
+                  {/*    : <Typography variant="body1" sx={{ flex: 1 }}>Không có thông tin ghi chú</Typography>}*/}
 
-                  {/*<textarea*/}
-                  {/*    rows={4}*/}
-                  {/*    style={{ width: '100%', padding: '8px',fontFamily: 'Segoe UI' }}*/}
-                  {/*    placeholder="Nhập ghi chú ở đây..."*/}
-                  {/*    value={customer?.note} // Hiển thị ghi chú từ customer.note*/}
-                  {/*    onChange={(e) => {*/}
-                  {/*        // Xử lý khi người dùng thay đổi ghi chú*/}
-                  {/*        if (customer) {*/}
-                  {/*            setCustomer({*/}
-                  {/*                ...customer,*/}
-                  {/*                [e.target.name]: e.target.value*/}
-                  {/*            });*/}
-                  {/*        }*/}
-                  {/*    }}*/}
-                  {/*/>*/}
-                  {/* <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>*/}
-                  {/*     <Button*/}
-                  {/*         variant="contained"*/}
-                  {/*         color="primary"*/}
-                  {/*         onClick={() => handleUpdateCustomer()}*/}
-                  {/*     >*/}
-                  {/*         Lưu*/}
-                  {/*     </Button>*/}
-                  {/* </Box>*/}
+                  <textarea
+                      rows={4}
+                      name="note"
+                      style={{ width: '100%', padding: '5px',fontFamily: 'Segoe UI' }}
+                      placeholder="Nhập ghi chú ở đây..."
+                      value={customer?.note} // Hiển thị ghi chú từ customer.note
+                      onChange={(e) => {
+                        // Xử lý khi người dùng thay đổi ghi chú
+                        if (customer) {
+                          setCustomer({
+                            ...customer,
+                            [e.target.name]: e.target.value
+                          });
+                          setNewCustomer({
+                            ...newCustomer,
+                            [e.target.name]: e.target.value
+                          });
+                        }
+                      }}
+                  />
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleUpdateCustomer()}
+                    >
+                      Lưu
+                    </Button>
+                  </Box>
                 </Box>
 
               </Box>
@@ -517,13 +525,14 @@ export default function CustomerDetailPage() {
                             ...customer,
                             [e.target.name]: new Date(e.target.value) // Chuyển đổi giá trị ngày thành Date
                           });
-                          setNewCustomer({
-                            ...newCustomer,
-                            [e.target.name]: new Date(e.target.value) // Chuyển đổi giá trị ngày thành Date
-                          });
                         }
-                        }}
-                    />
+                          if(newCustomer){
+                            setNewCustomer({
+                              ...newCustomer,
+                              [e.target.name]: new Date(e.target.value) // Chuyển đổi giá trị ngày thành Date
+                            });
+                          }
+                        }}/>
                   </Grid>
 
                   {/* Email */}
@@ -563,9 +572,11 @@ export default function CustomerDetailPage() {
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             if(customer){
                               setCustomer({...customer, gender: e.target.value === "male" });
+
+                            }if(newCustomer){
                               setNewCustomer({...newCustomer, gender: e.target.value === "male" });
-                            }}
-                          }
+                            }
+                          }}
                       >
                         <FormControlLabel value="male" control={<Radio />} label="Nam" />
                         <FormControlLabel value="female" control={<Radio />} label="Nữ" />
