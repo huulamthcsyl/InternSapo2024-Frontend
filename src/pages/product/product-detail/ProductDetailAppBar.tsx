@@ -104,12 +104,12 @@ export default function ProductDetailAppBar({ id }: Props) {
                                     borderBottom: "1px solid #d9d9d9",
                                 }}
                             >
-                                <Typography variant="h5">
+                                <Typography variant="h5" sx={{ color: 'red' }}>
                                     Xóa sản phẩm
                                 </Typography>
-                                <Close color="disabled" />
+                                <Close color="disabled"/>
                             </Box>
-                            <Typography>
+                            <Typography sx={{ color: '#000' }}>
                                 Thao tác này sẽ xóa sản phẩm bạn đã chọn. Thao
                                 tác này không thể khôi phục.
                             </Typography>
