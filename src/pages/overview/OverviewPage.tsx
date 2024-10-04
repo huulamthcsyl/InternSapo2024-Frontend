@@ -1,4 +1,4 @@
-import { Box, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, Typography } from "@mui/material"
+import { Box, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, Typography, Select, MenuItem } from "@mui/material"
 import MainBox from "../../components/layout/MainBox"
 import MainAppBar from "../../components/layout/MainAppBar.tsx";
 import React, { useEffect, useState } from "react";
@@ -17,6 +17,7 @@ export default function OverviewPage() {
 
   const [totalOrders, setTotalOrders] = useState<number>(0);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
+  const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
   const fetchTodayOrders = async () => {
@@ -30,6 +31,17 @@ export default function OverviewPage() {
       console.error('Lỗi khi gọi API:', error);
     }
   };
+
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    setUser(user ? JSON.parse(user) : null);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  }
 
   useEffect(() => {
     fetchTodayOrders();
@@ -47,7 +59,7 @@ export default function OverviewPage() {
   return (
     <Box>
       <MainAppBar>
-        <Box sx={{ display: 'flex' }}>
+        <Box display="flex" alignItems="center" justifyContent="space-between" flex={1}>
           <Typography variant="h6" sx={{
             color: '#000', // Màu chữ
             fontFamily: '"Segoe UI", sans-serif', // Phông chữ
@@ -56,6 +68,13 @@ export default function OverviewPage() {
             fontWeight: 600, // Độ đậm của chữ
             lineHeight: 'normal', // Chiều cao dòng
           }}  >Tổng quan</Typography>
+          {user && <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="h6" sx={{ color: '#000', fontWeight: '600' }}>{user.name}</Typography>
+            <Select sx={{ '.MuiOutlinedInput-notchedOutline': { borderStyle: 'none' } }}>
+              <MenuItem onClick={() => navigate(`/account/${user.id}`)}>Thông tin tài khoản</MenuItem>
+              <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
+            </Select>
+          </Box>}
         </Box>
       </MainAppBar>
       <MainBox>
