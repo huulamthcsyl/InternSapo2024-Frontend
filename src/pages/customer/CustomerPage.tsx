@@ -256,7 +256,7 @@ export default function CustomerPage() {
                       hover
                       onClick={() => handleDetailsClick(customer.id)}
                     >
-                      <TableCell>{customer.code}</TableCell>
+                      <TableCell sx={{ color: '#08F' }}>{customer.code}</TableCell>
                       <TableCell>{customer.name}</TableCell>
                       <TableCell>{customer.phoneNumber}</TableCell>
                       <TableCell>{formatCurrency(customer.totalExpense)}</TableCell>
