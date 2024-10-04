@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, TableContainer, Button, Dialog, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio } from "@mui/material"
+import { Autocomplete, Box, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, TableContainer, Button, Dialog, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, CircularProgress } from "@mui/material"
 import MainBox from "../../../components/layout/MainBox"
 import CreateOrderAppBar from "./CreateOrderAppBar"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
@@ -188,6 +188,7 @@ export default function CreateOrderPage({ }: Props) {
   const [totalPrice, setTotalPrice] = useState<number>(0);
   const [cashReceived, setCashReceived] = useState<number>(0);
   const [note, setNote] = useState<string>('');
+  const [doesCreatingOrder, setDoesCreatingOrder] = useState<boolean>(false);
 
   const [newOrderReceipt, setNewOrderReceipt] = useState<any>({
     createdOn: "",
@@ -263,13 +264,14 @@ export default function CreateOrderPage({ }: Props) {
         }
       }),
     }
-
+    setDoesCreatingOrder(true);
     createOrder(newOrder).then((res) => {
       toast.success("Tạo đơn hàng thành công");
       setNewOrderReceipt(res.data.data);
       setTimeout(() => {
         handlePrint();
       }, 1000);
+      setDoesCreatingOrder(false);
       // navigate('/order')
     }).catch((error) => {
       toast.error(error.response.data.message);
@@ -281,7 +283,7 @@ export default function CreateOrderPage({ }: Props) {
       <Box display="none">
         <ReceiptToPrint ref={receiptRef} order={newOrderReceipt}/>
       </Box>
-      <CreateOrderAppBar handleCreateOrder={handleCreateOrder}/>
+      <CreateOrderAppBar handleCreateOrder={handleCreateOrder} doesCreatingOrder={doesCreatingOrder}/>
       <Box sx={{ backgroundColor: '#F0F1F1', padding: '25px 30px' }} flex={1} display='flex' flexDirection='column'>
         <NewCustomerDialog open={openAddCustomerDialog} handleClose={() => setOpenAddCustomerDialog(false)} />
         <Box bgcolor="#fff" borderRadius={1} padding="20px 15px" mb={2}>
@@ -459,9 +461,14 @@ export default function CreateOrderPage({ }: Props) {
           </Box>
         </Box>
         <Box mt={2} display="flex" justifyContent="flex-end">
+          {!doesCreatingOrder ? 
           <Button variant="contained" color="primary" onClick={handleCreateOrder}>
             Tạo đơn hàng
+          </Button> :
+          <Button variant="contained" color="primary">
+            <CircularProgress size={24} color="inherit"/>
           </Button>
+          }
         </Box>
       </Box>
     </MainBox>

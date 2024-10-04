@@ -47,7 +47,7 @@ export default function CustomerDetailPage() {
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
   const [customer1, setCustomer1] = useState();
 
-  const [newCustomer, setNewCustomer] = useState<NewCustomer | null>(null);
+  const [newCustomer, setNewCustomer] = useState<any>(null);
 
   const [pageNum, setPageNum] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(5);
@@ -103,7 +103,7 @@ export default function CustomerDetailPage() {
       setPhoneError(false);
       setOpenModal(false); // Đóng modal
       toast.success('Khách hàng đã được cập nhật thành công!');
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === 'Số điện thoại đã tồn tại') {
         setPhoneError(true); // Cập nhật trạng thái lỗi số điện thoại
       }else{
@@ -170,7 +170,7 @@ export default function CustomerDetailPage() {
   };
 
   const handleDetailsClick = (orderId: number) => {
-    navigate(`/order/${orderId}`); // Chuyển hướng tới trang chi tiết của khách hàng
+    navigate(`/orders/${orderId}`); // Chuyển hướng tới trang chi tiết của khách hàng
   };
 
   return (
