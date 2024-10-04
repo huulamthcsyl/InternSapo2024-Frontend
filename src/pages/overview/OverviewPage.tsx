@@ -169,18 +169,17 @@ export default function OverviewPage() {
                     orders.map((order: any) => (
                       <TableRow
                         key={order.id}
-                        sx={{
-                          '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
-                          '&:hover': { backgroundColor: '#e0f7fa' }, // Hover effect
+                        sx={{// Hover effect
                           cursor: 'pointer'
                         }}
+                        hover
                         onClick={() => handleDetailsClick(order.id)}
                       >
-                        <TableCell>{order.code}</TableCell>
+                        <TableCell sx={{ color: '#08F' }}>{order.code}</TableCell>
                         <TableCell>{formatDate(order.createdOn)}</TableCell>
                         <TableCell sx={{ paddingLeft: '5%' }}>{order.totalQuantity}</TableCell>
                         <TableCell>{formatCurrency(order.totalPayment)}</TableCell>
-                        <TableCell>{order.paymentType}</TableCell>
+                        <TableCell>{order.paymentType === "CASH" ? "COD" : null}</TableCell>
 
                       </TableRow>
                     ))

@@ -1,4 +1,3 @@
-import Customer from "./Customer.ts";
 import CustomerDetail from "./CustomerDetail.ts";
 
 class NewCustomer {
@@ -62,7 +61,7 @@ class NewCustomer {
                 customer.note
             );
         }
-        return null;
+        return new NewCustomer("", "", 0, 0, true, null, "", "", "");
     }
 }
 
