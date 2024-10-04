@@ -133,11 +133,14 @@ export default function CustomerDetailPage() {
         ...customer,
         [e.target.name]: e.target.value
       });
+    }
+    if(newCustomer){
       setNewCustomer({
         ...newCustomer,
         [e.target.name]: e.target.value
       });
     }
+
   };
 
 
@@ -517,13 +520,14 @@ export default function CustomerDetailPage() {
                             ...customer,
                             [e.target.name]: new Date(e.target.value) // Chuyển đổi giá trị ngày thành Date
                           });
-                          setNewCustomer({
-                            ...newCustomer,
-                            [e.target.name]: new Date(e.target.value) // Chuyển đổi giá trị ngày thành Date
-                          });
                         }
-                        }}
-                    />
+                          if(newCustomer){
+                            setNewCustomer({
+                              ...newCustomer,
+                              [e.target.name]: new Date(e.target.value) // Chuyển đổi giá trị ngày thành Date
+                            });
+                          }
+                        }}/>
                   </Grid>
 
                   {/* Email */}
@@ -563,9 +567,11 @@ export default function CustomerDetailPage() {
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             if(customer){
                               setCustomer({...customer, gender: e.target.value === "male" });
+
+                            }if(newCustomer){
                               setNewCustomer({...newCustomer, gender: e.target.value === "male" });
-                            }}
-                          }
+                            }
+                          }}
                       >
                         <FormControlLabel value="male" control={<Radio />} label="Nam" />
                         <FormControlLabel value="female" control={<Radio />} label="Nữ" />
