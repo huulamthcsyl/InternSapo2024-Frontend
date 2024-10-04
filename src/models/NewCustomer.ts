@@ -1,4 +1,4 @@
-// import Customer from "./Customer.ts";
+import Customer from "./Customer.ts";
 import CustomerDetail from "./CustomerDetail.ts";
 
 class NewCustomer {
@@ -10,6 +10,7 @@ class NewCustomer {
     birthday: Date | null;
     email: string;
     address: string;
+    note: string;
 
     constructor(
         name: string,
@@ -19,7 +20,8 @@ class NewCustomer {
         gender: boolean,
         birthday: Date | null,
         email: string,
-        address: string
+        address: string,
+        note: string
     ) {
         this.name = name;
         this.phoneNumber = phoneNumber;
@@ -29,6 +31,7 @@ class NewCustomer {
         this.birthday = birthday;
         this.email = email;
         this.address = address;
+        this.note= note;
     }
 
     static fromJson(json: any): NewCustomer {
@@ -40,11 +43,12 @@ class NewCustomer {
             json.gender,
             json.birthday ? new Date(json.birthday) : null,  // Xử lý nếu birthday có thể null
             json.email,
-            json.address
+            json.address,
+            json.note
         );
     }
 
-    static fromCustomer(customer: CustomerDetail | null ): NewCustomer | null {
+    static fromCustomer(customer: CustomerDetail | null): NewCustomer {
         if(customer) {
             return new NewCustomer(
                 customer.name,
@@ -54,7 +58,8 @@ class NewCustomer {
                 customer.gender,
                 customer.birthday ? new Date(customer.birthday) : null,
                 customer.email,
-                customer.address
+                customer.address,
+                customer.note
             );
         }
         return null;

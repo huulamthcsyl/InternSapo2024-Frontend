@@ -351,34 +351,39 @@ export default function CustomerDetailPage() {
                   </Box>
                 </Box>
                 <Box sx={{padding: '16px'}}>
-                  {customer?.note ?
-                      <Typography variant="body1" sx={{ flex: 1 }}>{customer?.note}</Typography>
-                      : <Typography variant="body1" sx={{ flex: 1 }}>Không có thông tin ghi chú</Typography>}
+                  {/*{customer?.note ?*/}
+                  {/*    <Typography variant="body1" sx={{ flex: 1 }}>{customer?.note}</Typography>*/}
+                  {/*    : <Typography variant="body1" sx={{ flex: 1 }}>Không có thông tin ghi chú</Typography>}*/}
 
-                  {/*<textarea*/}
-                  {/*    rows={4}*/}
-                  {/*    style={{ width: '100%', padding: '8px',fontFamily: 'Segoe UI' }}*/}
-                  {/*    placeholder="Nhập ghi chú ở đây..."*/}
-                  {/*    value={customer?.note} // Hiển thị ghi chú từ customer.note*/}
-                  {/*    onChange={(e) => {*/}
-                  {/*        // Xử lý khi người dùng thay đổi ghi chú*/}
-                  {/*        if (customer) {*/}
-                  {/*            setCustomer({*/}
-                  {/*                ...customer,*/}
-                  {/*                [e.target.name]: e.target.value*/}
-                  {/*            });*/}
-                  {/*        }*/}
-                  {/*    }}*/}
-                  {/*/>*/}
-                  {/* <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>*/}
-                  {/*     <Button*/}
-                  {/*         variant="contained"*/}
-                  {/*         color="primary"*/}
-                  {/*         onClick={() => handleUpdateCustomer()}*/}
-                  {/*     >*/}
-                  {/*         Lưu*/}
-                  {/*     </Button>*/}
-                  {/* </Box>*/}
+                  <textarea
+                      rows={4}
+                      name="note"
+                      style={{ width: '100%', padding: '5px',fontFamily: 'Segoe UI' }}
+                      placeholder="Nhập ghi chú ở đây..."
+                      value={customer?.note} // Hiển thị ghi chú từ customer.note
+                      onChange={(e) => {
+                        // Xử lý khi người dùng thay đổi ghi chú
+                        if (customer) {
+                          setCustomer({
+                            ...customer,
+                            [e.target.name]: e.target.value
+                          });
+                          setNewCustomer({
+                            ...newCustomer,
+                            [e.target.name]: e.target.value
+                          });
+                        }
+                      }}
+                  />
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleUpdateCustomer()}
+                    >
+                      Lưu
+                    </Button>
+                  </Box>
                 </Box>
 
               </Box>
